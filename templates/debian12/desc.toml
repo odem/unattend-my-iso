@@ -1,0 +1,9 @@
+
+[description]
+name = "debian12"
+iso_name = "debian-12.9.0-amd64-netinst.iso"
+iso_url = "https://gemmei.ftp.acc.umu.se/debian-cd/current/amd64/iso-cd/debian-12.9.0-amd64-netinst.iso"
+preseed_file = "preseed.cfg"
+path_ssh = "ssh"
+path_grub = "grub"
+path_postinstall = "postinstall"

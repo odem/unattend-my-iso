@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "unattend_my_iso"
+version = "0.0.1"
+description = "Short description of your project"
+authors = [{ name = "jb", email = "foo@bar.baz" }]
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+]
+[project.scripts]
+unattend_my_iso = "unattend_my_iso.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+#[project.urls]
+#homepage = "https://github.com/yourusername/your-package-name"
