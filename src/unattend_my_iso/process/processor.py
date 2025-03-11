@@ -52,7 +52,6 @@ class TaskProcessor(TaskProcessorBase):
         if template is None or self._ensure_task_iso(template) is False:
             return self._get_error_result("No ISO")
 
-        log_debug("Build ISO:")
         if self._extract_iso_contents(args, template, user) is False:
             return self._get_error_result("Not extracted")
 
@@ -77,9 +76,8 @@ class TaskProcessor(TaskProcessorBase):
         intername = args.target.template
         fullinter = f"{interpath}/{intername}"
         dst = f"{isopath}/umi_{isoname}"
-        hybridmbr = "/usr/lib/ISOLINUX/isohdpfx.bin"
         created = generate_md5sum_and_create_iso(
-            fullinter, template.iso_name, hybridmbr, dst, user
+            fullinter, template.iso_name, dst, user
         )
         if created is True:
             log_debug(f"Created ISO   : {dst}")
@@ -129,7 +127,8 @@ class TaskProcessor(TaskProcessorBase):
                 return False
             log_debug("Copied addon  : Ssh")
         if args.addons.addon_postinstall:
-            if copy_folder(f"{src}/{template.path_postinstall}", dst, user) is False:
+            postfolder = f"{src}/{template.path_postinstall}"
+            if copy_folder(postfolder, dst, user) is False:
                 return False
             log_debug("Copied addon  : Postinstall")
         return True

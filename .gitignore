@@ -3,3 +3,4 @@
 /.venv/
 /src/unattend_my_iso.egg-info/
 __pycache__/
+*.pyc

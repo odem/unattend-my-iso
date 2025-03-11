@@ -6,6 +6,7 @@ from unattend_my_iso.helpers.logging import log_debug, log_error, log_info
 
 DIR_OVMF_CODE = "/usr/share/OVMF/OVMF_CODE.fd"
 DIR_OVMF_VARS = "/usr/share/OVMF/OVMF_VARS.fd"
+DEFAULT_DISK_SIZE = 64
 
 
 @dataclass
@@ -116,7 +117,9 @@ def _create_disk_args(args_hv: HypervisorArgs) -> list[str]:
     if len(args_hv.disks) > 0:
         i = 0
         for disk in args_hv.disks:
-            if disk != "" and os.path.exists(disk):
+            if disk != "":
+                if os.path.exists(disk) is False:
+                    prepare_qcowdisk(disk, DEFAULT_DISK_SIZE)
                 ioname = f"io{i}"
                 diskid = f"disk{i}"
                 diskcache = "cache-size=16M,cache=none"

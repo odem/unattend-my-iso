@@ -1,7 +1,9 @@
 import subprocess
 
+DIR_MBR_HYBRID = "/usr/lib/ISOLINUX/isohdpfx.bin"
 
-def generate_md5sum_and_create_iso(infolder, volname, hybridmbr, outfile, user) -> bool:
+
+def generate_md5sum_and_create_iso(infolder, volname, outfile, user) -> bool:
     find_command = f"find {infolder} -type f"
     md5sum_command = f"md5sum $( {find_command} ) > {infolder}/md5sum.txt 2>/dev/null"
     subprocess.run(md5sum_command, shell=True, check=True)
@@ -20,7 +22,7 @@ def generate_md5sum_and_create_iso(infolder, volname, hybridmbr, outfile, user) 
         "-no-emul-boot",
         "-boot-info-table",
         "-isohybrid-mbr",
-        hybridmbr,
+        DIR_MBR_HYBRID,
         "-partition_offset",
         "16",
         "-isohybrid-gpt-basdat",
