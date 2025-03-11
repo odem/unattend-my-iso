@@ -2,7 +2,7 @@ import os
 import subprocess
 import shutil
 
-from unattend_my_iso.helpers.logging import log_error, log_debug
+from unattend_my_iso.helpers.logging import log_error
 
 
 def _get_copy_cmd(src: str, dst: str) -> list[str]:
@@ -28,14 +28,14 @@ def copy_file(src: str, dst: str) -> bool:
     return True
 
 
-def copy_folder(src: str, dst: str) -> bool:
+def copy_folder(src: str, dst: str, user: str) -> bool:
     try:
         # log_debug(f"Copy folder from '{src}' to '{dst}'")
         if os.path.exists(dst) is False:
             os.makedirs(dst)
         if os.path.exists(dst):
             command = _get_copy_cmd(src, dst)
-            chown = _get_chown_cmd(dst, "jb")
+            chown = _get_chown_cmd(dst, user)
             chmod = _get_chmod_cmd(dst)
             completed_proc = subprocess.run(command, capture_output=True, text=True)
             if completed_proc.returncode == 0:

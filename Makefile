@@ -42,9 +42,10 @@ update_dummies:
 build: | update_dummies $(DIR_VENV)
 	source $(DIR_VENV)/bin/activate && \
 		pip install --upgrade build && \
+		pip install -r requirements.txt && \
 		python -m build
 install: build
-	source $(DIR_VENV)/bin/activate ; \
+	source $(DIR_VENV)/bin/activate && \
 		pip install --editable .
 debugstart: 
 	@source $(DIR_VENV)/bin/activate ; \

@@ -12,6 +12,7 @@ class SysConfig:
     mnt_path: str
     intermediate_path: str
     iso_path: str
+    vm_path: str
 
 
 @dataclass
@@ -81,6 +82,7 @@ def create_default_config(work_path: str):
         mnt_path=f"{work_path}/data/mounts",
         intermediate_path=f"{work_path}/data/out",
         iso_path=f"{work_path}/data/iso",
+        vm_path=f"{work_path}/data/vm",
     )
     cfg_addons = AddonConfig(
         addon_ssh=True, addon_grubmenu=True, addon_postinstall=True

@@ -27,7 +27,8 @@ def create_irmod(path_mod, path_in, path_inc):
             stderr=subprocess.DEVNULL,
             check=True,
         )
-        gzip_process.stdout.close()
+        if gzip_process.stdout is not None:
+            gzip_process.stdout.close()
     preseed_src = os.path.join(path_inc, "preseed.cfg")
     preseed_dst = os.path.join(path_mod, "preseed.cfg")
     shutil.copy(preseed_src, preseed_dst)

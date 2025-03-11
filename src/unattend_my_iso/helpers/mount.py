@@ -1,7 +1,6 @@
 import os
 import subprocess
-
-from unattend_my_iso.helpers.logging import log_error, log_debug
+from unattend_my_iso.helpers.logging import log_error
 
 
 def _get_mount_cmd(src: str, dst: str, fstype: str = "") -> list[str]:
@@ -19,7 +18,6 @@ def _get_unmount_cmd(dst: str) -> list[str]:
 
 def mount_folder(src: str, name: str, dst: str) -> bool:
     full = f"{dst}/{name}"
-    # log_debug(f"Mount iso '{src}' to '{full}'")
     if os.path.exists(full) is False:
         os.makedirs(full)
     if os.path.exists(full):
