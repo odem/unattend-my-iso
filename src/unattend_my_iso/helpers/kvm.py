@@ -23,7 +23,13 @@ class HypervisorArgs:
 def run_vm(args: TaskConfig, args_hv: HypervisorArgs) -> bool:
     log_info(f"Running VM: {args_hv.name}")
     runcmd = _create_run_command(args, args_hv)
-    proc = subprocess.Popen(runcmd)
+    proc = subprocess.Popen(
+        runcmd,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        close_fds=True,
+    )
     if proc.returncode == 0:
         log_info("VMRUN was initiated")
         return True
