@@ -47,9 +47,12 @@ build: | update_dummies $(DIR_VENV)
 install: build
 	source $(DIR_VENV)/bin/activate && \
 		pip install --editable .
-debugstart: 
+debugbuild: 
 	@source $(DIR_VENV)/bin/activate ; \
-		python3 -m src.$(PROJECT_NAME).main
+		python3 -m src.$(PROJECT_NAME).main "vmbuild"
+debugrun: 
+	@source $(DIR_VENV)/bin/activate ; \
+		python3 -m src.$(PROJECT_NAME).main "vmrun"
 
 fullstart: build
 	source $(DIR_VENV)/bin/activate ; \

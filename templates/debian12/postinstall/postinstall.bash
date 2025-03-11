@@ -1,12 +1,13 @@
 #!/bin/bash
 
 # Globals
+export DEBIAN_FRONTEND=noninteractive
 LOCALESTR=en_US.UTF-8
 
 # bashrc
 cp /opt/umi/postinstall/.bashrc /root/.bashrc
 
-# Locale is important! ceph wont install with incorrect locale!
+
 unset LANG
 unset LANGUAGE
 unset LC_LANG
@@ -43,6 +44,17 @@ echo "locales locales/default_environment_locale select $LOCALESTR" \
     | debconf-set-selections
 dpkg-reconfigure -f noninteractive locales
 
+# Sources
+cat<< EOF > /etc/apt/sources.list
+deb http://deb.debian.org/debian/ bookworm main contrib non-free-firmware
+deb http://deb.debian.org/debian/ bookworm-updates main contrib non-free-firmware
+deb http://deb.debian.org/debian/ bookworm-backports main contrib non-free non-free-firmware
+deb http://security.debian.org/debian-security bookworm-security main contrib non-free-firmware
+EOF
+apt-get update -y && apt-get upgrade -y && apt-get install -y \
+    sudo psmisc bsdmainutils ntp lsb-release curl gnupg  \
+     traceroute iftop sysstat bridge-utils net-tools tcpdump nmap \
+    git vim make kitty bc
 
 # SSH
 if [[ -f /opt/postinstall/ssh/id_rsa.pub ]] ; then
@@ -61,6 +73,7 @@ if [[ -f /opt/postinstall/ssh/sshd_config ]] ; then
     cp /opt/postinstall/ssh/sshd_config /etc/ssh/sshd_config
 fi
 systemctl enable ssh
+systemctl restart ssh
 
 
 # systemd unit
@@ -81,7 +94,7 @@ EOF
 # preseed-launcher
 cat <<EOF > /firstboot.bash
 #!/bin/bash
-/opt/umi/postinstall/postinstall.bash
+/opt/umi/postinstall/postinstall_mps.bash
 systemctl disable firstboot.service
 rm -rf /etc/systemd/service/firstboot.service
 rm -rf /firstboot.bash

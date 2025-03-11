@@ -22,20 +22,20 @@ terminal-border: "0"
 
 # Show the boot menu
 + boot_menu {
-  left = 30%
+  left = 35%
   top = 30%
-  width = 40%
+  width = 30%
   height = 40%
   align = "center"
-  item_font = "Unifont Regular 16"
+  item_font = "Unifont Regular 14"
   item_color = "#ffffff"
   selected_item_color = "#ff0000"
   icon_width = 0
   icon_height = 0
   item_icon_space = 0
-  item_height = 48
-  item_padding = 2
-  item_spacing = 2
+  item_height = 32
+  item_padding = 4
+  item_spacing = 4
   selected_item_pixmap_style = "hl_*.png"
 }
 

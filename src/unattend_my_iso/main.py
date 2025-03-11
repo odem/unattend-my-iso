@@ -1,14 +1,17 @@
+import sys
 from unattend_my_iso.process.processor import TaskProcessor
 
 
-def do_main(work_path: str = ""):
+def do_main(script_name: str = "", arguments: list = [], work_path: str = ""):
     proc = TaskProcessor(work_path)
-    proc.do_process()
+    proc.do_process(script_name, arguments)
 
 
-def main(work_path: str = ""):
-    do_main(work_path)
+def main(script_name: str = "", arguments: list = [], work_path: str = ""):
+    do_main(script_name, arguments, work_path)
 
 
 if __name__ == "__main__":
-    main()
+    script_name = sys.argv[0]
+    arguments = sys.argv[1:]
+    main(script_name, arguments)

@@ -24,18 +24,15 @@ class HypervisorArgs:
 def run_vm(args: TaskConfig, args_hv: HypervisorArgs) -> bool:
     log_info(f"Running VM: {args_hv.name}")
     runcmd = _create_run_command(args, args_hv)
-    proc = subprocess.Popen(
+    subprocess.Popen(
         runcmd,
         stdin=subprocess.DEVNULL,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         close_fds=True,
     )
-    if proc.returncode == 0:
-        log_info("VMRUN was initiated")
-        return True
-    log_error(f"Error on VMRUN: {proc.returncode}")
-    return False
+    log_info("VMRUN was initiated")
+    return True
 
 
 def _create_run_command(args: TaskConfig, args_hv: HypervisorArgs) -> list:
@@ -86,7 +83,6 @@ def _create_uefi_args(args: TaskConfig, args_hv: HypervisorArgs) -> list[str]:
             arr_uefi = ["-drive", f"{pflash},file={DIR_OVMF_CODE},readonly=on"]
             arr_uefi += ["-drive", f"{pflash},file={efidisk}"]
             return arr_uefi
-    log_error("Error creating uefi arguments")
     return []
 
 

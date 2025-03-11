@@ -10,14 +10,18 @@ from unattend_my_iso.process.processor_base import TaskProcessorBase
 
 class TaskProcessor(TaskProcessorBase):
 
-    def do_process(self):
+    def do_process(self, script_name: str = "", arguments: list = []):
         self._print_args(self.taskconfig)
-        result = self._process_task(self.taskconfig)
+        result = self._process_task(self.taskconfig, script_name, arguments)
         self._process_result(result)
 
-    def _process_task(self, args: TaskConfig) -> TaskResult:
+    def _process_task(
+        self, args: TaskConfig, script_name: str = "", arguments: list = []
+    ) -> TaskResult:
         user = "jb"
-        tasktype = "vmrun"
+        tasktype = "vmbuild"
+        if len(arguments) > 0:
+            tasktype = arguments[0]
         if tasktype == "vmbuild":
             return self.task_build_iso(args, user)
         elif tasktype == "vmrun":
@@ -33,7 +37,7 @@ class TaskProcessor(TaskProcessorBase):
         hyperargs = HypervisorArgs(
             args.target.template,
             True,
-            dst,
+            "",
             [f"{vmdir}/disk1.qcow2"],
             ["nat"],
             [(2222, 22)],
