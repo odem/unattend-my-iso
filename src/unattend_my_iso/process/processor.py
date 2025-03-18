@@ -1,6 +1,5 @@
 import os
 from unattend_my_iso.helpers.config import IsoTemplate, TaskConfig, TaskResult
-from unattend_my_iso.helpers.files import copy_file, copy_folder
 from unattend_my_iso.helpers.geniso import generate_md5sum_and_create_iso
 from unattend_my_iso.helpers.irmod import create_irmod
 from unattend_my_iso.helpers.kvm import HypervisorArgs, run_vm
@@ -9,6 +8,9 @@ from unattend_my_iso.process.processor_base import TaskProcessorBase
 
 
 class TaskProcessor(TaskProcessorBase):
+
+    def __init__(self, work_path: str = ""):
+        TaskProcessorBase.__init__(self, work_path)
 
     def do_process(self, script_name: str = "", arguments: list = []):
         self._print_args(self.taskconfig)
@@ -37,7 +39,7 @@ class TaskProcessor(TaskProcessorBase):
         hyperargs = HypervisorArgs(
             args.target.template,
             True,
-            "",
+            dst,
             [f"{vmdir}/disk1.qcow2"],
             ["nat"],
             [(2222, 22)],
@@ -56,13 +58,13 @@ class TaskProcessor(TaskProcessorBase):
         if template is None or self._ensure_task_iso(template) is False:
             return self._get_error_result("No ISO")
 
-        if self._extract_iso_contents(args, template, user) is False:
+        if self._extract_iso_contents(args, template) is False:
             return self._get_error_result("Not extracted")
 
         if self._copy_preseed(args, template) is False:
             return self._get_error_result("Preseed not copied")
 
-        if self._copy_addons(args, template, user) is False:
+        if self._copy_addons(args, template) is False:
             return self._get_error_result("Addons not copied")
 
         if self._create_irmod(args) is False:
@@ -110,31 +112,13 @@ class TaskProcessor(TaskProcessorBase):
             print(f"Exception: {exe}")
         return True
 
-    def _copy_addons(self, args: TaskConfig, template: IsoTemplate, user: str) -> bool:
-        templatepath = self.taskconfig.sys.template_path
-        templatename = args.target.template
-        interpath = self.taskconfig.sys.intermediate_path
-        intername = args.target.template
-        src = f"{templatepath}/{templatename}"
-        dst = f"{interpath}/{intername}/umi"
-        dstgrub = f"{interpath}/{intername}/boot/grub"
-        srcgrub = f"{src}/{template.path_grub}"
+    def _copy_addons(self, args: TaskConfig, template: IsoTemplate) -> bool:
         if args.addons.addon_grubmenu:
-            os.makedirs(dstgrub, exist_ok=True)
-            if copy_folder(f"{srcgrub}/theme", dstgrub, user) is False:
-                return False
-            if copy_file(f"{srcgrub}/grub.cfg", dstgrub) is False:
-                return False
-            log_debug("Copied addon  : Grub")
+            self.addons["grub"].integrate_addon(args, template)
         if args.addons.addon_ssh:
-            if copy_folder(f"{src}/{template.path_ssh}", dst, user) is False:
-                return False
-            log_debug("Copied addon  : Ssh")
+            self.addons["ssh"].integrate_addon(args, template)
         if args.addons.addon_postinstall:
-            postfolder = f"{src}/{template.path_postinstall}"
-            if copy_folder(postfolder, dst, user) is False:
-                return False
-            log_debug("Copied addon  : Postinstall")
+            self.addons["postinstall"].integrate_addon(args, template)
         return True
 
     def _copy_preseed(self, args: TaskConfig, template: IsoTemplate) -> bool:
@@ -144,23 +128,23 @@ class TaskProcessor(TaskProcessorBase):
         intername = args.target.template
         fullpreseed = f"{templatepath}/{templatename}/{template.preseed_file}"
         fullinter = f"{interpath}/{intername}"
-        if copy_file(fullpreseed, fullinter):
+        if self.files.copy_file(fullpreseed, fullinter):
             log_debug(f"Copied preseed: {fullpreseed}")
             return True
         return False
 
-    def _extract_iso_contents(
-        self, args: TaskConfig, template: IsoTemplate, user: str
-    ) -> bool:
+    def _extract_iso_contents(self, args: TaskConfig, template: IsoTemplate) -> bool:
         interpath = self.taskconfig.sys.intermediate_path
         isopath = self.taskconfig.sys.iso_path
         isoname = template.iso_name
         fulliso = f"{isopath}/{isoname}"
-        fulldst = f"{args.sys.mnt_path}/{args.target.template}"
-        self._unmount_folder(fulldst)
+        src = f"{args.sys.mnt_path}/{args.target.template}"
+        dst = f"{interpath}/{args.target.template}"
+        self._unmount_folder(src)
         if self._mount_folder(fulliso, args.target.template, args.sys.mnt_path):
-            copied = copy_folder(fulldst, interpath, user)
-            self._unmount_folder(fulldst)
+            copied = self.files.copy_folder(src, dst)
+            copied = self.files.ensure_privilege(dst, privilege=0o200)
+            self._unmount_folder(src)
             if copied:
                 log_debug(f"Copied ISO    : {isoname}")
                 return True

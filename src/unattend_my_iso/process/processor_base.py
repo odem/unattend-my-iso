@@ -1,5 +1,9 @@
 import os
-import subprocess
+from unattend_my_iso.addons.grub import GrubAddon
+from unattend_my_iso.addons.addon_base import UmiAddon
+from unattend_my_iso.addons.postinstall import PostinstallAddon
+from unattend_my_iso.addons.ssh import SshAddon
+from unattend_my_iso.core.files.file_manager import UmiFileManager
 from unattend_my_iso.helpers.config import (
     IsoTemplate,
     TaskConfig,
@@ -17,9 +21,13 @@ class TaskProcessorBase:
     work_path: str
     taskconfig: TaskConfig
     templates: dict[str, IsoTemplate]
+    addons: dict[str, UmiAddon]
+    files: UmiFileManager
 
     def __init__(self, work_path: str = ""):
         self.work_path = work_path
+        self.files = UmiFileManager()
+        self._get_addons()
         self._get_templates()
 
     def exists(self, path: str) -> bool:
@@ -41,6 +49,16 @@ class TaskProcessorBase:
         ):
             return True
         return False
+
+    def _get_addons(self):
+        grub = GrubAddon()
+        ssh = SshAddon()
+        postinst = PostinstallAddon()
+        self.addons = {
+            grub.addon_name: grub,
+            ssh.addon_name: ssh,
+            postinst.addon_name: postinst,
+        }
 
     def _get_templates(self):
         if self.work_path == "":

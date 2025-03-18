@@ -1,5 +1,7 @@
 import subprocess
 
+from unattend_my_iso.helpers.logging import log_debug
+
 DIR_MBR_HYBRID = "/usr/lib/ISOLINUX/isohdpfx.bin"
 
 
@@ -36,8 +38,13 @@ def generate_md5sum_and_create_iso(infolder, volname, outfile, user) -> bool:
         f"{outfile}.iso",
         infolder,
     ]
-    subprocess.run(
+
+    cmdstr = " ".join(xorriso_command)
+    log_debug(f"CMD: {cmdstr}")
+    out_iso = subprocess.run(
         xorriso_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
+    if out_iso.returncode != 0:
+        log_debug(f"Error on isogen: {out_iso.stdout}{out_iso.stderr}")
     subprocess.run(["sudo", "chown", f"{user}:{user}", "-R", infolder], check=True)
     return True

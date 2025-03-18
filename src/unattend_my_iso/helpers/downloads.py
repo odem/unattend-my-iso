@@ -5,7 +5,7 @@ from unattend_my_iso.helpers.logging import log_error, log_debug
 
 def download_file(url: str, name: str, dir: str) -> bool:
     try:
-        os.makedirs(dir)
+        os.makedirs(dir, exist_ok=True)
         log_debug(f"Requesting: {url}")
         response = requests.get(url)
         if response.status_code == 200:
