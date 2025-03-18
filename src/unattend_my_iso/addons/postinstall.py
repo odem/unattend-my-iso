@@ -15,9 +15,9 @@ class PostinstallAddon(UmiAddon):
         interpath = args.sys.intermediate_path
         intername = args.target.template
         src = f"{templatepath}/{templatename}"
-        dst = f"{interpath}/{intername}/umi"
+        dst = f"{interpath}/{intername}/umi/postinstall"
         postfolder = f"{src}/{template.path_postinstall}"
-        if self.files.copy_folder(postfolder, dst) is False:
+        if self.files.cp(postfolder, dst) is False:
             return False
         log_debug(f"Integrated    : {self.addon_name}")
         return True

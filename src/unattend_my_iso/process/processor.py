@@ -128,7 +128,7 @@ class TaskProcessor(TaskProcessorBase):
         intername = args.target.template
         fullpreseed = f"{templatepath}/{templatename}/{template.preseed_file}"
         fullinter = f"{interpath}/{intername}"
-        if self.files.copy_file(fullpreseed, fullinter):
+        if self.files.cp(fullpreseed, fullinter):
             log_debug(f"Copied preseed: {fullpreseed}")
             return True
         return False
@@ -142,7 +142,7 @@ class TaskProcessor(TaskProcessorBase):
         dst = f"{interpath}/{args.target.template}"
         self._unmount_folder(src)
         if self._mount_folder(fulliso, args.target.template, args.sys.mnt_path):
-            copied = self.files.copy_folder(src, dst)
+            copied = self.files.copy_folder_iso(src, dst)
             copied = self.files.ensure_privilege(dst, privilege=0o200)
             self._unmount_folder(src)
             if copied:

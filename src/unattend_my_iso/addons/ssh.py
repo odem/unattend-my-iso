@@ -15,8 +15,8 @@ class SshAddon(UmiAddon):
         interpath = args.sys.intermediate_path
         intername = args.target.template
         src = f"{templatepath}/{templatename}"
-        dst = f"{interpath}/{intername}/umi"
-        if self.files.copy_folder(f"{src}/{template.path_ssh}", dst) is False:
+        dst = f"{interpath}/{intername}/umi/ssh"
+        if self.files.cp(f"{src}/{template.path_ssh}", dst) is False:
             return False
         log_debug(f"Integrated    : {self.addon_name}")
         return True

@@ -31,14 +31,16 @@ class GrubAddon(UmiAddon):
         src = f"{templatepath}/{templatename}"
         dst = f"{interpath}/{intername}"
         dstgrub = f"{dst}/boot/grub"
+        dstthemes = f"{dstgrub}/themes"
         srcgrub = f"{src}/{template.path_grub}"
         kernel = self._get_kernel_version(dst)
         log_debug(f"Found kernel  : {kernel}")
         log_debug(f"Integrated    : {self.addon_name}")
-        os.makedirs(dstgrub, exist_ok=True)
-        if self.files.copy_folder(f"{srcgrub}/themes", dstgrub) is False:
+        os.makedirs(dstthemes, exist_ok=True)
+        self.files.mv(f"{dstgrub}/theme", f"{dstgrub}/themes/default")
+        if self.files.cp(f"{srcgrub}/themes", dstthemes) is False:
             return False
-        if self.files.copy_file(f"{srcgrub}/grub.cfg", dstgrub) is False:
+        if self.files.cp(f"{srcgrub}/grub.cfg", dstgrub) is False:
             return False
         log_debug(f"Integrated    : {self.addon_name}")
         return True
