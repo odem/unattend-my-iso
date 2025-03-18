@@ -3,9 +3,9 @@ from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 
 
-class PostinstallAddon(UmiAddon):
+class AnswerFileAddon(UmiAddon):
     def __init__(self):
-        UmiAddon.__init__(self, "postinstall")
+        UmiAddon.__init__(self, "answerfile")
 
     @override
     def integrate_addon(self, args: TaskConfig, template: TemplateConfig) -> bool:
@@ -13,9 +13,8 @@ class PostinstallAddon(UmiAddon):
         templatename = args.target.template
         interpath = args.sys.intermediate_path
         intername = args.target.template
-        src = f"{templatepath}/{templatename}"
-        dst = f"{interpath}/{intername}/umi/postinstall"
-        postfolder = f"{src}/{template.path_postinstall}"
-        if self.files.cp(postfolder, dst) is False:
-            return False
-        return True
+        fullpreseed = f"{templatepath}/{templatename}/{template.preseed_file}"
+        fullinter = f"{interpath}/{intername}"
+        if self.files.cp(fullpreseed, fullinter):
+            return True
+        return False

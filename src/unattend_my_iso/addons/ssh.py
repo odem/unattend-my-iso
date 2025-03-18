@@ -1,7 +1,6 @@
 from typing_extensions import override
 from unattend_my_iso.addons.addon_base import UmiAddon
-from unattend_my_iso.helpers.config import IsoTemplate, TaskConfig
-from unattend_my_iso.helpers.logging import log_debug
+from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 
 
 class SshAddon(UmiAddon):
@@ -9,7 +8,7 @@ class SshAddon(UmiAddon):
         UmiAddon.__init__(self, "ssh")
 
     @override
-    def integrate_addon(self, args: TaskConfig, template: IsoTemplate) -> bool:
+    def integrate_addon(self, args: TaskConfig, template: TemplateConfig) -> bool:
         templatepath = args.sys.template_path
         templatename = args.target.template
         interpath = args.sys.intermediate_path
@@ -18,5 +17,4 @@ class SshAddon(UmiAddon):
         dst = f"{interpath}/{intername}/umi/ssh"
         if self.files.cp(f"{src}/{template.path_ssh}", dst) is False:
             return False
-        log_debug(f"Integrated    : {self.addon_name}")
         return True

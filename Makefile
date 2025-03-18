@@ -45,6 +45,7 @@ build: | update_dummies $(DIR_VENV)
 		pip install -r requirements.txt && \
 		python -m build
 install: build
+	sudo apt install qemu-kvm xorriso ovmf swtpm
 	source $(DIR_VENV)/bin/activate && \
 		pip install --editable .
 debugbuild: 

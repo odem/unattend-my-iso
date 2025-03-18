@@ -1,5 +1,5 @@
 import sys
-from unattend_my_iso.process.processor import TaskProcessor
+from unattend_my_iso.core.processing.processor import TaskProcessor
 
 
 def do_main(script_name: str = "", arguments: list = [], work_path: str = ""):

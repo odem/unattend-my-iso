@@ -2,13 +2,19 @@ import os
 from os.path import isdir, isfile
 import shutil
 import subprocess
-from unattend_my_iso.helpers.logging import log_error
+import requests
+from unattend_my_iso.common.config import TaskConfig, TemplateConfig
+from unattend_my_iso.core.files.file_mounts import UmiFileMounts
+from unattend_my_iso.common.logging import log_debug, log_error
 
 
-class UmiFileManager:
+class UmiFileManager(UmiFileMounts):
 
     def __init__(self):
-        pass
+        UmiFileMounts.__init__(self)
+
+    def cwd(self):
+        return os.getcwd()
 
     def rm(self, src: str) -> bool:
         try:
@@ -56,7 +62,27 @@ class UmiFileManager:
             return False
         return True
 
-    def ensure_privilege(self, dst: str, privilege: int) -> bool:
+    def http_download(self, url: str, name: str, dir: str) -> bool:
+        try:
+            os.makedirs(dir, exist_ok=True)
+            log_debug(f"Requesting: {url}")
+            response = requests.get(url)
+            if response.status_code == 200:
+                dst = f"{dir}/{name}"
+                log_debug(f"Download success! Storing to '{dst}'")
+                if os.path.exists(dir):
+                    with open(dst, "wb") as file:
+                        file.write(response.content)
+                        return True
+                else:
+                    log_error(f"Iso folder does not exist: '{dir}'")
+            else:
+                log_error(f"Download failed! Url: {url}")
+        except Exception as exe:
+            log_error(f"Download failed! Url: {url}\n{exe}")
+        return False
+
+    def chmod(self, dst: str, privilege: int) -> bool:
         try:
             current_permissions = os.stat(dst).st_mode
             new_permissions = current_permissions | privilege
@@ -75,4 +101,38 @@ class UmiFileManager:
         except Exception as exe:
             log_error(f"Error on ensure_privilege {privilege}: {exe}")
             return False
+        return True
+
+    def _get_path_isopath(self, args: TaskConfig) -> str:
+        isopath = args.sys.iso_path
+        isoname = args.target.template
+        isoprefix = args.target.file_prefix
+        return f"{isopath}/{isoprefix}{isoname}"
+
+    def _get_path_isofile(self, args: TaskConfig) -> str:
+        isopath = self._get_path_isopath(args)
+        return f"{isopath}.{args.target.file_extension}"
+
+    def _get_path_intermediate(self, args: TaskConfig) -> str:
+        interpath = args.sys.intermediate_path
+        intername = args.target.template
+        return f"{interpath}/{intername}"
+
+    def _get_path_template(self, args: TaskConfig) -> str:
+        templatepath = args.sys.template_path
+        templatename = args.target.template
+        return f"{templatepath}/{templatename}"
+
+    def _get_path_mountfile(self, args: TaskConfig, template: TemplateConfig) -> str:
+        isopath = args.sys.iso_path
+        isoname = template.iso_name
+        return f"{isopath}/{isoname}"
+
+    def _get_path_mountpath(self, args: TaskConfig) -> str:
+        mntpath = args.sys.mnt_path
+        targetname = args.target.template
+        return f"{mntpath}/{targetname}"
+
+    def _get_path_vm(self, args: TaskConfig):
+        return f"{args.sys.vm_path}/{args.target.template}"
         return True

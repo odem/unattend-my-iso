@@ -1,10 +1,11 @@
-import os
 import importlib.util
 from pathlib import Path
+from unattend_my_iso.core.files.file_manager import UmiFileManager
 
 
 def run():
-    cwd_path = Path(f"{os.getcwd()}/../..").resolve()
+    files = UmiFileManager()
+    cwd_path = Path(f"{files.cwd()}/../..").resolve()
     print(f"CWD:{cwd_path}")
     script_path = Path(__file__).resolve()
     module_path = script_path.parent / "main.py"

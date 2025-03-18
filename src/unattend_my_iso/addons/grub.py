@@ -3,8 +3,8 @@ import glob
 import re
 from typing_extensions import override
 from unattend_my_iso.addons.addon_base import UmiAddon
-from unattend_my_iso.helpers.config import IsoTemplate, TaskConfig
-from unattend_my_iso.helpers.logging import log_debug
+from unattend_my_iso.common.config import TaskConfig, TemplateConfig
+from unattend_my_iso.common.logging import log_debug
 
 
 class GrubAddon(UmiAddon):
@@ -23,7 +23,7 @@ class GrubAddon(UmiAddon):
         return "X.Y.Z-W"
 
     @override
-    def integrate_addon(self, args: TaskConfig, template: IsoTemplate) -> bool:
+    def integrate_addon(self, args: TaskConfig, template: TemplateConfig) -> bool:
         templatepath = args.sys.template_path
         templatename = args.target.template
         interpath = args.sys.intermediate_path
@@ -34,13 +34,11 @@ class GrubAddon(UmiAddon):
         dstthemes = f"{dstgrub}/themes"
         srcgrub = f"{src}/{template.path_grub}"
         kernel = self._get_kernel_version(dst)
-        log_debug(f"Found kernel  : {kernel}")
-        log_debug(f"Integrated    : {self.addon_name}")
+        log_debug(f"Found kernel : {kernel}")
         os.makedirs(dstthemes, exist_ok=True)
         self.files.mv(f"{dstgrub}/theme", f"{dstgrub}/themes/default")
         if self.files.cp(f"{srcgrub}/themes", dstthemes) is False:
             return False
         if self.files.cp(f"{srcgrub}/grub.cfg", dstgrub) is False:
             return False
-        log_debug(f"Integrated    : {self.addon_name}")
         return True

@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 
 from unattend_my_iso.core.files.file_manager import UmiFileManager
-from unattend_my_iso.helpers.config import IsoTemplate, TaskConfig
-from unattend_my_iso.helpers.logging import log_info
+from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 
 
 class UmiAddon(ABC):
@@ -14,5 +13,5 @@ class UmiAddon(ABC):
         self.files = UmiFileManager()
 
     @abstractmethod
-    def integrate_addon(self, args: TaskConfig, template: IsoTemplate) -> bool:
+    def integrate_addon(self, args: TaskConfig, template: TemplateConfig) -> bool:
         raise NotImplementedError("Not implemented")
