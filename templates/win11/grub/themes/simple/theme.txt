@@ -1,0 +1,74 @@
+# Global Property
+title-text: ""
+desktop-image: "splash.png"
+desktop-color: "#000000"
+terminal-font: "Terminus Regular 14"
+terminal-left: "0"
+terminal-top: "0"
+terminal-width: "100%"
+terminal-height: "100%"
+terminal-border: "0"
+
+# Show a countdown message using the label component
++ label {
+  top = 5%
+  left = 31%
+  width = 38%
+  align = "center"
+  text = "Debian GNU/Linux UEFI Installer menu"
+  color = "#ffffff"
+  font = "Unifont Regular 16"
+}
+
+# Show the boot menu
++ boot_menu {
+  left = 35%
+  top = 30%
+  width = 30%
+  height = 40%
+  align = "center"
+  item_font = "Unifont Regular 14"
+  item_color = "#ffffff"
+  selected_item_color = "#ff0000"
+  icon_width = 0
+  icon_height = 0
+  item_icon_space = 0
+  item_height = 32
+  item_padding = 4
+  item_spacing = 4
+  selected_item_pixmap_style = "hl_*.png"
+}
+
+
+# Show a countdown message using the label component
++ label {
+  top = 80%
+  left = 31%
+  width = 38%
+  align = "center"
+  id = "__timeout__"
+  text = "Booting in %d seconds"
+  color = "#00ff00"
+  font = "Unifont Regular 16"
+}
+
++ hbox {
+  top = 90%
+  left = 31%
+  width = 38%
+  align = "center"
+  item_padding = 0
+  item_spacing = 0
+  + vbox {
+    + label {text = "ENTER: Run Target " font = "Sans 10" color = "blue" align = "center"}
+  }
+  + vbox {
+    + label {text = "E: Edit Selection " font = "Sans 10" color = "red" align = "center"}
+  }
+  + vbox {
+    + label {text = "C: Command line " font = "Sans 10" color = "red" align = "center"}
+  }
+  + vbox {
+    + label {text = "ESC: Back" font = "Sans 10" color = "blue" align = "center"}
+  }
+}

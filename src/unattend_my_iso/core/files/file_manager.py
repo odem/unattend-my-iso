@@ -6,11 +6,13 @@ import requests
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.core.files.file_mounts import UmiFileMounts
 from unattend_my_iso.common.logging import log_debug, log_error
+from unattend_my_iso.core.files.file_replacements import UmiFileReplacements
 
 
-class UmiFileManager(UmiFileMounts):
+class UmiFileManager(UmiFileMounts, UmiFileReplacements):
 
     def __init__(self):
+        UmiFileReplacements.__init__(self)
         UmiFileMounts.__init__(self)
 
     def cwd(self):
@@ -102,6 +104,11 @@ class UmiFileManager(UmiFileMounts):
             log_error(f"Error on ensure_privilege {privilege}: {exe}")
             return False
         return True
+
+    def _get_path_isosource(self, args: TaskConfig, template: TemplateConfig) -> str:
+        isopath = args.sys.iso_path
+        isoname = template.iso_name
+        return f"{isopath}/{isoname}"
 
     def _get_path_isopath(self, args: TaskConfig) -> str:
         isopath = args.sys.iso_path

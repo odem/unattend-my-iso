@@ -9,24 +9,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
     def __init__(self) -> None:
         UmiHypervisorBase.__init__(self)
 
-    def get_hv_args(self, args: TaskConfig) -> HypervisorArgs:
-        cdrom = self.files._get_path_isofile(args)
-        vmdir = self.files._get_path_vm(args)
-        disk = f"{vmdir}/{args.run.diskname}"
-        if os.path.exists(disk) is False:
-            self.prepare_disk_vm(args, disk, args.run.disksize)
-        return HypervisorArgs(
-            args.target.template,
-            args.run.uefi,
-            cdrom,
-            [disk],
-            args.run.net_devs,
-            args.run.net_ports,
-            args.run.res_cpu,
-            args.run.res_mem,
-        )
-
-    def run_vm(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:
+    def vm_run(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:
         log_info(f"Running VM: {args_hv.name}")
         runcmd = self._create_run_command(args, args_hv)
         proc = subprocess.Popen(
@@ -41,8 +24,31 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         log_info("VMRUN was initiated")
         return True
 
-    def prepare_disk_vm(self, args: TaskConfig, diskpath: str, size_gb: int) -> bool:
+    def vm_get_args(self, args: TaskConfig) -> HypervisorArgs:
+        cdrom = self.files._get_path_isofile(args)
         vmdir = self.files._get_path_vm(args)
+        disk = f"{vmdir}/{args.run.diskname}"
+        return HypervisorArgs(
+            args.target.template,
+            args.run.uefi,
+            cdrom,
+            [disk],
+            args.run.net_devs,
+            args.run.net_ports,
+            args.run.res_cpu,
+            args.run.res_mem,
+        )
+
+    def vm_prepare_disks(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:
+        for disk in args_hv.disks:
+            if os.path.exists(disk) is False:
+                if self.vm_prepare_disk(args, disk) is False:
+                    return False
+        return True
+
+    def vm_prepare_disk(self, args: TaskConfig, diskpath: str) -> bool:
+        vmdir = self.files._get_path_vm(args)
+        size_gb = args.run.disksize
         os.makedirs(vmdir, exist_ok=True)
         rmcmd = [
             "qemu-img",
@@ -62,16 +68,17 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         log_error(f"Error while creating disk size {size_gb} GB -> {diskpath}")
         return False
 
-    def _prepare_disk_efi(self, efidisk: str) -> bool:
-        rmcmd = ["sudo", "rm", efidisk]
-        cpcmd = ["sudo", "cp", DIR_OVMF_VARS, efidisk]
-        rmcmd = ["sudo", "chmod", "644", efidisk]
-        subprocess.run(rmcmd, capture_output=True, text=True)
-        copied = subprocess.run(cpcmd, capture_output=True, text=True)
-        if copied.returncode != 0:
-            log_error("Could not copy ovmf efi disk")
-            return False
-        subprocess.run(rmcmd, capture_output=True, text=True)
+    def _prepare_disk_efi(self, args: TaskConfig, efidisk: str) -> bool:
+        if os.path.exists(efidisk) is False:
+            rmcmd = ["sudo", "rm", efidisk]
+            cpcmd = ["sudo", "cp", args.run.uefi_ovmf_vars, efidisk]
+            chmodcmd = ["sudo", "chmod", "644", efidisk]
+            subprocess.run(rmcmd, capture_output=True, text=True)
+            copied = subprocess.run(cpcmd, capture_output=True, text=True)
+            if copied.returncode != 0:
+                log_error("Could not copy ovmf efi disk")
+                return False
+            subprocess.run(chmodcmd, capture_output=True, text=True)
         return True
 
     def _create_run_command(self, args: TaskConfig, args_hv: HypervisorArgs) -> list:
@@ -104,7 +111,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         arr_cdrom = self._create_cdrom_args(args_hv)
         arr_uefi = self._create_uefi_args(args, args_hv)
         arr_net = self._create_net_args(args_hv)
-        arr_disks = self._create_disk_args(args_hv)
+        arr_disks = self._create_disk_args(args, args_hv)
         return [*arr_disks, *arr_net, *arr_cdrom, *arr_uefi]
 
     def _create_cdrom_args(self, args_hv: HypervisorArgs) -> list[str]:
@@ -117,9 +124,12 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         vmdir = f"{args.sys.vm_path}/{args.target.template}"
         efidisk = f"{vmdir}/OVMF_VARS.fd"
         if args_hv.uefi is True:
-            if self._prepare_disk_efi(efidisk):
+            if self._prepare_disk_efi(args, efidisk):
                 pflash = "if=pflash,format=raw"
-                arr_uefi = ["-drive", f"{pflash},file={DIR_OVMF_CODE},readonly=on"]
+                arr_uefi = [
+                    "-drive",
+                    f"{pflash},file={args.run.uefi_ovmf_code},readonly=on",
+                ]
                 arr_uefi += ["-drive", f"{pflash},file={efidisk}"]
                 return arr_uefi
         return []
@@ -145,14 +155,14 @@ class UmiHypervisorKvm(UmiHypervisorBase):
                 i += 1
         return arr_netdevs
 
-    def _create_disk_args(self, args_hv: HypervisorArgs) -> list[str]:
+    def _create_disk_args(self, args: TaskConfig, args_hv: HypervisorArgs) -> list[str]:
         arr_disk = []
         if len(args_hv.disks) > 0:
             i = 0
             for disk in args_hv.disks:
                 if disk != "":
                     if os.path.exists(disk) is False:
-                        self.prepare_disk_vm(disk, DEFAULT_DISK_SIZE)
+                        self.vm_prepare_disk(args, disk)
                     ioname = f"io{i}"
                     diskid = f"disk{i}"
                     diskcache = "cache-size=16M,cache=none"

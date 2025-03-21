@@ -1,0 +1,9 @@
+
+[description]
+name = "win11"
+iso_name = "Win11_24H2_German_x64.iso"
+iso_url = ""
+answerfile = "autounattend.xml"
+path_ssh = "ssh"
+path_grub = "grub"
+path_postinstall = "postinstall"

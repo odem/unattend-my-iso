@@ -15,11 +15,57 @@ class RunArgs:
 
 
 @dataclass
+class AddonArgsAnswerFile:
+    enabled: bool
+    locale_string: str
+    locale_multi: str
+    locale_keyboard: str
+    host_name: str
+    host_domain: str
+    net_dhcp: bool
+    net_ip: str
+    net_mask: str
+    net_gateway: str
+    net_dns: str
+    time_utc: bool
+    time_zone: str
+    time_ntp: bool
+    user_root_enabled: bool
+    user_root_password: str
+    user_other_enabled: bool
+    user_other_name: str
+    user_other_fullname: str
+    user_other_password: str
+    packages_install: list[str]
+    grub_install_device: str
+
+
+@dataclass
+class AddonArgsSsh:
+    enabled: bool
+
+
+@dataclass
+class AddonArgsPostinstall:
+    enabled: bool
+
+
+@dataclass
+class AddonArgsGrub:
+    enabled: bool
+    grub_theme: str
+    grub_icons: str
+    initrd_list: list[str]
+    sleeptime: int
+    timeout: int
+
+
+@dataclass
 class AddonArgs:
-    addon_answerfile: bool
-    addon_ssh: bool
-    addon_grubmenu: bool
-    addon_postinstall: bool
+    answerfile: AddonArgsAnswerFile
+    ssh: AddonArgsSsh
+    grub: AddonArgsGrub
+    postinstall: AddonArgsPostinstall
 
 
 @dataclass

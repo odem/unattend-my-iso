@@ -10,6 +10,7 @@ PROJECT_AUTHOR:=jb
 PROJECT_EMAIL:=foo@bar.baz
 PROJECT_VERSION:=0.0.1
 DIR_VENV?=.venv
+TARGET ?= "vmbuild_all"
 # Help
 usage:
 	@echo "make TARGET"
@@ -50,7 +51,7 @@ install: build
 		pip install --editable .
 debugbuild: 
 	@source $(DIR_VENV)/bin/activate ; \
-		python3 -m src.$(PROJECT_NAME).main "vmbuild"
+		python3 -m src.$(PROJECT_NAME).main $(TARGET)
 debugrun: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main "vmrun"
@@ -62,3 +63,4 @@ stop:
 	echo "Stop"
 clean:
 	rm -rf build dist src/$(PROJECT_NAME).egg-info
+	sudo rm -rf data/out/

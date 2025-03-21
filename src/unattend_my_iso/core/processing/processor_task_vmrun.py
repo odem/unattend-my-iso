@@ -9,6 +9,8 @@ class TaskProcessorVmRun(TaskProcessorBase):
         TaskProcessorBase.__init__(self, work_path)
 
     def task_vm_run(self, args: TaskConfig) -> TaskResult:
-        hyperargs = self.hvrunner.get_hv_args(args)
-        self.hvrunner.run_vm(args, hyperargs)
+        hyperargs = self.hvrunner.vm_get_args(args)
+        if hyperargs is not None:
+            if self.hvrunner.vm_prepare_disks(args, hyperargs):
+                self.hvrunner.vm_run(args, hyperargs)
         return self._get_error_result("")

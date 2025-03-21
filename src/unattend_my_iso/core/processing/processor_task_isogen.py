@@ -1,8 +1,9 @@
+import os
 from typing import Optional
 from unattend_my_iso.common.common import TaskResult
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.core.processing.processor_base import TaskProcessorBase
-from unattend_my_iso.common.logging import log_error, log_info
+from unattend_my_iso.common.logging import log_debug, log_error, log_info
 
 
 class TaskProcessorIsogen(TaskProcessorBase):
@@ -10,7 +11,7 @@ class TaskProcessorIsogen(TaskProcessorBase):
     def __init__(self, work_path: str = ""):
         TaskProcessorBase.__init__(self, work_path)
 
-    def task_build_iso(self, args: TaskConfig, user: str) -> TaskResult:
+    def task_build_all(self, args: TaskConfig, user: str) -> TaskResult:
         template = self._get_task_template(args)
         if template is None:
             return self._get_error_result("No template")
@@ -26,35 +27,94 @@ class TaskProcessorIsogen(TaskProcessorBase):
             return self._get_error_result("iso not generated")
         return self._get_success_result()
 
+    def task_build_intermediate(self, args: TaskConfig, user: str) -> TaskResult:
+        template = self._get_task_template(args)
+        if template is None:
+            return self._get_error_result("No template")
+        if self._ensure_task_iso(args, template) is False:
+            return self._get_error_result("No ISO")
+        if self._extract_iso_contents(args, template) is False:
+            return self._get_error_result("Not extracted")
+        return self._get_success_result()
+
+    def task_build_addons(self, args: TaskConfig, user: str) -> TaskResult:
+        template = self._get_task_template(args)
+        if template is None:
+            return self._get_error_result("No template")
+        if self._copy_addons(args, template) is False:
+            return self._get_error_result("Addons not copied")
+        return self._get_success_result()
+
+    def task_build_irmod(self, args: TaskConfig, user: str) -> TaskResult:
+        template = self._get_task_template(args)
+        if template is None:
+            return self._get_error_result("No template")
+        if self._create_irmod(args) is False:
+            return self._get_error_result("irmod not created")
+        return self._get_success_result()
+
+    def task_build_iso(self, args: TaskConfig, user: str) -> TaskResult:
+        template = self._get_task_template(args)
+        if template is None:
+            return self._get_error_result("No template")
+        if self._generate_iso(args, template, user) is False:
+            return self._get_error_result("iso not generated")
+        return self._get_success_result()
+
     def _generate_iso(
         self, args: TaskConfig, template: TemplateConfig, user: str
     ) -> bool:
         dst = self.files._get_path_isopath(args)
         fullinter = self.files._get_path_intermediate(args)
-        created = self.isogen.create_iso(fullinter, template.iso_name, dst, user)
+        created = self.isogen.create_iso_linux(
+            fullinter, template.name, dst, user, args.target.mbrfile
+        )
         if created is True:
             log_info(f"Created ISO   : {dst}")
         return created
 
     def _create_irmod(self, args: TaskConfig) -> bool:
-        interfull = self.files._get_path_intermediate(args)
         src = self.files._get_path_template(args)
+        dstinter = self.files._get_path_intermediate(args)
+        modpath = f"{dstinter}/irmod"
+        initrdlist = self._extract_ramdisks(dstinter)
         try:
-            if self.isogen.create_irmod(f"{interfull}/irmod", interfull, src) is False:
-                return False
-            log_info(f"Created irmod : {interfull}/irmod")
+            for initrd in initrdlist:
+                subdir = os.path.dirname(initrd)
+                if subdir in args.addons.grub.initrd_list:
+                    if (
+                        self.isogen.create_irmod(subdir, modpath, dstinter, src)
+                        is False
+                    ):
+                        log_error(f"Error creating irmod: {subdir}")
+                        return False
+                else:
+                    log_info(f"Skipped irmod : {initrd}")
         except Exception as exe:
             log_error(f"Exception: {exe}")
         return True
 
+    def _extract_ramdisks(self, path: str) -> list[str]:
+        matches = []
+        for root, _, files in os.walk(path):
+            for file in files:
+                if file.startswith("initrd") and file.endswith(".gz"):
+                    filepath = os.path.join(root, file)
+                    filepath = filepath.removeprefix(path)
+                    if filepath.startswith("/"):
+                        filepath = filepath.removeprefix("/")
+                    log_debug(f"FILE: {filepath}")
+                    matches.append(filepath)
+        return matches
+
     def _copy_addons(self, args: TaskConfig, template: TemplateConfig) -> bool:
-        if args.addons.addon_answerfile:
+        if args.addons.answerfile.enabled:
             self._copy_addon("answerfile", args, template)
-        if args.addons.addon_grubmenu:
+        if args.addons.grub.enabled:
             self._copy_addon("grub", args, template)
-        if args.addons.addon_ssh:
+        if args.addons.ssh.enabled:
             self._copy_addon("ssh", args, template)
-        if args.addons.addon_postinstall:
+        if args.addons.postinstall.enabled:
             self._copy_addon("postinstall", args, template)
         return True
 
@@ -72,6 +132,7 @@ class TaskProcessorIsogen(TaskProcessorBase):
         dir_intermediate = self.files._get_path_intermediate(args)
         self.files.unmount_folder(dir_mount)
         if self.files.mount_folder(file_mount, dir_mount):
+            os.makedirs(dir_intermediate, exist_ok=True)
             copied = self.files.copy_folder_iso(dir_mount, dir_intermediate)
             copied = self.files.chmod(dir_intermediate, privilege=0o200)
             self.files.unmount_folder(dir_mount)
@@ -81,7 +142,7 @@ class TaskProcessorIsogen(TaskProcessorBase):
         return False
 
     def _ensure_task_iso(self, args: TaskConfig, template: TemplateConfig) -> bool:
-        fullname = self.files._get_path_isofile(args)
+        fullname = self.files._get_path_isosource(args, template)
         if self.exists(fullname):
             log_info("Download ISO  : Already present")
             return True

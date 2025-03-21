@@ -21,10 +21,18 @@ class TaskProcessor(TaskProcessorIsogen, TaskProcessorVmRun):
         self, args: TaskConfig, script_name: str = "", arguments: list = []
     ) -> TaskResult:
         user = "jb"
-        tasktype = "vmbuild"
+        tasktype = "vmbuild_all"
         if len(arguments) > 0:
             tasktype = arguments[0]
-        if tasktype == "vmbuild":
+        if tasktype == "vmbuild_all":
+            return self.task_build_all(args, user)
+        if tasktype == "vmbuild_intermediate":
+            return self.task_build_intermediate(args, user)
+        if tasktype == "vmbuild_addons":
+            return self.task_build_addons(args, user)
+        if tasktype == "vmbuild_irmod":
+            return self.task_build_irmod(args, user)
+        if tasktype == "vmbuild_iso":
             return self.task_build_iso(args, user)
         elif tasktype == "vmrun":
             return self.task_vm_run(args)
