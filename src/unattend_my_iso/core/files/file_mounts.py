@@ -8,8 +8,12 @@ class UmiFileMounts:
     def __init__(self):
         pass
 
-    def _get_mount_cmd(self, src: str, dst: str, fstype: str = "") -> list[str]:
+    def _get_mount_cmd(
+        self, src: str, dst: str, opts: str = "", fstype: str = ""
+    ) -> list[str]:
         command = ["sudo", "mount"]
+        if opts != "":
+            command += ["-o", opts]
         if fstype != "":
             command += ["-t", fstype]
         command += [src, dst]
@@ -19,12 +23,14 @@ class UmiFileMounts:
         command = ["sudo", "umount", dst]
         return command
 
-    def mount_folder(self, src: str, dst: str) -> bool:
+    def mount_folder(
+        self, src: str, dst: str, opts: str = "", fstype: str = ""
+    ) -> bool:
         if os.path.exists(dst) is False:
             os.makedirs(dst)
 
         if os.path.exists(dst):
-            command = self._get_mount_cmd(src, dst)
+            command = self._get_mount_cmd(src, dst, opts, fstype)
             completed_proc = subprocess.run(command, capture_output=True, text=True)
             if completed_proc.returncode == 0:
                 return True

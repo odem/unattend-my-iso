@@ -21,13 +21,13 @@ class TaskProcessorIsogen(TaskProcessorBase):
             return self._get_error_result("Not extracted")
         if self._copy_addons(args, template) is False:
             return self._get_error_result("Addons not copied")
-        if self._create_irmod(args) is False:
+        if self._prepare_bootloader(args, template) is False:
             return self._get_error_result("irmod not created")
         if self._generate_iso(args, template, user) is False:
             return self._get_error_result("iso not generated")
         return self._get_success_result()
 
-    def task_build_intermediate(self, args: TaskConfig, user: str) -> TaskResult:
+    def task_build_intermediate(self, args: TaskConfig) -> TaskResult:
         template = self._get_task_template(args)
         if template is None:
             return self._get_error_result("No template")
@@ -37,7 +37,7 @@ class TaskProcessorIsogen(TaskProcessorBase):
             return self._get_error_result("Not extracted")
         return self._get_success_result()
 
-    def task_build_addons(self, args: TaskConfig, user: str) -> TaskResult:
+    def task_build_addons(self, args: TaskConfig) -> TaskResult:
         template = self._get_task_template(args)
         if template is None:
             return self._get_error_result("No template")
@@ -45,11 +45,11 @@ class TaskProcessorIsogen(TaskProcessorBase):
             return self._get_error_result("Addons not copied")
         return self._get_success_result()
 
-    def task_build_irmod(self, args: TaskConfig, user: str) -> TaskResult:
+    def task_build_irmod(self, args: TaskConfig) -> TaskResult:
         template = self._get_task_template(args)
         if template is None:
             return self._get_error_result("No template")
-        if self._create_irmod(args) is False:
+        if self._prepare_bootloader(args, template) is False:
             return self._get_error_result("irmod not created")
         return self._get_success_result()
 
@@ -66,15 +66,30 @@ class TaskProcessorIsogen(TaskProcessorBase):
     ) -> bool:
         dst = self.files._get_path_isopath(args)
         fullinter = self.files._get_path_intermediate(args)
-        created = self.isogen.create_iso_linux(
-            fullinter, template.name, dst, user, args.target.mbrfile
+        created = self.isogen.create_iso(
+            args, template, fullinter, template.name, dst, user, args.target.mbrfile
         )
         if created is True:
             log_info(f"Created ISO   : {dst}")
         return created
 
-    def _create_irmod(self, args: TaskConfig) -> bool:
-        src = self.files._get_path_template(args)
+    def _prepare_bootloader(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        if template.iso_type == "windows":
+            return self._create_efidisk_windows(args)
+        else:
+            return self._create_irmod_linux(args)
+
+    def _create_efidisk_windows(self, args: TaskConfig) -> bool:
+        dstinter = self.files._get_path_intermediate(args)
+        try:
+            if self.isogen.create_efidisk_windows(args, dstinter) is False:
+                log_error(f"Error creating efidisk for windows: {dstinter}")
+                return False
+        except Exception as exe:
+            log_error(f"Exception: {exe}")
+        return True
+
+    def _create_irmod_linux(self, args: TaskConfig) -> bool:
         dstinter = self.files._get_path_intermediate(args)
         modpath = f"{dstinter}/irmod"
         initrdlist = self._extract_ramdisks(dstinter)
@@ -82,10 +97,7 @@ class TaskProcessorIsogen(TaskProcessorBase):
             for initrd in initrdlist:
                 subdir = os.path.dirname(initrd)
                 if subdir in args.addons.grub.initrd_list:
-                    if (
-                        self.isogen.create_irmod(subdir, modpath, dstinter, src)
-                        is False
-                    ):
+                    if self.isogen.create_irmod(subdir, modpath, dstinter) is False:
                         log_error(f"Error creating irmod: {subdir}")
                         return False
                 else:

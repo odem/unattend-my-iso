@@ -1,25 +1,38 @@
 import subprocess
 import os
 import shutil
+from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.common.logging import log_debug, log_error, log_info
+from unattend_my_iso.core.files.file_manager import UmiFileManager
 
 
 class UmiIsoGenerator:
     def __init__(self) -> None:
-        pass
+        self.files = UmiFileManager()
 
-    def create_iso_linux(
-        self, infolder: str, volname: str, outfile: str, user: str, mbrfile: str
+    def create_iso(
+        self,
+        args: TaskConfig,
+        template: TemplateConfig,
+        infolder: str,
+        volname: str,
+        outfile: str,
+        user: str,
+        mbrfile: str,
     ) -> bool:
         self._generate_md5sum(infolder)
-        xorriso_command = self._get_xorriso_cmd_linux(
-            infolder, volname, outfile, mbrfile
-        )
+
+        if template.iso_type == "windows":
+            xorriso_command = self._get_xorriso_cmd_windows(infolder, outfile)
+        else:
+            xorriso_command = self._get_xorriso_cmd_linux(
+                infolder, volname, outfile, mbrfile
+            )
+
         cmdstr = " ".join(xorriso_command)
         log_debug(f"xorriso cmd  : {cmdstr}")
         out_iso = subprocess.run(
             xorriso_command,
-            check=True,
             capture_output=True,
             text=True,
         )
@@ -28,12 +41,10 @@ class UmiIsoGenerator:
         subprocess.run(["sudo", "chown", f"{user}:{user}", "-R", infolder], check=True)
         return True
 
-    def create_irmod(self, path_src: str, path_mod: str, path_in: str, path_inc: str):
+    def create_irmod(self, path_src: str, path_mod: str, path_in: str):
         if os.path.exists(path_mod):
             shutil.rmtree(path_mod)
         os.makedirs(path_mod)
-        # user = "jb"
-        # subprocess.run(["sudo", "chown", f"{user}:{user}", "-R", path_mod], check=True)
         base_dir = os.path.realpath(path_in)
         initrd_location = f"{path_in}/{path_src}"
         initrd_filepath = os.path.join(initrd_location, "initrd.gz")
@@ -62,25 +73,43 @@ class UmiIsoGenerator:
         preseed_src = os.path.join(path_in, "preseed.cfg")
         preseed_dst = os.path.join(path_mod, "preseed.cfg")
         shutil.copy(preseed_src, preseed_dst)
-
-        # subprocess.run(["sudo", "chown", "root:root", path_mod], check=True)
-        # subprocess.run(["sudo", "chmod", "o+w", initrd_filepath], check=True)
         os.chdir(path_mod)
         subprocess.run(
-            # f"find . | sudo cpio -o -H newc 2>/dev/null | gzip -9 > {{}}/{path_src}/initrd.gz".format(
             f"find . | cpio -o -H newc 2>/dev/null | gzip -9 > {{}}/{path_src}/initrd-umi.gz".format(
                 base_dir
             ),
             shell=True,
             check=True,
         )
-        os.chdir(base_dir)
-        # subprocess.run(["sudo", "chown", f"{user}:{user}", "-R", path_mod], check=True)
-        # subprocess.run(["sudo", "chmod", "a+w", "-R", path_mod], check=True)
         shutil.rmtree(path_mod, ignore_errors=True)
-        # subprocess.run(["sudo", "chmod", "o-w", initrd_filepath], check=True)
-        subprocess.run(["rm", "-rf", path_mod], check=True)
         log_info(f"Created irmod : {path_src}")
+
+    def create_efidisk_windows(self, args: TaskConfig, infolder: str):
+        mntpath = args.sys.mnt_path
+        dstmount = f"{mntpath}/efiboot"
+        dstmgr = f"{dstmount}/efi/boot"
+        srcefi = f"{infolder}/efiboot.img"
+        subprocess.run(["dd", "if=/dev/zero", f"of={srcefi}", "bs=1M", "count=64"])
+        subprocess.run(["sudo", "mkfs.fat", "-F32", f"{infolder}/efiboot.img"])
+        os.makedirs(dstmount, exist_ok=True)
+        # self.files.unmount_folder(dstmount)
+        self.files.mount_folder(srcefi, dstmount, "loop")
+        subprocess.run(["sudo", "mkdir", "-p", f"{dstmount}/efi/boot"])
+        subprocess.run(
+            [
+                "sudo",
+                "wimlib-imagex",
+                "extract",
+                f"{infolder}/sources/boot.wim",
+                "1",
+                "Windows/Boot/EFI/bootmgfw.efi",
+                f"--dest-dir={dstmgr}",
+            ]
+        )
+        subprocess.run(
+            ["sudo", "mv", f"{dstmgr}/bootmgfw.efi", f"{dstmgr}/bootx64.efi"]
+        )
+        self.files.unmount_folder(dstmount)
 
     def _get_xorriso_cmd_linux(
         self, infolder: str, volname: str, outfile: str, mbrfile: str
@@ -118,37 +147,31 @@ class UmiIsoGenerator:
             infolder,
         ]
 
-    def _get_xorriso_cmd_windows(
-        self, infolder: str, volname: str, outfile: str, mbrfile: str
-    ):
+    def _get_xorriso_cmd_windows(self, infolder: str, outfile: str):
         return [
             "xorriso",
             "-as",
             "mkisofs",
-            "-r",
-            "-J",
-            "-R",
             "-iso-level",
             "3",
-            "-V",
-            volname,
-            "-c",
-            "isolinux/boot.cat",
-            "-b",
-            "isolinux/isolinux.bin",
+            "-full-iso9660-filenames",
+            "-volid",
+            "win11",
+            "-eltorito-boot",
+            "boot/etfsboot.com",
+            "-eltorito-catalog",
+            "boot/boot.cat",
             "-no-emul-boot",
+            "-boot-load-size",
+            "8",
             "-boot-info-table",
-            "-isohybrid-mbr",
-            mbrfile,
-            "-partition_offset",
-            "16",
-            "-isohybrid-gpt-basdat",
             "-eltorito-alt-boot",
-            "-eltorito-platform",
-            "efi",
             "-e",
-            "/boot/grub/efi.img",
+            "efiboot.img",
             "-no-emul-boot",
+            "-isohybrid-mbr",
+            "/usr/lib/ISOLINUX/isohdpfx.bin",
+            "-isohybrid-gpt-basdat",
             "-o",
             f"{outfile}.iso",
             infolder,

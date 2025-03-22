@@ -113,6 +113,7 @@ class TemplateConfig:
     name: str
     iso_name: str
     iso_url: str
+    iso_type: str
     answerfile: str
     path_ssh: str
     path_grub: str
