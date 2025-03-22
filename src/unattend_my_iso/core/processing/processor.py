@@ -27,16 +27,19 @@ class TaskProcessor(TaskProcessorIsogen, TaskProcessorVmRun):
         if tasktype == "vmbuild_all":
             return self.task_build_all(args, user)
         if tasktype == "vmbuild_intermediate":
-            return self.task_build_intermediate(args, user)
+            return self.task_build_intermediate(args)
         if tasktype == "vmbuild_addons":
-            return self.task_build_addons(args, user)
+            return self.task_build_addons(args)
         if tasktype == "vmbuild_irmod":
-            return self.task_build_irmod(args, user)
+            return self.task_build_irmod(args)
         if tasktype == "vmbuild_iso":
             return self.task_build_iso(args, user)
         elif tasktype == "vmrun":
-            return self.task_vm_run(args)
+            template = self._get_task_template(args)
+            if template is None:
+                return self._get_error_result("No template")
+            return self.task_vm_run(args, template)
         return self._get_error_result("Unknown task")
 
     def _process_result(self, result: TaskResult):
-        log_debug(f"Result: {result.success}")
+        log_debug(f"Success: {result.success}, Msg:{result.msg}")

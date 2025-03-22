@@ -1,13 +1,14 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from unattend_my_iso.common.config import TaskConfig
+from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.core.files.file_manager import UmiFileManager
 
 
 @dataclass
 class HypervisorArgs:
     name: str
+    vmtype: str
     uefi: bool
     cdrom: str
     disks: list[str]
@@ -24,7 +25,7 @@ class UmiHypervisorBase(ABC):
         pass
 
     @abstractmethod
-    def vm_get_args(self, args: TaskConfig) -> HypervisorArgs:
+    def vm_get_args(self, args: TaskConfig, template: TemplateConfig) -> HypervisorArgs:
         raise NotImplementedError("Not implemented")
 
     @abstractmethod
@@ -37,4 +38,8 @@ class UmiHypervisorBase(ABC):
 
     @abstractmethod
     def vm_prepare_disk(self, args: TaskConfig, diskpath: str) -> bool:
+        raise NotImplementedError("Not implemented")
+
+    @abstractmethod
+    def vm_prepare_tpm(self, socketdir: str) -> bool:
         raise NotImplementedError("Not implemented")

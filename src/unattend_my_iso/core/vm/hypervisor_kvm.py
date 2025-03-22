@@ -1,6 +1,6 @@
 import os
 import subprocess
-from unattend_my_iso.common.config import TaskConfig
+from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.core.vm.hypervisor_base import HypervisorArgs, UmiHypervisorBase
 from unattend_my_iso.common.logging import log_debug, log_error, log_info
 
@@ -12,24 +12,27 @@ class UmiHypervisorKvm(UmiHypervisorBase):
     def vm_run(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:
         log_info(f"Running VM: {args_hv.name}")
         runcmd = self._create_run_command(args, args_hv)
-        proc = subprocess.Popen(
-            runcmd,
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            close_fds=True,
-        )
+        # proc = subprocess.Popen(
+        #     runcmd,
+        #     stdin=subprocess.DEVNULL,
+        #     stdout=subprocess.DEVNULL,
+        #     stderr=subprocess.DEVNULL,
+        #     close_fds=True,
+        # )
+        proc = subprocess.run(runcmd, capture_output=True, text=True)
         if proc.returncode != 0:
             log_error(f"VMRUN not successful: {proc.stdout} {proc.stderr}")
+            return False
         log_info("VMRUN was initiated")
         return True
 
-    def vm_get_args(self, args: TaskConfig) -> HypervisorArgs:
+    def vm_get_args(self, args: TaskConfig, template: TemplateConfig) -> HypervisorArgs:
         cdrom = self.files._get_path_isofile(args)
         vmdir = self.files._get_path_vm(args)
         disk = f"{vmdir}/{args.run.diskname}"
         return HypervisorArgs(
             args.target.template,
+            template.iso_type,
             args.run.uefi,
             cdrom,
             [disk],
@@ -68,6 +71,21 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         log_error(f"Error while creating disk size {size_gb} GB -> {diskpath}")
         return False
 
+    def vm_prepare_tpm(self, socketdir: str) -> bool:
+        if os.path.exists(f"{socketdir}-socket"):
+            subprocess.run(["pkill", "-f", "swtpm"])
+        os.makedirs(socketdir, exist_ok=True)
+        runcmd = self._create_tpm_command(socketdir)
+        log_debug(f"RUNCMD: {' '.join(runcmd)}")
+        subprocess.Popen(
+            runcmd,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            close_fds=True,
+        )
+        log_info("SWTPM was initiated")
+        return True
+
     def _prepare_disk_efi(self, args: TaskConfig, efidisk: str) -> bool:
         if os.path.exists(efidisk) is False:
             rmcmd = ["sudo", "rm", efidisk]
@@ -86,6 +104,19 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         cmd_dyn = self._create_dynamic_run_command(args, args_hv)
         all = [*cmd_static, *cmd_dyn]
         return all
+
+    def _create_tpm_command(self, socketdir: str) -> list:
+        return [
+            "swtpm",
+            "socket",
+            "--tpm2",
+            "--tpmstate",
+            f"dir={socketdir}",
+            "--ctrl",
+            f"type=unixio,path={socketdir}-socket",
+            "--log",
+            "level=20",
+        ]
 
     def _create_static_run_command(
         self, args: TaskConfig, args_hv: HypervisorArgs
@@ -108,16 +139,32 @@ class UmiHypervisorKvm(UmiHypervisorBase):
     def _create_dynamic_run_command(
         self, args: TaskConfig, args_hv: HypervisorArgs
     ) -> list[str]:
-        arr_cdrom = self._create_cdrom_args(args_hv)
         arr_uefi = self._create_uefi_args(args, args_hv)
+        arr_tpm = self._create_tpm_args(args, args_hv)
         arr_net = self._create_net_args(args_hv)
         arr_disks = self._create_disk_args(args, args_hv)
-        return [*arr_disks, *arr_net, *arr_cdrom, *arr_uefi]
+        arr_cdrom = self._create_cdrom_args(args_hv)
+        return [*arr_disks, *arr_net, *arr_cdrom, *arr_uefi, *arr_tpm]
 
     def _create_cdrom_args(self, args_hv: HypervisorArgs) -> list[str]:
         arr_cdrom = []
         if args_hv.cdrom != "":
             arr_cdrom += ["-cdrom", f"{args_hv.cdrom}", "-boot", "order=cd"]
+        return arr_cdrom
+
+    def _create_tpm_args(self, args: TaskConfig, args_hv: HypervisorArgs) -> list[str]:
+        arr_cdrom = []
+        vmdir = self.files._get_path_vm(args)
+        socketdir = f"{vmdir}/swtpm-socket"
+        if args_hv.vmtype == "windows":
+            arr_cdrom += [
+                "-chardev",
+                f"socket,id=chrtpm,path={socketdir}",
+                "-tpmdev",
+                "emulator,id=tpm0,chardev=chrtpm",
+                "-device",
+                "tpm-tis,tpmdev=tpm0",
+            ]
         return arr_cdrom
 
     def _create_uefi_args(self, args: TaskConfig, args_hv: HypervisorArgs) -> list[str]:

@@ -92,7 +92,6 @@ class UmiIsoGenerator:
         subprocess.run(["dd", "if=/dev/zero", f"of={srcefi}", "bs=1M", "count=64"])
         subprocess.run(["sudo", "mkfs.fat", "-F32", f"{infolder}/efiboot.img"])
         os.makedirs(dstmount, exist_ok=True)
-        # self.files.unmount_folder(dstmount)
         self.files.mount_folder(srcefi, dstmount, "loop")
         subprocess.run(["sudo", "mkdir", "-p", f"{dstmount}/efi/boot"])
         subprocess.run(
