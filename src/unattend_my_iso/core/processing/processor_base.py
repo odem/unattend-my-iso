@@ -54,13 +54,9 @@ class TaskProcessorBase:
         for t in self.templates.values():
             log_debug(f" -- Template:  {t.name}")
 
-    def _download_file(self, args: TaskConfig, template: TemplateConfig) -> bool:
+    def _download_file(self, args: TaskConfig, url: str, name: str) -> bool:
         fullname = self.files._get_path_isofile(args)
-        self.files.http_download(
-            url=template.iso_url,
-            name=template.iso_name,
-            dir=self.sysconfig.iso_path,
-        )
+        self.files.http_download(url=url, name=name, dir=self.sysconfig.iso_path)
         return self.exists(fullname)
 
     def _get_success_result(self, msg: str = ""):

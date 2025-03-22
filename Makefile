@@ -46,7 +46,7 @@ build: | update_dummies $(DIR_VENV)
 		pip install -r requirements.txt && \
 		python -m build
 install: build
-	sudo apt install qemu-kvm xorriso ovmf swtpm
+	sudo apt install qemu-kvm xorriso ovmf swtpm wimtools isolinux mkisofs
 	source $(DIR_VENV)/bin/activate && \
 		pip install --editable .
 debugbuild: 

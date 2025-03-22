@@ -3,105 +3,85 @@
   <settings pass="windowsPE">
     <component language="neutral" name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <SetupUILanguage>
-        <UILanguage>de-DE</UILanguage>
+        <UILanguage>CFG_LOCALE_STRING</UILanguage>
       </SetupUILanguage>
       <InputLocale>0407:00000407</InputLocale>
-      <SystemLocale>de-DE</SystemLocale>
-      <UILanguage>de-DE</UILanguage>
-      <UILanguageFallback>de-DE</UILanguageFallback>
-      <UserLocale>de-DE</UserLocale>
+      <SystemLocale>CFG_LOCALE_STRING</SystemLocale>
+      <UILanguage>CFG_LOCALE_STRING</UILanguage>
+      <UILanguageFallback>CFG_LOCALE_STRING</UILanguageFallback>
+      <UserLocale>CFG_LOCALE_STRING</UserLocale>
     </component>
     <component language="neutral" name="Microsoft-Windows-PnPCustomizationsWinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <DriverPaths>
         <PathAndCredentials wcm:action="add" wcm:keyValue="1">
-          <Path>D:\virtio\amd64\w11\</Path>
+          <Path>D:\umi\virtio\amd64\w11\</Path>
         </PathAndCredentials>
         <PathAndCredentials wcm:action="add" wcm:keyValue="1">
-          <Path>D:\virtio\vioscsi\w11\amd64\</Path>
+          <Path>D:\umi\virtio\vioscsi\w11\amd64\</Path>
         </PathAndCredentials>
         <PathAndCredentials wcm:action="add" wcm:keyValue="1">
-          <Path>D:\virtio\Balloon\w11\amd64\</Path>
+          <Path>D:\umi\virtio\Balloon\w11\amd64\</Path>
         </PathAndCredentials>
         <PathAndCredentials wcm:action="add" wcm:keyValue="1">
-          <Path>D:\virtio\NetKVM\w11\amd64\</Path>
+          <Path>D:\umi\virtio\NetKVM\w11\amd64\</Path>
         </PathAndCredentials>
         <PathAndCredentials wcm:action="add" wcm:keyValue="1">
-          <Path>D:\virtio\viorng\w11\amd64\</Path>
+          <Path>D:\umi\virtio\viorng\w11\amd64\</Path>
         </PathAndCredentials>
         <PathAndCredentials wcm:action="add" wcm:keyValue="1">
-          <Path>D:\virtio\vioserial\w11\amd64\</Path>
+          <Path>D:\umi\virtio\vioserial\w11\amd64\</Path>
         </PathAndCredentials>
         <PathAndCredentials wcm:action="add" wcm:keyValue="1">
-          <Path>D:\virtio\smbus\w11\amd64\</Path>
+          <Path>D:\umi\virtio\smbus\w11\amd64\</Path>
         </PathAndCredentials>
         <PathAndCredentials wcm:action="add" wcm:keyValue="1">
-          <Path>D:\virtio\pvpanic\w11\amd64\</Path>
+          <Path>D:\umi\virtio\pvpanic\w11\amd64\</Path>
         </PathAndCredentials>
       </DriverPaths>
     </component>
     <component language="neutral" name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-      <DiskConfiguration>
-        <Disk wcm:action="add">
-          <DiskID>0</DiskID>
-          <WillWipeDisk>true</WillWipeDisk>
-          <CreatePartitions>
-            <!-- Windows RE Tools partition -->
-            <CreatePartition wcm:action="add">
-              <Order>3</Order>
-              <Type>Primary</Type>
-              <Size>500</Size>
-            </CreatePartition>
-            <!-- System partition (ESP) -->
-            <CreatePartition wcm:action="add">
-              <Order>1</Order>
-              <Type>EFI</Type>
-              <Size>500</Size>
-            </CreatePartition>
-            <!-- Microsoft reserved partition (MSR) -->
-            <CreatePartition wcm:action="add">
-              <Order>2</Order>
-              <Type>MSR</Type>
-              <Size>128</Size>
-            </CreatePartition>
-            <!-- Windows partition -->
-            <CreatePartition wcm:action="add">
-              <Order>4</Order>
-              <Type>Primary</Type>
-              <Extend>true</Extend>
-            </CreatePartition>
-          </CreatePartitions>
-          <ModifyPartitions>
-            <!-- Windows RE Tools partition -->
-            <ModifyPartition wcm:action="add">
-              <Order>3</Order>
-              <PartitionID>3</PartitionID>
-              <Label>WINRE</Label>
-              <Format>NTFS</Format>
-              <TypeID>DE94BBA4-06D1-4D40-A16A-BFD50179D6AC</TypeID>
-            </ModifyPartition>
-            <!-- System partition (ESP) -->
-            <ModifyPartition wcm:action="add">
-              <Order>1</Order>
-              <PartitionID>1</PartitionID>
-              <Label>System</Label>
-              <Format>FAT32</Format>
-            </ModifyPartition>
-            <!-- MSR partition does not need to be modified -->
-            <ModifyPartition wcm:action="add">
-              <Order>2</Order>
-              <PartitionID>2</PartitionID>
-            </ModifyPartition>
-            <!-- Windows partition -->
-            <ModifyPartition wcm:action="add">
-              <Order>4</Order>
-              <PartitionID>4</PartitionID>
-              <Label>OS</Label>
-              <Letter>C</Letter>
-              <Format>NTFS</Format>
-            </ModifyPartition>
-          </ModifyPartitions>
-        </Disk>
-      </DiskConfiguration>
+      <!-- <DiskConfiguration> -->
+      <!--   <Disk wcm:action="add"> -->
+      <!--     <DiskID>0</DiskID> -->
+      <!--     <WillWipeDisk>true</WillWipeDisk> -->
+      <!--     <CreatePartitions> -->
+      <!--       <CreatePartition wcm:action="add"> -->
+      <!--         <Order>1</Order> -->
+      <!--         <Type>EFI</Type> -->
+      <!--         <Size>500</Size> -->
+      <!--       </CreatePartition> -->
+      <!--       <CreatePartition wcm:action="add"> -->
+      <!--         <Order>2</Order> -->
+      <!--         <Type>MSR</Type> -->
+      <!--         <Size>128</Size> -->
+      <!--       </CreatePartition> -->
+      <!--       <CreatePartition wcm:action="add"> -->
+      <!--         <Order>3</Order> -->
+      <!--         <Type>Primary</Type> -->
+      <!--         <Extend>true</Extend> -->
+      <!--       </CreatePartition> -->
+      <!--     </CreatePartitions> -->
+      <!--     <ModifyPartitions> -->
+      <!--       <ModifyPartition wcm:action="add"> -->
+      <!--         <Order>1</Order> -->
+      <!--         <PartitionID>1</PartitionID> -->
+      <!--         <Label>System</Label> -->
+      <!--         <Format>FAT32</Format> -->
+      <!--       </ModifyPartition> -->
+      <!--       <ModifyPartition wcm:action="add"> -->
+      <!--         <Order>2</Order> -->
+      <!--         <PartitionID>2</PartitionID> -->
+      <!--       </ModifyPartition> -->
+      <!--       <ModifyPartition wcm:action="add"> -->
+      <!--         <Order>3</Order> -->
+      <!--         <PartitionID>3</PartitionID> -->
+      <!--         <Label>OS</Label> -->
+      <!--         <Letter>C</Letter> -->
+      <!--         <Format>NTFS</Format> -->
+      <!--       </ModifyPartition> -->
+      <!--     </ModifyPartitions> -->
+      <!--   </Disk> -->
+      <!-- </DiskConfiguration> -->
       <ImageInstall>
         <OSImage>
           <InstallFrom>
@@ -110,20 +90,19 @@
               <Value>Windows 11 Pro</Value>
             </MetaData>
           </InstallFrom>
-          <InstallTo>
-            <DiskID>0</DiskID>
-            <PartitionID>4</PartitionID>
-          </InstallTo>
-          <InstallToAvailablePartition>false</InstallToAvailablePartition>
+          <!-- <InstallTo> -->
+          <!--   <DiskID>0</DiskID> -->
+          <!--   <PartitionID>3</PartitionID> -->
+          <!-- </InstallTo> -->
+          <!-- <InstallToAvailablePartition>false</InstallToAvailablePartition> -->
         </OSImage>
       </ImageInstall>
       <UserData>
         <ProductKey>
-          <!-- <Key></Key> -->
           <WillShowUI>Never</WillShowUI>
         </ProductKey>
         <AcceptEula>true</AcceptEula>
-        <FullName>user</FullName>
+        <FullName>CFG_USER_OTHER_NAME</FullName>
         <Organization></Organization>
       </UserData>
     </component>
@@ -141,10 +120,10 @@
   <settings pass="specialize">
     <component language="neutral" name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <InputLocale>0407:00000407</InputLocale>
-      <SystemLocale>de-DE</SystemLocale>
-      <UILanguage>de-DE</UILanguage>
-      <UILanguageFallback>de-DE</UILanguageFallback>
-      <UserLocale>de-DE</UserLocale>
+      <SystemLocale>CFG_LOCALE_STRING</SystemLocale>
+      <UILanguage>CFG_LOCALE_STRING</UILanguage>
+      <UILanguageFallback>CFG_LOCALE_STRING</UILanguageFallback>
+      <UserLocale>CFG_LOCALE_STRING</UserLocale>
     </component>
     <component language="neutral" name="Microsoft-Windows-Security-SPP-UX" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <SkipAutoActivation>true</SkipAutoActivation>
@@ -153,7 +132,7 @@
       <CEIPEnabled>0</CEIPEnabled>
     </component>
     <component language="neutral" name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-      <ComputerName>WIN11-VM-PC</ComputerName>
+      <ComputerName>CFG_HOST_NAME</ComputerName>
       <ProductKey>W269N-WFGWX-YVC9B-4J6C9-T83GX</ProductKey>
     </component>
   </settings>
@@ -161,11 +140,11 @@
     <component language="neutral" name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <AutoLogon>
         <Password>
-          <Value>user</Value>
+          <Value>CFG_USER_OTHER_PASSWORD</Value>
           <PlainText>true</PlainText>
         </Password>
         <Enabled>true</Enabled>
-        <Username>user</Username>
+        <Username>CFG_USER_OTHER_NAME</Username>
       </AutoLogon>
       <OOBE>
         <HideEULAPage>true</HideEULAPage>
@@ -181,18 +160,18 @@
         <LocalAccounts>
           <LocalAccount wcm:action="add">
             <Password>
-              <Value>user</Value>
+              <Value>CFG_USER_OTHER_PASSWORD</Value>
               <PlainText>true</PlainText>
             </Password>
             <Description></Description>
-            <DisplayName>user</DisplayName>
+            <DisplayName>CFG_USER_OTHER_NAME</DisplayName>
             <Group>Administrators</Group>
-            <Name>user</Name>
+            <Name>CFG_USER_OTHER_NAME</Name>
           </LocalAccount>
         </LocalAccounts>
       </UserAccounts>
       <RegisteredOrganization></RegisteredOrganization>
-      <RegisteredOwner>user</RegisteredOwner>
+      <RegisteredOwner>CFG_USER_OTHER_NAME</RegisteredOwner>
       <DisableAutoDaylightTimeSet>false</DisableAutoDaylightTimeSet>
       <FirstLogonCommands>
         <SynchronousCommand wcm:action="add">
@@ -210,13 +189,13 @@
         <SynchronousCommand wcm:action="add">
           <Order>3</Order>
           <RequiresUserInput>false</RequiresUserInput>
-          <CommandLine>cmd /C wmic useraccount where name="root" set PasswordExpires=false</CommandLine>
+          <CommandLine>cmd /C wmic useraccount where name="CFG_OTHER_USER_NAME" set PasswordExpires=false</CommandLine>
           <Description>Password Never Expires</Description>
         </SynchronousCommand>
         <SynchronousCommand wcm:action="add">
           <Order>4</Order>
           <RequiresUserInput>true</RequiresUserInput>
-          <CommandLine>D:\postinstall\postinstall.bat</CommandLine>
+          <CommandLine>D:\umi\postinstall\postinstall.bat</CommandLine>
           <Description>Install common tools</Description>
         </SynchronousCommand>
       </FirstLogonCommands>

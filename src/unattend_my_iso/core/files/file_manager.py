@@ -105,6 +105,11 @@ class UmiFileManager(UmiFileMounts, UmiFileReplacements):
             return False
         return True
 
+    def _get_path_isovirtio(self, args: TaskConfig, template: TemplateConfig) -> str:
+        isopath = args.sys.iso_path
+        isoname = template.virtio_name
+        return f"{isopath}/{isoname}"
+
     def _get_path_isosource(self, args: TaskConfig, template: TemplateConfig) -> str:
         isopath = args.sys.iso_path
         isoname = template.iso_name
@@ -133,6 +138,11 @@ class UmiFileManager(UmiFileMounts, UmiFileReplacements):
     def _get_path_mountfile(self, args: TaskConfig, template: TemplateConfig) -> str:
         isopath = args.sys.iso_path
         isoname = template.iso_name
+        return f"{isopath}/{isoname}"
+
+    def _get_path_mountvirtio(self, args: TaskConfig, template: TemplateConfig) -> str:
+        isopath = args.sys.mnt_path
+        isoname = template.virtio_name
         return f"{isopath}/{isoname}"
 
     def _get_path_mountpath(self, args: TaskConfig) -> str:

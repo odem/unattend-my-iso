@@ -18,7 +18,9 @@ class TaskProcessorIsogen(TaskProcessorBase):
         if self._ensure_task_iso(args, template) is False:
             return self._get_error_result("No ISO")
         if self._extract_iso_contents(args, template) is False:
-            return self._get_error_result("Not extracted")
+            return self._get_error_result("Not extracted iso")
+        if self._extract_virtio_contents(args, template) is False:
+            return self._get_error_result("Not extracted virtio")
         if self._copy_addons(args, template) is False:
             return self._get_error_result("Addons not copied")
         if self._prepare_bootloader(args, template) is False:
@@ -34,7 +36,9 @@ class TaskProcessorIsogen(TaskProcessorBase):
         if self._ensure_task_iso(args, template) is False:
             return self._get_error_result("No ISO")
         if self._extract_iso_contents(args, template) is False:
-            return self._get_error_result("Not extracted")
+            return self._get_error_result("Not extracted iso")
+        if self._extract_virtio_contents(args, template) is False:
+            return self._get_error_result("Not extracted virtio")
         return self._get_success_result()
 
     def task_build_addons(self, args: TaskConfig) -> TaskResult:
@@ -153,13 +157,46 @@ class TaskProcessorIsogen(TaskProcessorBase):
                 return True
         return False
 
+    def _extract_virtio_contents(
+        self, args: TaskConfig, template: TemplateConfig
+    ) -> bool:
+        if template.virtio_name == "":
+            return True
+        dir_mount = self.files._get_path_mountvirtio(args, template)
+        file_mount = self.files._get_path_isovirtio(args, template)
+        dir_intermediate = self.files._get_path_intermediate(args)
+        dst = f"{dir_intermediate}/umi/virtio"
+        # self.files.unmount_folder(dir_mount)
+        if self.files.mount_folder(file_mount, dir_mount, "loop"):
+            os.makedirs(dst, exist_ok=True)
+            copied = self.files.copy_folder_iso(dir_mount, dst)
+            copied = self.files.chmod(dst, privilege=0o200)
+            self.files.unmount_folder(dir_mount)
+            if copied:
+                log_info(f"Copied virt : {file_mount}")
+                return True
+        return False
+
     def _ensure_task_iso(self, args: TaskConfig, template: TemplateConfig) -> bool:
-        fullname = self.files._get_path_isosource(args, template)
-        if self.exists(fullname):
+        if template.virtio_name != "":
+            srcvirtio = self.files._get_path_isovirtio(args, template)
+            if self.exists(srcvirtio):
+                log_info("Download virt: Already present")
+            else:
+                log_info(f"Download virt: {srcvirtio}")
+                self._download_file(args, template.virtio_url, template.virtio_name)
+            if self.exists(srcvirtio) is False:
+                return False
+        else:
+            return True
+
+        srciso = self.files._get_path_isosource(args, template)
+        if self.exists(srciso):
             log_info("Download ISO  : Already present")
             return True
-        log_info(f"Download ISO  : {fullname}")
-        return self._download_file(args, template)
+        else:
+            log_info(f"Download ISO  : {srciso}")
+            return self._download_file(args, template.iso_url, template.iso_name)
 
     def _get_task_template(self, args: TaskConfig) -> Optional[TemplateConfig]:
         name = args.target.template

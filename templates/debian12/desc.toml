@@ -1,6 +1,8 @@
 
 [description]
 name = "debian12"
+virtio_name = ""
+virtio_url = ""
 iso_name = "debian-12.10.0-amd64-netinst.iso"
 iso_url = "https://chuangtzu.ftp.acc.umu.se/debian-cd/current/amd64/iso-cd/debian-12.10.0-amd64-netinst.iso"
 iso_type = "linux"

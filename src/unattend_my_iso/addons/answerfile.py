@@ -15,14 +15,15 @@ class AnswerFileAddon(UmiAddon):
         inter = self.files._get_path_intermediate(args)
         srcpreseed = f"{src}/{template.answerfile}"
         interpreseed = f"{inter}/{template.answerfile}"
-        srcbackground = f"{src}/{self.addon_name}/background.png"
-        dstbackground = f"{inter}/install/images"
         if self.files.cp(srcpreseed, inter) is False:
             return False
 
-        # os.makedirs(dstbackground)
-        # if self.files.cp(srcbackground, dstbackground) is False:
-        #     return False
+        if template.iso_type == "windows":
+            srcbackground = f"{src}/{self.addon_name}/background.png"
+            dstbackground = f"{inter}/umi/postinstall/images"
+            os.makedirs(dstbackground)
+            if self.files.cp(srcbackground, dstbackground) is False:
+                return False
         return self._apply_replacements(args, interpreseed)
 
     def _apply_replacements(self, args: TaskConfig, preseed: str) -> bool:

@@ -37,6 +37,7 @@ class UmiFileMounts:
             else:
                 msg = (
                     f"Mount error {completed_proc.returncode}!\n"
+                    f"CMD was: {' '.join(command)}"
                     f"{completed_proc.stdout.strip()}"
                     f"{completed_proc.stderr.strip()}"
                 )

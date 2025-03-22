@@ -63,11 +63,11 @@ DEFAULT_ADDON_ANSWER_TIME_UTC = True
 DEFAULT_ADDON_ANSWER_TIME_ZONE = "EU/Berlin"
 DEFAULT_ADDON_ANSWER_TIME_NTP = True
 DEFAULT_ADDON_ANSWER_USER_ROOT_ENABLED = True
-DEFAULT_ADDON_ANSWER_USER_ROOT_PASSWORD = "root"
+DEFAULT_ADDON_ANSWER_USER_ROOT_PASSWORD = "rootpass"
 DEFAULT_ADDON_ANSWER_USER_OTHER_ENABLED = False
 DEFAULT_ADDON_ANSWER_USER_OTHER_NAME = "umi"
 DEFAULT_ADDON_ANSWER_USER_OTHER_FULLNAME = "umi"
-DEFAULT_ADDON_ANSWER_USER_OTHER_PASSWORD = "umi"
+DEFAULT_ADDON_ANSWER_USER_OTHER_PASSWORD = "umipass"
 DEFAULT_ADDON_ANSWER_PACKAGES_INSTALL = [
     "openssh-server",
     "build-essential",
@@ -111,6 +111,8 @@ class TaskConfig:
 @dataclass
 class TemplateConfig:
     name: str
+    virtio_name: str
+    virtio_url: str
     iso_name: str
     iso_url: str
     iso_type: str
