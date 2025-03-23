@@ -69,7 +69,7 @@ cat <<EOF > /etc/default/console-setup
 ACTIVE_CONSOLES="/dev/tty[1-6]"
 CHARMAP="UTF-8"
 CODESET="Lat15"
-FONTFACE="Fixed"
+FONTFACE="Terminus"
 FONTSIZE="8x16"
 VIDEOMODE=
 EOF

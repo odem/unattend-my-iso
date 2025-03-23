@@ -12,28 +12,6 @@ class GrubAddon(UmiAddon):
     def __init__(self):
         UmiAddon.__init__(self, "grub")
 
-    def _extract_kernel_version_image(self, path: str) -> str:
-        pattern = f"{path}/pool/main/l/linux-signed-amd64/linux-image-*-amd64_*.deb"
-        files = glob.glob(pattern)
-        version_regex = re.compile(r"linux-image-(\d+\.\d+\.\d+-\d+)-amd*")
-        for file in files:
-            match = version_regex.search(file)
-            if match:
-                kernel_version = match.group(1)
-                return kernel_version
-        return "X.Y.Z-W"
-
-    def _extract_kernel_version_headers(self, path: str) -> str:
-        pattern = f"{path}/pool/main/l/linux/linux-headers-*_all.deb"
-        files = glob.glob(pattern)
-        version_regex = re.compile(r"linux-headers-(\d+\.\d+\.\d+-\d+)-common")
-        for file in files:
-            match = version_regex.search(file)
-            if match:
-                kernel_version = match.group(1)
-                return kernel_version
-        return "X.Y.Z-W"
-
     @override
     def integrate_addon(self, args: TaskConfig, template: TemplateConfig) -> bool:
         src = self.files._get_path_template(args)
