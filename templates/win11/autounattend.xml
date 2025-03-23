@@ -11,34 +11,34 @@
       <UILanguageFallback>CFG_LOCALE_STRING</UILanguageFallback>
       <UserLocale>CFG_LOCALE_STRING</UserLocale>
     </component>
-    <component language="neutral" name="Microsoft-Windows-PnPCustomizationsWinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-      <DriverPaths>
-        <PathAndCredentials wcm:action="add" wcm:keyValue="1">
-          <Path>D:\umi\virtio\amd64\w11\</Path>
-        </PathAndCredentials>
-        <PathAndCredentials wcm:action="add" wcm:keyValue="1">
-          <Path>D:\umi\virtio\vioscsi\w11\amd64\</Path>
-        </PathAndCredentials>
-        <PathAndCredentials wcm:action="add" wcm:keyValue="1">
-          <Path>D:\umi\virtio\Balloon\w11\amd64\</Path>
-        </PathAndCredentials>
-        <PathAndCredentials wcm:action="add" wcm:keyValue="1">
-          <Path>D:\umi\virtio\NetKVM\w11\amd64\</Path>
-        </PathAndCredentials>
-        <PathAndCredentials wcm:action="add" wcm:keyValue="1">
-          <Path>D:\umi\virtio\viorng\w11\amd64\</Path>
-        </PathAndCredentials>
-        <PathAndCredentials wcm:action="add" wcm:keyValue="1">
-          <Path>D:\umi\virtio\vioserial\w11\amd64\</Path>
-        </PathAndCredentials>
-        <PathAndCredentials wcm:action="add" wcm:keyValue="1">
-          <Path>D:\umi\virtio\smbus\w11\amd64\</Path>
-        </PathAndCredentials>
-        <PathAndCredentials wcm:action="add" wcm:keyValue="1">
-          <Path>D:\umi\virtio\pvpanic\w11\amd64\</Path>
-        </PathAndCredentials>
-      </DriverPaths>
-    </component>
+    <!-- <component language="neutral" name="Microsoft-Windows-PnPCustomizationsWinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> -->
+    <!--   <DriverPaths> -->
+    <!--     <PathAndCredentials wcm:action="add" wcm:keyValue="1"> -->
+    <!--       <Path>D:\umi\virtio\amd64\w11\</Path> -->
+    <!--     </PathAndCredentials> -->
+    <!--     <PathAndCredentials wcm:action="add" wcm:keyValue="1"> -->
+    <!--       <Path>D:\umi\virtio\vioscsi\w11\amd64\</Path> -->
+    <!--     </PathAndCredentials> -->
+    <!--     <PathAndCredentials wcm:action="add" wcm:keyValue="1"> -->
+    <!--       <Path>D:\umi\virtio\Balloon\w11\amd64\</Path> -->
+    <!--     </PathAndCredentials> -->
+    <!--     <PathAndCredentials wcm:action="add" wcm:keyValue="1"> -->
+    <!--       <Path>D:\umi\virtio\NetKVM\w11\amd64\</Path> -->
+    <!--     </PathAndCredentials> -->
+    <!--     <PathAndCredentials wcm:action="add" wcm:keyValue="1"> -->
+    <!--       <Path>D:\umi\virtio\viorng\w11\amd64\</Path> -->
+    <!--     </PathAndCredentials> -->
+    <!--     <PathAndCredentials wcm:action="add" wcm:keyValue="1"> -->
+    <!--       <Path>D:\umi\virtio\vioserial\w11\amd64\</Path> -->
+    <!--     </PathAndCredentials> -->
+    <!--     <PathAndCredentials wcm:action="add" wcm:keyValue="1"> -->
+    <!--       <Path>D:\umi\virtio\smbus\w11\amd64\</Path> -->
+    <!--     </PathAndCredentials> -->
+    <!--     <PathAndCredentials wcm:action="add" wcm:keyValue="1"> -->
+    <!--       <Path>D:\umi\virtio\pvpanic\w11\amd64\</Path> -->
+    <!--     </PathAndCredentials> -->
+    <!--   </DriverPaths> -->
+    <!-- </component> -->
     <component language="neutral" name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <!-- <DiskConfiguration> -->
       <!--   <Disk wcm:action="add"> -->

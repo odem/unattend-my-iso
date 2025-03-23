@@ -1,13 +1,21 @@
 #!/bin/bash
 
+user=CFG_USER_OTHER_NAME
+
 # Globals
 export DEBIAN_FRONTEND=noninteractive
 LOCALESTR=en_US.UTF-8
 
-# bashrc
-cp /opt/umi/postinstall/.bashrc /root/.bashrc
-
-# sudo efibootmgr --create --disk /dev/vda --part 1 --loader '\\EFI\\debian\\grubx64.efi' --label "DebianNew" --verbose
+# Sources
+cat<< EOF > /etc/apt/sources.list
+deb http://deb.debian.org/debian/ bookworm main contrib non-free-firmware
+deb http://deb.debian.org/debian/ bookworm-updates main contrib non-free-firmware
+deb http://deb.debian.org/debian/ bookworm-backports main contrib non-free non-free-firmware
+deb http://security.debian.org/debian-security bookworm-security main contrib non-free-firmware
+EOF
+apt-get update -y && apt-get upgrade -y && apt-get install -y \
+    kitty bc keyboard-configuration console-setup
+    # traceroute iftop sysstat bridge-utils net-tools tcpdump nmap \
 
 unset LANG
 unset LANGUAGE
@@ -35,9 +43,6 @@ update-locale
 echo "LANG=$LOCALESTR">/etc/default/locale
 echo "LANGUAGE=$LOCALESTR">/etc/default/locale
 echo "LC_ALL=$LOCALESTR">/etc/default/locale
-source /root/.bashrc
-
-# Locales
 export LANG=$LOCALESTR
 export LANGUAGE=$LOCALESTR
 locale-gen "$LOCALESTR"
@@ -45,6 +50,11 @@ echo "locales locales/default_environment_locale select $LOCALESTR" \
     | debconf-set-selections
 dpkg-reconfigure -f noninteractive locales
 
+# bashrc
+cp /opt/umi/postinstall/.bashrc /root/.bashrc
+source /root/.bashrc
+
+# Keyboard
 cat <<EOF > /etc/default/keyboard
 XKBMODEL="pc105"
 XKBLAYOUT="de"
@@ -53,20 +63,19 @@ XKBOPTIONS="compose:menu"
 BACKSPACE="guess"
 EOF
 dpkg-reconfigure -f noninteractive keyboard-configuration
+
+# console
+cat <<EOF > /etc/default/console-setup
+ACTIVE_CONSOLES="/dev/tty[1-6]"
+CHARMAP="UTF-8"
+CODESET="Lat15"
+FONTFACE="Fixed"
+FONTSIZE="8x16"
+VIDEOMODE=
+EOF
+dpkg-reconfigure -f noninteractive console-setup
 systemctl enable console-setup.service
 systemctl restart console-setup.service
-
-# Sources
-cat<< EOF > /etc/apt/sources.list
-deb http://deb.debian.org/debian/ bookworm main contrib non-free-firmware
-deb http://deb.debian.org/debian/ bookworm-updates main contrib non-free-firmware
-deb http://deb.debian.org/debian/ bookworm-backports main contrib non-free non-free-firmware
-deb http://security.debian.org/debian-security bookworm-security main contrib non-free-firmware
-EOF
-apt-get update -y && apt-get upgrade -y && apt-get install -y \
-    sudo psmisc bsdmainutils ntp lsb-release curl gnupg  \
-     traceroute iftop sysstat bridge-utils net-tools tcpdump nmap \
-    git vim make kitty bc
 
 # SSH
 if [[ -f /opt/postinstall/ssh/id_rsa.pub ]] ; then
@@ -74,13 +83,9 @@ if [[ -f /opt/postinstall/ssh/id_rsa.pub ]] ; then
     cp /opt/postinstall/ssh/id_rsa* /root/.ssh/
     chmod 0600 /root/.ssh/id_rsa*
 fi
-
-# Authorization
 if [[ -f /opt/postinstall/ssh/authorized_keys ]] ; then
     cp /opt/postinstall/ssh/authorized_keys /root/.ssh/authorized_keys
 fi
-
-# SSHD
 if [[ -f /opt/postinstall/ssh/sshd_config ]] ; then
     cp /opt/postinstall/ssh/sshd_config /etc/ssh/sshd_config
 fi
@@ -105,7 +110,7 @@ EOF
 # preseed-launcher
 cat <<EOF > /firstboot.bash
 #!/bin/bash
-/opt/umi/postinstall/postinstall_mps.bash
+#/opt/umi/postinstall/postinstall_mps.bash $user
 systemctl disable firstboot.service
 rm -rf /etc/systemd/service/firstboot.service
 rm -rf /firstboot.bash

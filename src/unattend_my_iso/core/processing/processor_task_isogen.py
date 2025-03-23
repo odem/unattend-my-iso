@@ -119,7 +119,6 @@ class TaskProcessorIsogen(TaskProcessorBase):
                     filepath = filepath.removeprefix(path)
                     if filepath.startswith("/"):
                         filepath = filepath.removeprefix("/")
-                    log_debug(f"FILE: {filepath}")
                     matches.append(filepath)
         return matches
 

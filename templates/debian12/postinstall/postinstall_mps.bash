@@ -1,24 +1,15 @@
 #!/bin/bash
 
-FONTDIR=~/.local/share/fonts/JetBrainsMono
+user=$1
 cd /opt || exit 1
 git clone https://github.com/odem/mps.git
 cd mps || exit 2
-./terminal.bash
-./installer/terminal-nvim.bash -a all
+./bootstrap.bash -u "$user"
+./terminal.bash -u "$user"
 
-
-# for file in "$FONTDIR"/*.ttf; do
-#     filename=$(basename "$file" .ttf)  # Extract filename without path and extension
-#     echo "$filename"
-#     otf2bdf -p 16 -o "$FONTDIR/$filename".bdf "$FONTDIR/$filename".ttf
-#     fontforge -lang=ff -c "Open(\"$FONTDIR/$filename.ttf\"); Generate(\"$FONTDIR/$filename.bdf\")"
-#     bdf2psd "$FONTDIR/$filename".bdf "$FONTDIR/$filename".ttf
-#     bdf2psd -unicode "$FONTDIR/$filename".bdf "$FONTDIR/$filename".ttf
-#     gzip "$FONTDIR/$filename".psfu
-# done
-#
-# for f in "$FONTDIR"/*.ttf ; do
-#     echo "FILE: $f"
-# done
-#
+cp -r /opt/umi/theme /boot/grub
+grep "GRUB_GFXMODE=" /etc/default/grub >/dev/null 2>&1 && sed -i '/GRUB_GFXMODE=/d' /etc/default/grub
+echo "GRUB_GFXMODE=\"1280x800x32\"" >> /etc/default/grub
+grep "GRUB_THEME=" /etc/default/grub >/dev/null 2>&1 && sed -i '/GRUB_THEME=/d' /etc/default/grub
+echo "GRUB_THEME=\"/boot/grub/theme/theme.txt\"" >> /etc/default/grub
+update-grub

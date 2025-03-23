@@ -20,7 +20,6 @@ class GrubAddon(UmiAddon):
             match = version_regex.search(file)
             if match:
                 kernel_version = match.group(1)
-                log_debug("Extracted kernel version via image")
                 return kernel_version
         return "X.Y.Z-W"
 
@@ -32,7 +31,6 @@ class GrubAddon(UmiAddon):
             match = version_regex.search(file)
             if match:
                 kernel_version = match.group(1)
-                log_debug("Extracted kernel version via header")
                 return kernel_version
         return "X.Y.Z-W"
 

@@ -6,6 +6,7 @@ class RunArgs:
     diskname: str
     disksize: int
     uefi: bool
+    daemonize: bool
     uefi_ovmf_vars: str
     uefi_ovmf_code: str
     net_ports: list[tuple[int, int]]
@@ -27,6 +28,8 @@ class AddonArgsAnswerFile:
     net_mask: str
     net_gateway: str
     net_dns: str
+    disk_password: str
+    disk_cryptname: str
     time_utc: bool
     time_zone: str
     time_ntp: bool

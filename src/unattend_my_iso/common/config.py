@@ -16,10 +16,11 @@ APP_VERSION = "0.0.1"
 DEFAULT_RUN_CPU = 8
 DEFAULT_RUN_MEMORY = 32000
 DEFAULT_RUN_DISK0_NAME = "disk1.qcow2"
-DEFAULT_RUN_DISK0_SIZE = 64
+DEFAULT_RUN_DISK0_SIZE = 128
 DEFAULT_RUN_PORTS = [(2222, 22)]
 DEFAULT_RUN_NETDEVS = ["nat"]
 DEFAULT_RUN_UEFI_BOOT = True
+DEFAULT_RUN_UEFI_DAEMONIZE = True
 DEFAULT_RUN_OVMF_CODE = "/usr/share/OVMF/OVMF_CODE.fd"
 DEFAULT_RUN_OVMF_VARS = "/usr/share/OVMF/OVMF_VARS.fd"
 
@@ -42,9 +43,9 @@ DEFAULT_ADDON_GRUB_TIMEOUT = -1
 DEFAULT_ADDON_GRUB_SLEEPTIME = 1
 DEFAULT_ADDON_GRUB_INITRD_LIST = [
     "install.amd",
-    "install.amd/gtk",
-    "install",
-    "install/gtk",
+    # "install.amd/gtk",
+    # "install",
+    # "install/gtk",
 ]
 
 # Defaults answerfile
@@ -59,6 +60,8 @@ DEFAULT_ADDON_ANSWER_NET_IP = "10.23.42.9"
 DEFAULT_ADDON_ANSWER_NET_MASK = "255.255.255.0"
 DEFAULT_ADDON_ANSWER_NET_GATEWAY = "10.23.42.1"
 DEFAULT_ADDON_ANSWER_NET_DNS = "10.23.42.1"
+DEFAULT_ADDON_ANSWER_DISK_PASSWORD = "diskpass"
+DEFAULT_ADDON_ANSWER_DISK_CRYPTNAME = "vg_crypto"
 DEFAULT_ADDON_ANSWER_TIME_UTC = True
 DEFAULT_ADDON_ANSWER_TIME_ZONE = "EU/Berlin"
 DEFAULT_ADDON_ANSWER_TIME_NTP = True
@@ -80,14 +83,15 @@ DEFAULT_ADDON_ANSWER_PACKAGES_INSTALL = [
     "net-tools",
     "psmisc",
     "dnsutils",
-    "keyboard-configuration",
-    "console-setup",
     "fontconfig",
-    "otf2bdf",
-    "bdf2psf",
-    "fontforge",
+    "curl",
+    "gnupg",
+    "bsdmainutils",
+    "ksmcon",
 ]
-DEFAULT_ADDON_ANSWER_GRUB_INSTALL_DEVICE = "/dev/vda"
+DEFAULT_ADDON_ANSWER_GRUB_INSTALL_DEVICE = "default"
+
+DEFAULT_TEST_TEMPLATE = "debian12"
 
 
 @dataclass
@@ -147,6 +151,8 @@ def get_cfg_task(work_path: str) -> TaskConfig:
         DEFAULT_ADDON_ANSWER_NET_MASK,
         DEFAULT_ADDON_ANSWER_NET_GATEWAY,
         DEFAULT_ADDON_ANSWER_NET_DNS,
+        DEFAULT_ADDON_ANSWER_DISK_PASSWORD,
+        DEFAULT_ADDON_ANSWER_DISK_CRYPTNAME,
         DEFAULT_ADDON_ANSWER_TIME_UTC,
         DEFAULT_ADDON_ANSWER_TIME_ZONE,
         DEFAULT_ADDON_ANSWER_TIME_NTP,
@@ -177,7 +183,7 @@ def get_cfg_task(work_path: str) -> TaskConfig:
         postinstall=args_postinstall,
     )
     cfg_target = TargetArgs(
-        template="win11",
+        template=DEFAULT_TEST_TEMPLATE,
         file_prefix=DEFAULT_TARGET_ISO_PREFIX,
         file_extension=DEFAULT_TARGET_ISO_EXT,
         mbrfile=DEFAULT_TARGET_MBRFILE,
@@ -186,6 +192,7 @@ def get_cfg_task(work_path: str) -> TaskConfig:
         DEFAULT_RUN_DISK0_NAME,
         DEFAULT_RUN_DISK0_SIZE,
         DEFAULT_RUN_UEFI_BOOT,
+        DEFAULT_RUN_UEFI_DAEMONIZE,
         DEFAULT_RUN_OVMF_VARS,
         DEFAULT_RUN_OVMF_CODE,
         DEFAULT_RUN_PORTS,

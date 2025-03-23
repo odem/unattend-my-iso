@@ -11,14 +11,14 @@ class TaskProcessorVmRun(TaskProcessorBase):
 
     def task_vm_run(self, args: TaskConfig, template: TemplateConfig) -> TaskResult:
         hyperargs = self.hvrunner.vm_get_args(args, template)
+        vmdir = self.files._get_path_vm(args)
+        socketdir = f"{vmdir}/swtpm"
         if hyperargs is not None:
+            if template.iso_type == "windows":
+                if self.hvrunner.vm_prepare_tpm(socketdir, template) is False:
+                    return self._get_error_result("Error on swtpm")
             if self.hvrunner.vm_prepare_disks(args, hyperargs) is False:
                 return self._get_error_result("Error on prepare disk")
-            vmdir = self.files._get_path_vm(args)
-            socketdir = f"{vmdir}/swtpm"
-            log_debug(f"SOCKETDIR: {socketdir}")
-            if self.hvrunner.vm_prepare_tpm(socketdir) is False:
-                return self._get_error_result("Error on swtpm")
             if self.hvrunner.vm_run(args, hyperargs) is False:
                 return self._get_error_result("Error on VMRUN")
         return self._get_success_result()

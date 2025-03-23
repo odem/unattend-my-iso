@@ -41,5 +41,5 @@ class UmiHypervisorBase(ABC):
         raise NotImplementedError("Not implemented")
 
     @abstractmethod
-    def vm_prepare_tpm(self, socketdir: str) -> bool:
+    def vm_prepare_tpm(self, socketdir: str, template: TemplateConfig) -> bool:
         raise NotImplementedError("Not implemented")

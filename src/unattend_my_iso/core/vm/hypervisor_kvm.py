@@ -12,14 +12,16 @@ class UmiHypervisorKvm(UmiHypervisorBase):
     def vm_run(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:
         log_info(f"Running VM: {args_hv.name}")
         runcmd = self._create_run_command(args, args_hv)
-        # proc = subprocess.Popen(
-        #     runcmd,
-        #     stdin=subprocess.DEVNULL,
-        #     stdout=subprocess.DEVNULL,
-        #     stderr=subprocess.DEVNULL,
-        #     close_fds=True,
-        # )
-        proc = subprocess.run(runcmd, capture_output=True, text=True)
+        if args.run.daemonize:
+            proc = subprocess.Popen(
+                runcmd,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                close_fds=True,
+            )
+        else:
+            proc = subprocess.run(runcmd, capture_output=True, text=True)
         if proc.returncode != 0:
             log_error(f"VMRUN not successful: {proc.stdout} {proc.stderr}")
             return False
@@ -71,19 +73,20 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         log_error(f"Error while creating disk size {size_gb} GB -> {diskpath}")
         return False
 
-    def vm_prepare_tpm(self, socketdir: str) -> bool:
-        if os.path.exists(f"{socketdir}-socket"):
-            subprocess.run(["pkill", "-f", "swtpm"])
-        os.makedirs(socketdir, exist_ok=True)
-        runcmd = self._create_tpm_command(socketdir)
-        log_debug(f"RUNCMD: {' '.join(runcmd)}")
-        subprocess.Popen(
-            runcmd,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            close_fds=True,
-        )
-        log_info("SWTPM was initiated")
+    def vm_prepare_tpm(self, socketdir: str, template: TemplateConfig) -> bool:
+        if template.iso_type == "windows":
+            if os.path.exists(f"{socketdir}-socket"):
+                subprocess.run(["pkill", "-f", "swtpm"])
+            os.makedirs(socketdir, exist_ok=True)
+            runcmd = self._create_tpm_command(socketdir)
+            log_debug(f"RUNCMD: {' '.join(runcmd)}")
+            subprocess.Popen(
+                runcmd,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                close_fds=True,
+            )
+            log_info("SWTPM was initiated")
         return True
 
     def _prepare_disk_efi(self, args: TaskConfig, efidisk: str) -> bool:

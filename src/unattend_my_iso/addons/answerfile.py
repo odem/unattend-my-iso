@@ -39,6 +39,8 @@ class AnswerFileAddon(UmiAddon):
             Replaceable(preseed, "CFG_NET_MASK", c.net_mask),
             Replaceable(preseed, "CFG_NET_GATEWAY", c.net_gateway),
             Replaceable(preseed, "CFG_NET_DNS", c.net_dns),
+            Replaceable(preseed, "CFG_DISK_CRYPTNAME", c.disk_cryptname),
+            Replaceable(preseed, "CFG_DISK_PASSWORD", c.disk_password),
             Replaceable(preseed, "CFG_TIME_UTC", "true" if c.time_utc else "false"),
             Replaceable(preseed, "CFG_TIME_ZONE", c.time_zone),
             Replaceable(preseed, "CFG_TIME_NTP", "true" if c.time_ntp else "false"),
