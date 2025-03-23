@@ -78,16 +78,16 @@ systemctl enable console-setup.service
 systemctl restart console-setup.service
 
 # SSH
-if [[ -f /opt/postinstall/ssh/id_rsa.pub ]] ; then
+if [[ -f /opt/umi/ssh/id_rsa.pub ]] ; then
     mkdir -p /root/.ssh
-    cp /opt/postinstall/ssh/id_rsa* /root/.ssh/
+    cp /opt/umi/ssh/id_rsa* /root/.ssh/
     chmod 0600 /root/.ssh/id_rsa*
 fi
-if [[ -f /opt/postinstall/ssh/authorized_keys ]] ; then
-    cp /opt/postinstall/ssh/authorized_keys /root/.ssh/authorized_keys
+if [[ -f /opt/umi/ssh/authorized_keys ]] ; then
+    cp /opt/umi/ssh/authorized_keys /root/.ssh/authorized_keys
 fi
-if [[ -f /opt/postinstall/ssh/sshd_config ]] ; then
-    cp /opt/postinstall/ssh/sshd_config /etc/ssh/sshd_config
+if [[ -f /opt/umi/ssh/sshd_config ]] ; then
+    cp /opt/umi/ssh/sshd_config /etc/ssh/sshd_config
 fi
 systemctl enable ssh
 systemctl restart ssh
@@ -110,7 +110,7 @@ EOF
 # preseed-launcher
 cat <<EOF > /firstboot.bash
 #!/bin/bash
-#/opt/umi/postinstall/postinstall_mps.bash $user
+/opt/umi/postinstall/postinstall_mps.bash $user
 systemctl disable firstboot.service
 rm -rf /etc/systemd/service/firstboot.service
 rm -rf /firstboot.bash

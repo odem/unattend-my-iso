@@ -87,7 +87,6 @@ DEFAULT_ADDON_ANSWER_PACKAGES_INSTALL = [
     "curl",
     "gnupg",
     "bsdmainutils",
-    "ksmcon",
 ]
 DEFAULT_ADDON_ANSWER_GRUB_INSTALL_DEVICE = "default"
 
