@@ -91,15 +91,15 @@ class UmiHypervisorKvm(UmiHypervisorBase):
 
     def _prepare_disk_efi(self, args: TaskConfig, efidisk: str) -> bool:
         if os.path.exists(efidisk) is False:
-            rmcmd = ["sudo", "rm", efidisk]
-            cpcmd = ["sudo", "cp", args.run.uefi_ovmf_vars, efidisk]
-            chmodcmd = ["sudo", "chmod", "644", efidisk]
+            rmcmd = ["rm", efidisk]
+            cpcmd = ["cp", args.run.uefi_ovmf_vars, efidisk]
+            # chmodcmd = ["chmod", "644", efidisk]
             subprocess.run(rmcmd, capture_output=True, text=True)
             copied = subprocess.run(cpcmd, capture_output=True, text=True)
             if copied.returncode != 0:
                 log_error("Could not copy ovmf efi disk")
                 return False
-            subprocess.run(chmodcmd, capture_output=True, text=True)
+            # subprocess.run(chmodcmd, capture_output=True, text=True)
         return True
 
     def _create_run_command(self, args: TaskConfig, args_hv: HypervisorArgs) -> list:
@@ -128,7 +128,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         pidfile = f"{vmdir}/vm.pid"
         smpinfo = f"{args_hv.sys_cpu},sockets=1,cores={args_hv.sys_cpu},threads=1"
         machineinfo = "q35,kernel_irqchip=on,accel=kvm,usb=off,vmport=off,smm=on"
-        command = ["sudo", "qemu-system-x86_64"]
+        command = ["qemu-system-x86_64"]
         command += ["--enable-kvm", "-cpu", "host", "-smp", smpinfo]
         command += ["-pidfile", pidfile]
         command += ["-machine", machineinfo]

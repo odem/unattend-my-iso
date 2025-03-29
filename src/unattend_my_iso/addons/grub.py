@@ -11,6 +11,9 @@ class GrubAddon(UmiAddon):
 
     @override
     def integrate_addon(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        if template.iso_type == "windows":
+            return True
+
         src = self.files._get_path_template(args)
         dst = self.files._get_path_intermediate(args)
         dstboot = f"{dst}/boot"

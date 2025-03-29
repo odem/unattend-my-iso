@@ -38,7 +38,6 @@ class UmiIsoGenerator:
         )
         if out_iso.returncode != 0:
             log_error(f"xorriso error: {out_iso.stdout}{out_iso.stderr}")
-        subprocess.run(["sudo", "chown", f"{user}:{user}", "-R", infolder], check=True)
         return True
 
     def create_irmod(self, path_src: str, path_mod: str, path_in: str):
@@ -67,7 +66,6 @@ class UmiIsoGenerator:
                 stderr=subprocess.DEVNULL,
                 check=True,
             )
-            subprocess.run(["sudo", "chown", "jb:jb", "-R", path_mod], check=True)
             if gzip_process.stdout is not None:
                 gzip_process.stdout.close()
         preseed_src = os.path.join(path_in, "preseed.cfg")
@@ -91,7 +89,7 @@ class UmiIsoGenerator:
         dstmgr = f"{dstmount}/efi/boot"
         srcefi = f"{infolder}/efiboot.img"
         subprocess.run(["dd", "if=/dev/zero", f"of={srcefi}", "bs=1M", "count=64"])
-        subprocess.run(["sudo", "mkfs.fat", "-F32", f"{infolder}/efiboot.img"])
+        subprocess.run(["/usr/sbin/mkfs.fat", "-F32", f"{infolder}/efiboot.img"])
         log_debug(f"Create efidisk: {infolder}/efiboot.img")
         os.makedirs(dstmount, exist_ok=True)
         self.files.mount_folder(srcefi, dstmount, "loop")
@@ -108,7 +106,12 @@ class UmiIsoGenerator:
             ]
         )
         subprocess.run(
-            ["sudo", "mv", f"{dstmgr}/bootmgfw.efi", f"{dstmgr}/bootx64.efi"]
+            [
+                "sudo",
+                "mv",
+                f"{dstmgr}/bootmgfw.efi",
+                f"{dstmgr}/bootx64.efi",
+            ]
         )
         self.files.unmount_folder(dstmount)
 
