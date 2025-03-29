@@ -25,7 +25,7 @@ DEFAULT_RUN_DISK0_SIZE = 128
 DEFAULT_RUN_PORTS = [(2222, 22)]
 DEFAULT_RUN_NETDEVS = ["nat"]
 DEFAULT_RUN_UEFI_BOOT = True
-DEFAULT_RUN_UEFI_DAEMONIZE = True
+DEFAULT_RUN_DAEMONIZE = True
 DEFAULT_RUN_OVMF_CODE = "/usr/share/OVMF/OVMF_CODE.fd"
 DEFAULT_RUN_OVMF_VARS = "/usr/share/OVMF/OVMF_VARS.fd"
 
@@ -45,6 +45,8 @@ DEFAULT_ADDON_SSH_CONFIG_KEY = "id_rsa"
 
 # Defaults postinstall
 DEFAULT_ADDON_POSTINST_ENABLED = True
+DEFAULT_ADDON_POSTINST_CREATE_CONFIG = True
+DEFAULT_ADDON_POSTINST_THEME_NAME = True
 
 # Defaults Grubs
 DEFAULT_ADDON_GRUB_ENABLED = True
@@ -193,7 +195,11 @@ def get_cfg_task(work_path: str) -> TaskConfig:
         DEFAULT_ADDON_GRUB_SLEEPTIME,
         DEFAULT_ADDON_GRUB_TIMEOUT,
     )
-    args_postinstall = AddonArgsPostinstall(DEFAULT_ADDON_POSTINST_ENABLED)
+    args_postinstall = AddonArgsPostinstall(
+        DEFAULT_ADDON_POSTINST_ENABLED,
+        DEFAULT_ADDON_POSTINST_CREATE_CONFIG,
+        DEFAULT_ADDON_POSTINST_THEME_NAME,
+    )
     cfg_addons = AddonArgs(
         answerfile=args_answers,
         ssh=args_ssh,
@@ -210,7 +216,7 @@ def get_cfg_task(work_path: str) -> TaskConfig:
         DEFAULT_RUN_DISK0_NAME,
         DEFAULT_RUN_DISK0_SIZE,
         DEFAULT_RUN_UEFI_BOOT,
-        DEFAULT_RUN_UEFI_DAEMONIZE,
+        DEFAULT_RUN_DAEMONIZE,
         DEFAULT_RUN_OVMF_VARS,
         DEFAULT_RUN_OVMF_CODE,
         DEFAULT_RUN_PORTS,

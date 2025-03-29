@@ -4,7 +4,11 @@ default: usage
 
 # Makefile setup
 SHELL:=/bin/bash
-
+# username ALL=(ALL) NOPASSWD: /usr/bin/mount, /usr/bin/umount, 
+# /usr/bin/rm, /usr/bin/mkdir, /usr/bin/chmod, /usr/bin/chown, 
+# /usr/bin/mv, /usr/bin/cp, /usr/sbin/mkfs.fat, /usr/bin/wimlib-imagex, 
+# /usr/local/bin/nvim, /usr/bin/qemu-system-x86_64
+ 
 PROJECT_NAME:=unattend_my_iso
 PROJECT_AUTHOR:=jb
 PROJECT_EMAIL:=foo@bar.baz

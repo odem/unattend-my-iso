@@ -57,6 +57,8 @@ class AddonArgsSsh:
 @dataclass
 class AddonArgsPostinstall:
     enabled: bool
+    enable_grub_theme: bool
+    create_config: bool
 
 
 @dataclass

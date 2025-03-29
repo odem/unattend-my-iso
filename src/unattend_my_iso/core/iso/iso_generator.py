@@ -81,7 +81,8 @@ class UmiIsoGenerator:
             shell=True,
             check=True,
         )
-        shutil.rmtree(path_mod, ignore_errors=True)
+        log_debug(f"Deleting irmod: {path_mod}")
+        shutil.rmtree(path_mod, ignore_errors=False)
         log_info(f"Created irmod : {path_src}")
 
     def create_efidisk_windows(self, args: TaskConfig, infolder: str):
@@ -91,6 +92,7 @@ class UmiIsoGenerator:
         srcefi = f"{infolder}/efiboot.img"
         subprocess.run(["dd", "if=/dev/zero", f"of={srcefi}", "bs=1M", "count=64"])
         subprocess.run(["sudo", "mkfs.fat", "-F32", f"{infolder}/efiboot.img"])
+        log_debug(f"Create efidisk: {infolder}/efiboot.img")
         os.makedirs(dstmount, exist_ok=True)
         self.files.mount_folder(srcefi, dstmount, "loop")
         subprocess.run(["sudo", "mkdir", "-p", f"{dstmount}/efi/boot"])

@@ -21,32 +21,65 @@ class PostinstallAddon(UmiAddon):
         dst = f"{interpath}/{intername}/umi"
         dstpost = f"{dst}/postinstall"
         dsttheme = f"{dst}/theme"
-        os.makedirs(dsttheme, exist_ok=True)
-        log_debug(f"LOG_DEBUG: {srctheme} -> {dsttheme}")
-        if self.files.cp(srctheme, dsttheme) is False:
-            return False
+        dstthemefile = f"{dsttheme}/theme.txt"
         if template.iso_type == "windows":
             postfolder = f"{srctmpl}/{template.path_postinstall}"
             postfile = f"{dstpost}/postinstall.bat"
         else:
             postfolder = f"{srctmpl}/{template.path_postinstall}"
             postfile = f"{dstpost}/postinstall.bash"
+            if args.addons.postinstall.enable_grub_theme:
+                os.makedirs(dsttheme, exist_ok=True)
+                log_debug(f"LOG_DEBUG: {srctheme} -> {dsttheme}")
+                if self.files.cp(srctheme, dsttheme) is False:
+                    return False
+                rules = self._create_replacements_theme(args, dstthemefile)
+                if self._apply_replacements(rules) is False:
+                    return False
         if self.files.cp(postfolder, dstpost) is False:
             return False
-        return self._apply_replacements(args, postfile, f"{dsttheme}/theme.txt")
+        if self._create_config(args) is False:
+            return False
+        rules = self._create_replacements_postinst(args, postfile)
+        if self._apply_replacements(rules) is False:
+            return False
+        return True
 
-    def _apply_replacements(
-        self, args: TaskConfig, postinst: str, themefile: str
-    ) -> bool:
-        c = args.addons.answerfile
+    def _create_config(self, args: TaskConfig) -> bool:
+        interpath = args.sys.intermediate_path
+        intername = args.target.template
+        dst = f"{interpath}/{intername}/umi"
+        dstconf = f"{dst}/config"
+        dstconffile = f"{dstconf}/env.bash"
+        os.makedirs(dstconf, exist_ok=True)
+        name = args.target.template
+        hostname = args.addons.answerfile.host_name
+        domain = args.addons.answerfile.host_domain
+        version = args.sys.tool_version
+        arr = [
+            "#!/bin/bash",
+            f"CFG_TYPE={name}",
+            f"CFG_HOST={hostname}",
+            f"CFG_DOMAIN={domain}",
+            f"CFG_VERSION={version}",
+        ]
+        contents = "\n".join(arr)
+        if os.path.exists(dstconffile):
+            self.files.rm(dstconffile)
+        if self.files.append_to_file(dstconffile, contents) is False:
+            return False
+        return self.files.chmod(dstconffile, 777)
+
+    def _create_replacements_theme(
+        self, args: TaskConfig, themefile: str
+    ) -> list[Replaceable]:
         name = args.target.template
         hostname = args.addons.answerfile.host_name
         domain = args.addons.answerfile.host_domain
         version = args.sys.tool_version
         dst = self.files._get_path_intermediate(args)
         kernel = self._extract_kernel_version(dst)
-        rules = [
-            Replaceable(postinst, "CFG_USER_OTHER_NAME", c.user_other_name),
+        return [
             Replaceable(themefile, "CFG_TYPE", name),
             Replaceable(themefile, "CFG_HOST", hostname),
             Replaceable(themefile, "CFG_DOMAIN", domain),
@@ -54,6 +87,11 @@ class PostinstallAddon(UmiAddon):
             Replaceable(themefile, "CFG_KERNEL", kernel),
             Replaceable(themefile, "CFG_VERSION", version),
         ]
-        for rule in rules:
-            self.replacements.append(rule)
-        return self.do_replacements()
+
+    def _create_replacements_postinst(
+        self, args: TaskConfig, postinst: str
+    ) -> list[Replaceable]:
+        c = args.addons.answerfile
+        return [
+            Replaceable(postinst, "CFG_USER_OTHER_NAME", c.user_other_name),
+        ]

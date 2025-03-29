@@ -24,11 +24,12 @@ class AnswerFileAddon(UmiAddon):
             os.makedirs(dstbackground, exist_ok=True)
             if self.files.cp(srcbackground, dstbackground) is False:
                 return False
-        return self._apply_replacements(args, interpreseed)
+        rules = self._create_replacements(args, interpreseed)
+        return self._apply_replacements(rules)
 
-    def _apply_replacements(self, args: TaskConfig, preseed: str) -> bool:
+    def _create_replacements(self, args: TaskConfig, preseed: str) -> list[Replaceable]:
         c = args.addons.answerfile
-        rules = [
+        return [
             Replaceable(preseed, "CFG_LOCALE_STRING", c.locale_string),
             Replaceable(preseed, "CFG_LOCALE_MULTI", c.locale_multi),
             Replaceable(preseed, "CFG_LOCALE_KEYBOARD", c.locale_keyboard),
@@ -61,6 +62,3 @@ class AnswerFileAddon(UmiAddon):
                 "true" if c.user_other_enabled else "false",
             ),
         ]
-        for rule in rules:
-            self.replacements.append(rule)
-        return self.do_replacements()

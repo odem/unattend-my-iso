@@ -20,12 +20,12 @@ class UmiHypervisorKvm(UmiHypervisorBase):
                 stderr=subprocess.DEVNULL,
                 close_fds=True,
             )
+            log_info(f"VMRUN was initiated: {proc.pid}")
         else:
             proc = subprocess.run(runcmd, capture_output=True, text=True)
-        if proc.returncode != 0:
-            log_error(f"VMRUN not successful: {proc.stdout} {proc.stderr}")
-            return False
-        log_info("VMRUN was initiated")
+            if proc.returncode != 0:
+                log_error(f"VMRUN not successful: {proc.stdout} {proc.stderr}")
+                return False
         return True
 
     def vm_get_args(self, args: TaskConfig, template: TemplateConfig) -> HypervisorArgs:

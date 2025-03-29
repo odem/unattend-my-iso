@@ -49,6 +49,11 @@ class UmiAddon(ABC):
             kernel = self._extract_kernel_version_image(path)
         return kernel
 
+    def _apply_replacements(self, replacements: list[Replaceable]) -> bool:
+        for rule in replacements:
+            self.replacements.append(rule)
+        return self.do_replacements()
+
     @abstractmethod
     def integrate_addon(self, args: TaskConfig, template: TemplateConfig) -> bool:
         raise NotImplementedError("Not implemented")

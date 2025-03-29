@@ -6,7 +6,6 @@ from unattend_my_iso.core.files.file_manager import UmiFileManager
 def run():
     files = UmiFileManager()
     cwd_path = Path(f"{files.cwd()}/../..").resolve()
-    print(f"CWD:{cwd_path}")
     script_path = Path(__file__).resolve()
     module_path = script_path.parent / "main.py"
     spec = importlib.util.spec_from_file_location("main", module_path)

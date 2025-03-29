@@ -40,15 +40,15 @@ class GrubAddon(UmiAddon):
             return False
         if self.files.cp("/boot/memtest86+x64.efi", dstboot) is False:
             return False
-        return self._apply_replacements(args, dst, grubfile, dstthemefile)
+        rules = self._create_replacements(args, dst, grubfile, dstthemefile)
+        return self._apply_replacements(rules)
 
-    def _apply_replacements(
+    def _create_replacements(
         self, args: TaskConfig, inter: str, grub: str, themefile: str
-    ) -> bool:
+    ) -> list[Replaceable]:
         kernel = self._extract_kernel_version_headers(inter)
         if kernel == "X.Y.Z-W":
             kernel = self._extract_kernel_version_image(inter)
-
         name = args.target.template
         hostname = args.addons.answerfile.host_name
         domain = args.addons.answerfile.host_domain
@@ -58,7 +58,7 @@ class GrubAddon(UmiAddon):
         theme = args.addons.grub.grub_theme
         sleeptime = args.addons.grub.sleeptime
         buildtime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        rules = [
+        return [
             Replaceable(grub, "CFG_THEME", theme),
             Replaceable(grub, "CFG_KERNEL", kernel),
             Replaceable(grub, "CFG_TYPE", name),
@@ -75,6 +75,3 @@ class GrubAddon(UmiAddon):
             Replaceable(themefile, "CFG_KERNEL", kernel),
             Replaceable(themefile, "CFG_VERSION", version),
         ]
-        for rule in rules:
-            self.replacements.append(rule)
-        return self.do_replacements()
