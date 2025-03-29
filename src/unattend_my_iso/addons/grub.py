@@ -1,11 +1,8 @@
 import os
-import glob
-import re
 from datetime import datetime
 from typing_extensions import override
 from unattend_my_iso.addons.addon_base import Replaceable, UmiAddon
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
-from unattend_my_iso.common.logging import log_debug
 
 
 class GrubAddon(UmiAddon):

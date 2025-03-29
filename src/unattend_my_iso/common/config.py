@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass
 from unattend_my_iso.common.args import (
     AddonArgs,
@@ -11,6 +12,10 @@ from unattend_my_iso.common.args import (
 
 # Globals
 APP_VERSION = "0.0.1"
+
+# user
+HOMEDIR = os.path.expanduser("~")
+USER = os.getlogin()
 
 # Defaults Run
 DEFAULT_RUN_CPU = 8
@@ -31,6 +36,12 @@ DEFAULT_TARGET_ISO_PREFIX = "umi_"
 
 # Defaults Ssh
 DEFAULT_ADDON_SSH_ENABLED = True
+DEFAULT_ADDON_SSH_KEYGEN = True
+DEFAULT_ADDON_SSH_CONFIG_CLIENT = "config"
+DEFAULT_ADDON_SSH_CONFIG_DAEMON = "sshd_config"
+DEFAULT_ADDON_SSH_CONFIG_AUTH = "authorized_keys"
+DEFAULT_ADDON_SSH_CONFIG_AUTH_APPEND = f"{HOMEDIR}/.ssh/id_rsa.pub"
+DEFAULT_ADDON_SSH_CONFIG_KEY = "id_rsa"
 
 # Defaults postinstall
 DEFAULT_ADDON_POSTINST_ENABLED = True
@@ -165,7 +176,15 @@ def get_cfg_task(work_path: str) -> TaskConfig:
         DEFAULT_ADDON_ANSWER_GRUB_INSTALL_DEVICE,
     )
 
-    args_ssh = AddonArgsSsh(DEFAULT_ADDON_SSH_ENABLED)
+    args_ssh = AddonArgsSsh(
+        DEFAULT_ADDON_SSH_ENABLED,
+        DEFAULT_ADDON_SSH_KEYGEN,
+        DEFAULT_ADDON_SSH_CONFIG_CLIENT,
+        DEFAULT_ADDON_SSH_CONFIG_DAEMON,
+        DEFAULT_ADDON_SSH_CONFIG_AUTH,
+        DEFAULT_ADDON_SSH_CONFIG_AUTH_APPEND,
+        DEFAULT_ADDON_SSH_CONFIG_KEY,
+    )
     args_grub = AddonArgsGrub(
         DEFAULT_ADDON_GRUB_ENABLED,
         DEFAULT_ADDON_GRUB_THEME,

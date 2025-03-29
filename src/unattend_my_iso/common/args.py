@@ -46,6 +46,12 @@ class AddonArgsAnswerFile:
 @dataclass
 class AddonArgsSsh:
     enabled: bool
+    keygen: bool
+    config_client: str
+    config_daemon: str
+    config_auth: str
+    config_auth_append: str
+    config_key: str
 
 
 @dataclass

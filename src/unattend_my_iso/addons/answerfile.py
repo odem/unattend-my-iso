@@ -21,7 +21,7 @@ class AnswerFileAddon(UmiAddon):
         if template.iso_type == "windows":
             srcbackground = f"{src}/{self.addon_name}/background.png"
             dstbackground = f"{inter}/umi/postinstall/images"
-            os.makedirs(dstbackground)
+            os.makedirs(dstbackground, exist_ok=True)
             if self.files.cp(srcbackground, dstbackground) is False:
                 return False
         return self._apply_replacements(args, interpreseed)

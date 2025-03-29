@@ -152,4 +152,3 @@ class UmiFileManager(UmiFileMounts, UmiFileReplacements):
 
     def _get_path_vm(self, args: TaskConfig):
         return f"{args.sys.vm_path}/{args.target.template}"
-        return True
