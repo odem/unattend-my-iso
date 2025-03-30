@@ -35,7 +35,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         return HypervisorArgs(
             args.target.template,
             template.iso_type,
-            args.run.uefi,
+            args.run.uefi_boot,
             cdrom,
             [disk],
             args.run.net_devs,
@@ -97,7 +97,9 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             subprocess.run(rmcmd, capture_output=True, text=True)
             copied = subprocess.run(cpcmd, capture_output=True, text=True)
             if copied.returncode != 0:
-                log_error("Could not copy ovmf efi disk")
+                log_error(
+                    f"Could not copy ovmf efi disk: {args.run.uefi_ovmf_vars} to {efidisk}"
+                )
                 return False
             # subprocess.run(chmodcmd, capture_output=True, text=True)
         return True
@@ -124,7 +126,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
     def _create_static_run_command(
         self, args: TaskConfig, args_hv: HypervisorArgs
     ) -> list[str]:
-        vmdir = f"{args.sys.vm_path}/{args.target.template}"
+        vmdir = f"{args.sys.vm_path}/{args.run.instname}"
         pidfile = f"{vmdir}/vm.pid"
         smpinfo = f"{args_hv.sys_cpu},sockets=1,cores={args_hv.sys_cpu},threads=1"
         machineinfo = "q35,kernel_irqchip=on,accel=kvm,usb=off,vmport=off,smm=on"
@@ -171,7 +173,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         return arr_cdrom
 
     def _create_uefi_args(self, args: TaskConfig, args_hv: HypervisorArgs) -> list[str]:
-        vmdir = f"{args.sys.vm_path}/{args.target.template}"
+        vmdir = f"{args.sys.vm_path}/{args.run.instname}"
         efidisk = f"{vmdir}/OVMF_VARS.fd"
         if args_hv.uefi is True:
             if self._prepare_disk_efi(args, efidisk):

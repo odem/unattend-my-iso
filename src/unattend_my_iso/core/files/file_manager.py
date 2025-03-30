@@ -153,4 +153,4 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
         return f"{mntpath}/{targetname}"
 
     def _get_path_vm(self, args: TaskConfig):
-        return f"{args.sys.vm_path}/{args.target.template}"
+        return f"{args.sys.vm_path}/{args.run.instname}"

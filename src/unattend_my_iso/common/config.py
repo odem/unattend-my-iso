@@ -1,5 +1,6 @@
-import os
-from dataclasses import dataclass
+from dataclasses import dataclass, fields, is_dataclass
+from typing import Any, Optional
+from unattend_my_iso.cli.cli_reader import CommandlineReader
 from unattend_my_iso.common.args import (
     AddonArgs,
     AddonArgsAnswerFile,
@@ -9,102 +10,12 @@ from unattend_my_iso.common.args import (
     RunArgs,
     TargetArgs,
 )
+from unattend_my_iso.common.logging import log_debug, log_error, log_warn
+
 
 # Globals
 APP_VERSION = "0.0.1"
-
-# user
-HOMEDIR = os.path.expanduser("~")
-USER = os.getlogin()
-
-# Default template
-DEFAULT_TEST_TEMPLATE = "debian12"
-
-# Defaults Run
-DEFAULT_RUN_CPU = 8
-DEFAULT_RUN_MEMORY = 32000
-DEFAULT_RUN_DISK0_NAME = "disk1.qcow2"
-DEFAULT_RUN_DISK0_SIZE = 128
-DEFAULT_RUN_PORTS = [(2222, 22)]
-DEFAULT_RUN_NETDEVS = ["nat"]
-DEFAULT_RUN_UEFI_BOOT = True
-DEFAULT_RUN_DAEMONIZE = True
-DEFAULT_RUN_OVMF_CODE = "/usr/share/OVMF/OVMF_CODE.fd"
-DEFAULT_RUN_OVMF_VARS = "/usr/share/OVMF/OVMF_VARS.fd"
-
-# Defaults target
-DEFAULT_TARGET_MBRFILE = "/usr/lib/ISOLINUX/isohdpfx.bin"
-DEFAULT_TARGET_ISO_EXT = "iso"
-DEFAULT_TARGET_ISO_PREFIX = "umi_"
-
-# Defaults Ssh
-DEFAULT_ADDON_SSH_ENABLED = True
-DEFAULT_ADDON_SSH_KEYGEN = True
-DEFAULT_ADDON_SSH_CONFIG_CLIENT = "config"
-DEFAULT_ADDON_SSH_CONFIG_DAEMON = "sshd_config"
-DEFAULT_ADDON_SSH_CONFIG_AUTH = "authorized_keys"
-DEFAULT_ADDON_SSH_CONFIG_AUTH_APPEND = f"{HOMEDIR}/.ssh/id_rsa.pub"
-DEFAULT_ADDON_SSH_CONFIG_KEY = "id_rsa"
-
-# Defaults postinstall
-DEFAULT_ADDON_POSTINST_ENABLED = True
-DEFAULT_ADDON_POSTINST_CREATE_CONFIG = True
-DEFAULT_ADDON_POSTINST_THEME_NAME = True
-
-# Defaults Grubs
-DEFAULT_ADDON_GRUB_ENABLED = True
-DEFAULT_ADDON_GRUB_ICONS = "light"
-DEFAULT_ADDON_GRUB_THEME = "showroom"
-DEFAULT_ADDON_GRUB_TIMEOUT = -1
-DEFAULT_ADDON_GRUB_SLEEPTIME = 0
-DEFAULT_ADDON_GRUB_INITRD_LIST = [
-    "install.amd",
-    # "install.amd/gtk",
-    # "install",
-    # "install/gtk",
-]
-
-# Defaults answerfile
-DEFAULT_ADDON_ANSWER_ENABLED = True
-DEFAULT_ADDON_ANSWER_LOCALE_STRING = "en_US"
-DEFAULT_ADDON_ANSWER_LOCALE_MULTI = "en_US.UTF-8"
-DEFAULT_ADDON_ANSWER_LOCALE_KEYBOARD = "de"
-DEFAULT_ADDON_ANSWER_HOST_NAME = "foo"
-DEFAULT_ADDON_ANSWER_HOST_DOMAIN = "local"
-DEFAULT_ADDON_ANSWER_NET_DHCP = False
-DEFAULT_ADDON_ANSWER_NET_IP = "10.23.42.9"
-DEFAULT_ADDON_ANSWER_NET_MASK = "255.255.255.0"
-DEFAULT_ADDON_ANSWER_NET_GATEWAY = "10.23.42.1"
-DEFAULT_ADDON_ANSWER_NET_DNS = "10.23.42.1"
-DEFAULT_ADDON_ANSWER_DISK_PASSWORD = "diskpass"
-DEFAULT_ADDON_ANSWER_DISK_CRYPTNAME = "vg_crypto"
-DEFAULT_ADDON_ANSWER_TIME_UTC = True
-DEFAULT_ADDON_ANSWER_TIME_ZONE = "EU/Berlin"
-DEFAULT_ADDON_ANSWER_TIME_NTP = True
-DEFAULT_ADDON_ANSWER_USER_ROOT_ENABLED = True
-DEFAULT_ADDON_ANSWER_USER_ROOT_PASSWORD = "rootpass"
-DEFAULT_ADDON_ANSWER_USER_OTHER_ENABLED = False
-DEFAULT_ADDON_ANSWER_USER_OTHER_NAME = "umi"
-DEFAULT_ADDON_ANSWER_USER_OTHER_FULLNAME = "umi"
-DEFAULT_ADDON_ANSWER_USER_OTHER_PASSWORD = "umipass"
-DEFAULT_ADDON_ANSWER_GRUB_INSTALL_DEVICE = "default"
-DEFAULT_ADDON_ANSWER_PACKAGES_INSTALL = [
-    "openssh-server",
-    "build-essential",
-    "vim",
-    "git",
-    "make",
-    "debconf",
-    "sudo",
-    "lsb-release",
-    "net-tools",
-    "psmisc",
-    "dnsutils",
-    "fontconfig",
-    "curl",
-    "gnupg",
-    "bsdmainutils",
-]
+DEFAULT_TEMPLATE = "debian12"
 
 
 @dataclass
@@ -150,79 +61,106 @@ def get_cfg_sys(work_path: str) -> SysConfig:
     )
 
 
-def get_cfg_task(work_path: str) -> TaskConfig:
-    cfg_sys = get_cfg_sys(work_path)
-    args_answers = AddonArgsAnswerFile(
-        DEFAULT_ADDON_ANSWER_ENABLED,
-        DEFAULT_ADDON_ANSWER_LOCALE_STRING,
-        DEFAULT_ADDON_ANSWER_LOCALE_MULTI,
-        DEFAULT_ADDON_ANSWER_LOCALE_KEYBOARD,
-        DEFAULT_ADDON_ANSWER_HOST_NAME,
-        DEFAULT_ADDON_ANSWER_HOST_DOMAIN,
-        DEFAULT_ADDON_ANSWER_NET_DHCP,
-        DEFAULT_ADDON_ANSWER_NET_IP,
-        DEFAULT_ADDON_ANSWER_NET_MASK,
-        DEFAULT_ADDON_ANSWER_NET_GATEWAY,
-        DEFAULT_ADDON_ANSWER_NET_DNS,
-        DEFAULT_ADDON_ANSWER_DISK_PASSWORD,
-        DEFAULT_ADDON_ANSWER_DISK_CRYPTNAME,
-        DEFAULT_ADDON_ANSWER_TIME_UTC,
-        DEFAULT_ADDON_ANSWER_TIME_ZONE,
-        DEFAULT_ADDON_ANSWER_TIME_NTP,
-        DEFAULT_ADDON_ANSWER_USER_ROOT_ENABLED,
-        DEFAULT_ADDON_ANSWER_USER_ROOT_PASSWORD,
-        DEFAULT_ADDON_ANSWER_USER_OTHER_ENABLED,
-        DEFAULT_ADDON_ANSWER_USER_OTHER_NAME,
-        DEFAULT_ADDON_ANSWER_USER_OTHER_FULLNAME,
-        DEFAULT_ADDON_ANSWER_USER_OTHER_PASSWORD,
-        DEFAULT_ADDON_ANSWER_PACKAGES_INSTALL,
-        DEFAULT_ADDON_ANSWER_GRUB_INSTALL_DEVICE,
-    )
+def get_cli_group(name: str) -> Optional[Any]:
+    reader = CommandlineReader()
+    return reader.read_cli_group(name)
 
-    args_ssh = AddonArgsSsh(
-        DEFAULT_ADDON_SSH_ENABLED,
-        DEFAULT_ADDON_SSH_KEYGEN,
-        DEFAULT_ADDON_SSH_CONFIG_CLIENT,
-        DEFAULT_ADDON_SSH_CONFIG_DAEMON,
-        DEFAULT_ADDON_SSH_CONFIG_AUTH,
-        DEFAULT_ADDON_SSH_CONFIG_AUTH_APPEND,
-        DEFAULT_ADDON_SSH_CONFIG_KEY,
-    )
-    args_grub = AddonArgsGrub(
-        DEFAULT_ADDON_GRUB_ENABLED,
-        DEFAULT_ADDON_GRUB_THEME,
-        DEFAULT_ADDON_GRUB_ICONS,
-        DEFAULT_ADDON_GRUB_INITRD_LIST,
-        DEFAULT_ADDON_GRUB_SLEEPTIME,
-        DEFAULT_ADDON_GRUB_TIMEOUT,
-    )
-    args_postinstall = AddonArgsPostinstall(
-        DEFAULT_ADDON_POSTINST_ENABLED,
-        DEFAULT_ADDON_POSTINST_CREATE_CONFIG,
-        DEFAULT_ADDON_POSTINST_THEME_NAME,
-    )
-    cfg_addons = AddonArgs(
-        answerfile=args_answers,
-        ssh=args_ssh,
-        grub=args_grub,
-        postinstall=args_postinstall,
-    )
-    cfg_target = TargetArgs(
-        template=DEFAULT_TEST_TEMPLATE,
-        file_prefix=DEFAULT_TARGET_ISO_PREFIX,
-        file_extension=DEFAULT_TARGET_ISO_EXT,
-        mbrfile=DEFAULT_TARGET_MBRFILE,
-    )
-    cfg_run = RunArgs(
-        DEFAULT_RUN_DISK0_NAME,
-        DEFAULT_RUN_DISK0_SIZE,
-        DEFAULT_RUN_UEFI_BOOT,
-        DEFAULT_RUN_DAEMONIZE,
-        DEFAULT_RUN_OVMF_VARS,
-        DEFAULT_RUN_OVMF_CODE,
-        DEFAULT_RUN_PORTS,
-        DEFAULT_RUN_NETDEVS,
-        DEFAULT_RUN_CPU,
-        DEFAULT_RUN_MEMORY,
-    )
+
+def get_default_group(name: str) -> Optional[Any]:
+    if name == "target":
+        return TargetArgs()
+    elif name == "run":
+        return RunArgs()
+    elif name == "addon_ssh":
+        return AddonArgsSsh()
+    elif name == "addon_grub":
+        return AddonArgsGrub()
+    elif name == "addon_postinstall":
+        return AddonArgsPostinstall()
+    elif name == "addon_answerfile":
+        return AddonArgsAnswerFile()
+    return None
+
+
+def _match_group(name: str, template_name: str) -> Optional[Any]:
+    default_values = get_default_group(name)
+    matched = _match_group_with_cli(default_values, name)
+    return matched
+
+
+def _match_group_with_cli(result: Optional[Any], target: str) -> Optional[Any]:
+    if result is None or is_dataclass(result) is False:
+        log_error(f"result is not a valid dataclass: {result}")
+        return None
+    cfg_cli = get_cli_group(target)
+    if cfg_cli is None:
+        log_error(f"client config is not a valid dataclass: {cfg_cli}")
+        return None
+    for field in fields(cfg_cli):
+        name = field.name
+        val = _get_normalized_value(result, cfg_cli, name)
+        if val is not None:
+            setattr(result, name, val)
+            log_debug(f"cli_update   : group={target}, name={name}, value={val}")
+    return result
+
+
+def _get_normalized_value(obj_dest, obj_src, name: str) -> Optional[Any]:
+    val = getattr(obj_src, name)
+    if val is not None:
+        if type(getattr(obj_dest, name)) is bool:
+            lowername = str(val).lower()
+            if lowername in ("true", "false"):
+                val = True if lowername == "true" else False
+    return val
+
+
+def get_config(work_path: str) -> Optional[TaskConfig]:
+    cfg_sys = get_cfg_sys(work_path)
+    cli_target = get_cli_group("target")
+    if cli_target is None:
+        return None
+    if isinstance(cli_target, TargetArgs) is False:
+        template_name = DEFAULT_TEMPLATE
+        log_warn(f"Template name not specified. Using default: {template_name}")
+    else:
+        template_name = cli_target.template
+        log_debug(f"Use template : {template_name}")
+    cfg_target = _match_group("target", template_name)
+    if cfg_target is None or isinstance(cfg_target, TargetArgs) is False:
+        log_error(f"Matched target config invalid: {cfg_target}")
+        return None
+    cfg_run = _match_group("run", template_name)
+    if cfg_run is None or isinstance(cfg_run, RunArgs) is False:
+        log_error(f"Matched run config invalid: {cfg_run}")
+        return None
+    cfg_ssh = _match_group("addon_ssh", template_name)
+    if cfg_ssh is None or isinstance(cfg_ssh, AddonArgsSsh) is False:
+        log_error(f"Matched addon_ssh config invalid: {cfg_ssh}")
+        return None
+    cfg_grub = _match_group("addon_grub", template_name)
+    if cfg_grub is None or isinstance(cfg_grub, AddonArgsGrub) is False:
+        log_error(f"Matched addon_grub config invalid: {cfg_grub}")
+        return None
+    cfg_post = _match_group("addon_postinstall", template_name)
+    if cfg_post is None or isinstance(cfg_post, AddonArgsPostinstall) is False:
+        log_error(f"Matched addon_postinstall config invalid: {cfg_post}")
+        return None
+    cfg_answer = _match_group("addon_answerfile", template_name)
+    if cfg_answer is None or isinstance(cfg_answer, AddonArgsAnswerFile) is False:
+        log_error(f"Matched addon_answerfile config invalid: {cfg_answer}")
+        return None
+    cfg_addons = AddonArgs(cfg_answer, cfg_ssh, cfg_grub, cfg_post)
+    return TaskConfig(sys=cfg_sys, addons=cfg_addons, target=cfg_target, run=cfg_run)
+
+
+def get_config_default(work_path: str) -> TaskConfig:
+    cfg_sys = get_cfg_sys(work_path)
+    args_answers = AddonArgsAnswerFile()
+    args_ssh = AddonArgsSsh()
+    args_grub = AddonArgsGrub()
+    args_postinstall = AddonArgsPostinstall()
+    cfg_addons = AddonArgs(args_answers, args_ssh, args_grub, args_postinstall)
+    cfg_target = TargetArgs()
+    cfg_run = RunArgs()
     return TaskConfig(sys=cfg_sys, addons=cfg_addons, target=cfg_target, run=cfg_run)

@@ -50,9 +50,9 @@ class TaskProcessorBase:
 
     def _get_templates(self):
         self.templates = read_templates_isos(self.sysconfig.template_path)
-        log_debug("Enumerate Templates:")
-        for t in self.templates.values():
-            log_debug(f" -- Template:  {t.name}")
+        # log_debug("Enumerate Templates:")
+        # for t in self.templates.values():
+        #     log_debug(f" -- Template:  {t.name}")
 
     def _download_file(self, args: TaskConfig, url: str, name: str) -> bool:
         fullname = self.files._get_path_isofile(args)

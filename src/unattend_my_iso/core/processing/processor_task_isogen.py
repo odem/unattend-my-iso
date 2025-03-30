@@ -11,7 +11,7 @@ class TaskProcessorIsogen(TaskProcessorBase):
     def __init__(self, work_path: str = ""):
         TaskProcessorBase.__init__(self, work_path)
 
-    def task_build_all(self, args: TaskConfig, user: str) -> TaskResult:
+    def task_build_all(self, args: TaskConfig) -> TaskResult:
         template = self._get_task_template(args)
         if template is None:
             return self._get_error_result("No template")
@@ -25,11 +25,11 @@ class TaskProcessorIsogen(TaskProcessorBase):
             return self._get_error_result("Addons not copied")
         if self._prepare_bootloader(args, template) is False:
             return self._get_error_result("irmod not created")
-        if self._generate_iso(args, template, user) is False:
+        if self._generate_iso(args, template) is False:
             return self._get_error_result("iso not generated")
         return self._get_success_result()
 
-    def task_build_intermediate(self, args: TaskConfig) -> TaskResult:
+    def task_extract_iso(self, args: TaskConfig) -> TaskResult:
         template = self._get_task_template(args)
         if template is None:
             return self._get_error_result("No template")
@@ -57,21 +57,19 @@ class TaskProcessorIsogen(TaskProcessorBase):
             return self._get_error_result("irmod not created")
         return self._get_success_result()
 
-    def task_build_iso(self, args: TaskConfig, user: str) -> TaskResult:
+    def task_build_iso(self, args: TaskConfig) -> TaskResult:
         template = self._get_task_template(args)
         if template is None:
             return self._get_error_result("No template")
-        if self._generate_iso(args, template, user) is False:
+        if self._generate_iso(args, template) is False:
             return self._get_error_result("iso not generated")
         return self._get_success_result()
 
-    def _generate_iso(
-        self, args: TaskConfig, template: TemplateConfig, user: str
-    ) -> bool:
+    def _generate_iso(self, args: TaskConfig, template: TemplateConfig) -> bool:
         dst = self.files._get_path_isopath(args)
         fullinter = self.files._get_path_intermediate(args)
         created = self.isogen.create_iso(
-            args, template, fullinter, template.name, dst, user, args.target.mbrfile
+            args, template, fullinter, template.name, dst, args.target.file_mbr
         )
         if created is True:
             log_info(f"Created ISO   : {dst}")
@@ -123,13 +121,13 @@ class TaskProcessorIsogen(TaskProcessorBase):
         return matches
 
     def _copy_addons(self, args: TaskConfig, template: TemplateConfig) -> bool:
-        if args.addons.answerfile.enabled:
+        if args.addons.answerfile.answerfile_enabled:
             self._copy_addon("answerfile", args, template)
-        if args.addons.grub.enabled:
+        if args.addons.grub.grub_enabled:
             self._copy_addon("grub", args, template)
-        if args.addons.ssh.enabled:
+        if args.addons.ssh.ssh_enabled:
             self._copy_addon("ssh", args, template)
-        if args.addons.postinstall.enabled:
+        if args.addons.postinstall.postinstall_enabled:
             self._copy_addon("postinstall", args, template)
         return True
 
@@ -138,7 +136,7 @@ class TaskProcessorIsogen(TaskProcessorBase):
     ) -> bool:
         addon = self.addons[name]
         success = addon.integrate_addon(args, template)
-        log_info(f"Integrated    : {success}\t-> {addon.addon_name}")
+        log_info(f"Addon update  : {addon.addon_name} -> {success}")
         return success
 
     def _extract_iso_contents(self, args: TaskConfig, template: TemplateConfig) -> bool:
@@ -152,7 +150,7 @@ class TaskProcessorIsogen(TaskProcessorBase):
             copied = self.files.chmod(dir_intermediate, privilege=0o200)
             self.files.unmount_folder(dir_mount)
             if copied:
-                log_info(f"Copied ISO    : {file_mount}")
+                log_info(f"Extracted ISO : {file_mount}")
                 return True
         return False
 

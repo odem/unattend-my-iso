@@ -15,6 +15,8 @@ PROJECT_EMAIL:=foo@bar.baz
 PROJECT_VERSION:=0.0.1
 DIR_VENV?=.venv
 TARGET ?= "vmbuild_all"
+TEMPLATE ?= "debian12"
+
 # Help
 usage:
 	@echo "make TARGET"
@@ -55,7 +57,7 @@ install: build
 		pip install --editable .
 debugbuild: 
 	@source $(DIR_VENV)/bin/activate ; \
-		python3 -m src.$(PROJECT_NAME).main $(TARGET)
+		python3 -m src.$(PROJECT_NAME).main -tt $(TEMPLATE)
 debugrun: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main "vmrun"

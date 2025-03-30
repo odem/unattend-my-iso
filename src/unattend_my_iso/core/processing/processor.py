@@ -1,8 +1,11 @@
 from unattend_my_iso.common.common import TaskResult
-from unattend_my_iso.common.config import TaskConfig, get_cfg_task
+from unattend_my_iso.common.config import (
+    TaskConfig,
+    get_config,
+)
 from unattend_my_iso.core.processing.processor_task_isogen import TaskProcessorIsogen
 from unattend_my_iso.core.processing.processor_task_vmrun import TaskProcessorVmRun
-from unattend_my_iso.common.logging import log_debug
+from unattend_my_iso.common.logging import log_debug, log_error
 
 
 class TaskProcessor(TaskProcessorIsogen, TaskProcessorVmRun):
@@ -11,30 +14,27 @@ class TaskProcessor(TaskProcessorIsogen, TaskProcessorVmRun):
         TaskProcessorIsogen.__init__(self, work_path)
         TaskProcessorVmRun.__init__(self, work_path)
 
-    def do_process(self, script_name: str = "", arguments: list = []):
-        taskconfig = get_cfg_task(self.work_path)
-        self._print_args(taskconfig)
-        result = self._process_task(taskconfig, script_name, arguments)
-        self._process_result(result)
+    def do_process(self):
+        taskconfig = get_config(self.work_path)
+        if isinstance(taskconfig, TaskConfig):
+            result = self._process_task(taskconfig)
+            self._process_result(result)
+        else:
+            log_error(f"TaskConfig invalid: {taskconfig}")
 
-    def _process_task(
-        self, args: TaskConfig, script_name: str = "", arguments: list = []
-    ) -> TaskResult:
-        user = "jb"
-        tasktype = "vmbuild_all"
-        if len(arguments) > 0:
-            tasktype = arguments[0]
-        if tasktype == "vmbuild_all":
-            return self.task_build_all(args, user)
-        if tasktype == "vmbuild_intermediate":
-            return self.task_build_intermediate(args)
-        if tasktype == "vmbuild_addons":
+    def _process_task(self, args: TaskConfig) -> TaskResult:
+        tasktype = args.target.proctype
+        if tasktype == "all":
+            return self.task_build_all(args)
+        if tasktype == "extract":
+            return self.task_extract_iso(args)
+        if tasktype == "addons":
             return self.task_build_addons(args)
-        if tasktype == "vmbuild_irmod":
+        if tasktype == "irmod":
             return self.task_build_irmod(args)
-        if tasktype == "vmbuild_iso":
-            return self.task_build_iso(args, user)
-        elif tasktype == "vmrun":
+        if tasktype == "iso":
+            return self.task_build_iso(args)
+        elif tasktype == "run":
             template = self._get_task_template(args)
             if template is None:
                 return self._get_error_result("No template")

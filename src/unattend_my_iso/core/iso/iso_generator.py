@@ -17,7 +17,6 @@ class UmiIsoGenerator:
         infolder: str,
         volname: str,
         outfile: str,
-        user: str,
         mbrfile: str,
     ) -> bool:
         self._generate_md5sum(infolder)

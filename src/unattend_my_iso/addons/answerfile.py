@@ -29,36 +29,41 @@ class AnswerFileAddon(UmiAddon):
 
     def _create_replacements(self, args: TaskConfig, preseed: str) -> list[Replaceable]:
         c = args.addons.answerfile
-        return [
-            Replaceable(preseed, "CFG_LOCALE_STRING", c.locale_string),
-            Replaceable(preseed, "CFG_LOCALE_MULTI", c.locale_multi),
-            Replaceable(preseed, "CFG_LOCALE_KEYBOARD", c.locale_keyboard),
-            Replaceable(preseed, "CFG_HOST_NAME", c.host_name),
-            Replaceable(preseed, "CFG_HOST_DOMAIN", c.host_domain),
-            Replaceable(preseed, "CFG_NET_DHCP", "true" if c.net_dhcp else "false"),
-            Replaceable(preseed, "CFG_NET_IP", c.net_ip),
-            Replaceable(preseed, "CFG_NET_MASK", c.net_mask),
-            Replaceable(preseed, "CFG_NET_GATEWAY", c.net_gateway),
-            Replaceable(preseed, "CFG_NET_DNS", c.net_dns),
-            Replaceable(preseed, "CFG_DISK_CRYPTNAME", c.disk_cryptname),
-            Replaceable(preseed, "CFG_DISK_PASSWORD", c.disk_password),
-            Replaceable(preseed, "CFG_TIME_UTC", "true" if c.time_utc else "false"),
-            Replaceable(preseed, "CFG_TIME_ZONE", c.time_zone),
-            Replaceable(preseed, "CFG_TIME_NTP", "true" if c.time_ntp else "false"),
-            Replaceable(preseed, "CFG_PACKAGES_INSTALL", " ".join(c.packages_install)),
-            Replaceable(preseed, "CFG_USER_OTHER_NAME", c.user_other_name),
-            Replaceable(preseed, "CFG_USER_OTHER_FULLNAME", c.user_other_fullname),
-            Replaceable(preseed, "CFG_USER_OTHER_PASSWORD", c.user_other_password),
-            Replaceable(preseed, "CFG_GRUB_INSTALL_DEVICE", c.grub_install_device),
-            Replaceable(preseed, "CFG_USER_ROOT_PASSWORD", c.user_root_password),
-            Replaceable(
-                preseed,
-                "CFG_USER_ROOT_ENABLED",
-                "true" if c.user_root_enabled else "false",
-            ),
-            Replaceable(
-                preseed,
-                "CFG_USER_OTHER_ENABLED",
-                "true" if c.user_other_enabled else "false",
-            ),
-        ]
+        rules = []
+        if os.path.exists(preseed):
+            rules += [
+                Replaceable(preseed, "CFG_LOCALE_STRING", c.locale_string),
+                Replaceable(preseed, "CFG_LOCALE_MULTI", c.locale_multi),
+                Replaceable(preseed, "CFG_LOCALE_KEYBOARD", c.locale_keyboard),
+                Replaceable(preseed, "CFG_HOST_NAME", c.host_name),
+                Replaceable(preseed, "CFG_HOST_DOMAIN", c.host_domain),
+                Replaceable(preseed, "CFG_NET_DHCP", "true" if c.net_dhcp else "false"),
+                Replaceable(preseed, "CFG_NET_IP", c.net_ip),
+                Replaceable(preseed, "CFG_NET_MASK", c.net_mask),
+                Replaceable(preseed, "CFG_NET_GATEWAY", c.net_gateway),
+                Replaceable(preseed, "CFG_NET_DNS", c.net_dns),
+                Replaceable(preseed, "CFG_DISK_CRYPTNAME", c.disk_cryptname),
+                Replaceable(preseed, "CFG_DISK_PASSWORD", c.disk_password),
+                Replaceable(preseed, "CFG_TIME_UTC", "true" if c.time_utc else "false"),
+                Replaceable(preseed, "CFG_TIME_ZONE", c.time_zone),
+                Replaceable(preseed, "CFG_TIME_NTP", "true" if c.time_ntp else "false"),
+                Replaceable(
+                    preseed, "CFG_PACKAGES_INSTALL", " ".join(c.packages_install)
+                ),
+                Replaceable(preseed, "CFG_USER_OTHER_NAME", c.user_other_name),
+                Replaceable(preseed, "CFG_USER_OTHER_FULLNAME", c.user_other_fullname),
+                Replaceable(preseed, "CFG_USER_OTHER_PASSWORD", c.user_other_password),
+                Replaceable(preseed, "CFG_GRUB_INSTALL_DEVICE", c.grub_install_device),
+                Replaceable(preseed, "CFG_USER_ROOT_PASSWORD", c.user_root_password),
+                Replaceable(
+                    preseed,
+                    "CFG_USER_ROOT_ENABLED",
+                    "true" if c.user_root_enabled else "false",
+                ),
+                Replaceable(
+                    preseed,
+                    "CFG_USER_OTHER_ENABLED",
+                    "true" if c.user_other_enabled else "false",
+                ),
+            ]
+        return rules

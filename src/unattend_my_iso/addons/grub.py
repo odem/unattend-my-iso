@@ -61,20 +61,26 @@ class GrubAddon(UmiAddon):
         theme = args.addons.grub.grub_theme
         sleeptime = args.addons.grub.sleeptime
         buildtime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        return [
-            Replaceable(grub, "CFG_THEME", theme),
-            Replaceable(grub, "CFG_KERNEL", kernel),
-            Replaceable(grub, "CFG_TYPE", name),
-            Replaceable(grub, "CFG_HOST", hostname),
-            Replaceable(grub, "CFG_IP", ip),
-            Replaceable(grub, "CFG_BUILDTIME", buildtime),
-            Replaceable(grub, "CFG_VERSION", version),
-            Replaceable(grub, "CFG_SLEEPTIME", str(sleeptime)),
-            Replaceable(grub, "CFG_TIMEOUT", str(timeout)),
-            Replaceable(themefile, "CFG_TYPE", name),
-            Replaceable(themefile, "CFG_HOST", hostname),
-            Replaceable(themefile, "CFG_DOMAIN", domain),
-            Replaceable(themefile, "CFG_IP", hostname),
-            Replaceable(themefile, "CFG_KERNEL", kernel),
-            Replaceable(themefile, "CFG_VERSION", version),
-        ]
+        rules = []
+        if os.path.exists(grub):
+            rules += [
+                Replaceable(grub, "CFG_THEME", theme),
+                Replaceable(grub, "CFG_KERNEL", kernel),
+                Replaceable(grub, "CFG_TYPE", name),
+                Replaceable(grub, "CFG_HOST", hostname),
+                Replaceable(grub, "CFG_IP", ip),
+                Replaceable(grub, "CFG_BUILDTIME", buildtime),
+                Replaceable(grub, "CFG_VERSION", version),
+                Replaceable(grub, "CFG_SLEEPTIME", str(sleeptime)),
+                Replaceable(grub, "CFG_TIMEOUT", str(timeout)),
+            ]
+        if os.path.exists(themefile):
+            rules += [
+                Replaceable(themefile, "CFG_TYPE", name),
+                Replaceable(themefile, "CFG_HOST", hostname),
+                Replaceable(themefile, "CFG_DOMAIN", domain),
+                Replaceable(themefile, "CFG_IP", hostname),
+                Replaceable(themefile, "CFG_KERNEL", kernel),
+                Replaceable(themefile, "CFG_VERSION", version),
+            ]
+        return rules

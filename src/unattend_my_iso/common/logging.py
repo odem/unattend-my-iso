@@ -1,20 +1,33 @@
 import logging
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger()
+LOGGER = None
+
+
+def init_logger(level: int):
+    global LOGGER
+    logging.basicConfig(level=level)
+    LOGGER = logging.getLogger()
+
+
+def log_message(msg: str, level: int):
+    global LOGGER
+    if LOGGER is not None:
+        LOGGER.log(msg=msg, level=level)
+    else:
+        print(f"No Logger: {msg}")
 
 
 def log_debug(msg: str):
-    logger.log(msg=msg, level=logging.DEBUG)
+    log_message(msg=msg, level=logging.DEBUG)
 
 
 def log_info(msg: str):
-    logger.log(msg=msg, level=logging.INFO)
+    log_message(msg=msg, level=logging.INFO)
 
 
 def log_warn(msg: str):
-    logger.log(msg=msg, level=logging.WARN)
+    log_message(msg=msg, level=logging.WARN)
 
 
 def log_error(msg: str):
-    logger.log(msg=msg, level=logging.ERROR)
+    log_message(msg=msg, level=logging.ERROR)
