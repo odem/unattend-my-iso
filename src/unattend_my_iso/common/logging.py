@@ -5,7 +5,11 @@ LOGGER = None
 
 def init_logger(level: int):
     global LOGGER
-    logging.basicConfig(level=level)
+    logging.basicConfig(
+        level=level,
+        format="[%(levelname)6s] %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
     LOGGER = logging.getLogger()
 
 

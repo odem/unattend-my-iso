@@ -1,6 +1,6 @@
 from dataclasses import dataclass, fields, is_dataclass
 from typing import Any, Optional
-from unattend_my_iso.cli.cli_reader import CommandlineReader
+from unattend_my_iso.core.reader.cli_reader import CommandlineReader
 from unattend_my_iso.common.args import (
     AddonArgs,
     AddonArgsAnswerFile,

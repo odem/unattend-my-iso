@@ -78,9 +78,9 @@ class UmiIsoGenerator:
             shell=True,
             check=True,
         )
-        log_debug(f"Deleting irmod: {path_mod}")
+        log_debug(f"Delete irmod : {path_mod}")
         shutil.rmtree(path_mod, ignore_errors=False)
-        log_info(f"Created irmod : {path_src}")
+        log_info(f"Created irmod: {path_src}")
 
     def create_efidisk_windows(self, args: TaskConfig, infolder: str):
         mntpath = args.sys.mnt_path

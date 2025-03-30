@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Optional
 from unattend_my_iso.common.config import TemplateConfig
 from unattend_my_iso.common.logging import log_error
-from unattend_my_iso.common.tomlreader import TomlReader
+from unattend_my_iso.core.reader.toml_reader import TomlReader
 
 
 def read_templates_isos(parent_folder: str) -> dict[str, TemplateConfig]:

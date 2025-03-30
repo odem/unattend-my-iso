@@ -30,7 +30,6 @@ class PostinstallAddon(UmiAddon):
             postfile = f"{dstpost}/postinstall.bash"
             if args.addons.postinstall.enable_grub_theme:
                 os.makedirs(dsttheme, exist_ok=True)
-                log_debug(f"LOG_DEBUG: {srctheme} -> {dsttheme}")
                 if self.files.cp(srctheme, dsttheme) is False:
                     return False
                 rules = self._create_replacements_theme(args, dstthemefile)

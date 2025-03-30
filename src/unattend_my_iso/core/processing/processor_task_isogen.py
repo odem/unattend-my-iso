@@ -1,9 +1,8 @@
 import os
-from typing import Optional
 from unattend_my_iso.common.common import TaskResult
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.core.processing.processor_base import TaskProcessorBase
-from unattend_my_iso.common.logging import log_debug, log_error, log_info
+from unattend_my_iso.common.logging import log_info
 
 
 class TaskProcessorIsogen(TaskProcessorBase):
@@ -65,115 +64,6 @@ class TaskProcessorIsogen(TaskProcessorBase):
             return self._get_error_result("iso not generated")
         return self._get_success_result()
 
-    def _generate_iso(self, args: TaskConfig, template: TemplateConfig) -> bool:
-        dst = self.files._get_path_isopath(args)
-        fullinter = self.files._get_path_intermediate(args)
-        created = self.isogen.create_iso(
-            args, template, fullinter, template.name, dst, args.target.file_mbr
-        )
-        if created is True:
-            log_info(f"Created ISO   : {dst}")
-        return created
-
-    def _prepare_bootloader(self, args: TaskConfig, template: TemplateConfig) -> bool:
-        if template.iso_type == "windows":
-            return self._create_efidisk_windows(args)
-        else:
-            return self._create_irmod_linux(args)
-
-    def _create_efidisk_windows(self, args: TaskConfig) -> bool:
-        dstinter = self.files._get_path_intermediate(args)
-        try:
-            if self.isogen.create_efidisk_windows(args, dstinter) is False:
-                log_error(f"Error creating efidisk for windows: {dstinter}")
-                return False
-        except Exception as exe:
-            log_error(f"Exception: {exe}")
-        return True
-
-    def _create_irmod_linux(self, args: TaskConfig) -> bool:
-        dstinter = self.files._get_path_intermediate(args)
-        modpath = f"{dstinter}/irmod"
-        initrdlist = self._extract_ramdisks(dstinter)
-        try:
-            for initrd in initrdlist:
-                subdir = os.path.dirname(initrd)
-                if subdir in args.addons.grub.initrd_list:
-                    if self.isogen.create_irmod(subdir, modpath, dstinter) is False:
-                        log_error(f"Error creating irmod: {subdir}")
-                        return False
-                else:
-                    log_info(f"Skipped irmod : {initrd}")
-        except Exception as exe:
-            log_error(f"Exception: {exe}")
-        return True
-
-    def _extract_ramdisks(self, path: str) -> list[str]:
-        matches = []
-        for root, _, files in os.walk(path):
-            for file in files:
-                if file.startswith("initrd") and file.endswith(".gz"):
-                    filepath = os.path.join(root, file)
-                    filepath = filepath.removeprefix(path)
-                    if filepath.startswith("/"):
-                        filepath = filepath.removeprefix("/")
-                    matches.append(filepath)
-        return matches
-
-    def _copy_addons(self, args: TaskConfig, template: TemplateConfig) -> bool:
-        if args.addons.answerfile.answerfile_enabled:
-            self._copy_addon("answerfile", args, template)
-        if args.addons.grub.grub_enabled:
-            self._copy_addon("grub", args, template)
-        if args.addons.ssh.ssh_enabled:
-            self._copy_addon("ssh", args, template)
-        if args.addons.postinstall.postinstall_enabled:
-            self._copy_addon("postinstall", args, template)
-        return True
-
-    def _copy_addon(
-        self, name: str, args: TaskConfig, template: TemplateConfig
-    ) -> bool:
-        addon = self.addons[name]
-        success = addon.integrate_addon(args, template)
-        log_info(f"Addon update  : {addon.addon_name} -> {success}")
-        return success
-
-    def _extract_iso_contents(self, args: TaskConfig, template: TemplateConfig) -> bool:
-        dir_mount = self.files._get_path_mountpath(args)
-        file_mount = self.files._get_path_mountfile(args, template)
-        dir_intermediate = self.files._get_path_intermediate(args)
-        self.files.unmount_folder(dir_mount)
-        if self.files.mount_folder(file_mount, dir_mount):
-            os.makedirs(dir_intermediate, exist_ok=True)
-            copied = self.files.copy_folder_iso(dir_mount, dir_intermediate)
-            copied = self.files.chmod(dir_intermediate, privilege=0o200)
-            self.files.unmount_folder(dir_mount)
-            if copied:
-                log_info(f"Extracted ISO : {file_mount}")
-                return True
-        return False
-
-    def _extract_virtio_contents(
-        self, args: TaskConfig, template: TemplateConfig
-    ) -> bool:
-        if template.virtio_name == "":
-            return True
-        dir_mount = self.files._get_path_mountvirtio(args, template)
-        file_mount = self.files._get_path_isovirtio(args, template)
-        dir_intermediate = self.files._get_path_intermediate(args)
-        dst = f"{dir_intermediate}/umi/virtio"
-        # self.files.unmount_folder(dir_mount)
-        if self.files.mount_folder(file_mount, dir_mount, "loop"):
-            os.makedirs(dst, exist_ok=True)
-            copied = self.files.copy_folder_iso(dir_mount, dst)
-            copied = self.files.chmod(dst, privilege=0o200)
-            self.files.unmount_folder(dir_mount)
-            if copied:
-                log_info(f"Copied virt : {file_mount}")
-                return True
-        return False
-
     def _ensure_task_iso(self, args: TaskConfig, template: TemplateConfig) -> bool:
         if template.virtio_name != "":
             srcvirtio = self.files._get_path_isovirtio(args, template)
@@ -195,8 +85,66 @@ class TaskProcessorIsogen(TaskProcessorBase):
             log_info(f"Download ISO  : {srciso}")
             return self._download_file(args, template.iso_url, template.iso_name)
 
-    def _get_task_template(self, args: TaskConfig) -> Optional[TemplateConfig]:
-        name = args.target.template
-        if name in self.templates.keys():
-            return self.templates[name]
-        return None
+    def _extract_iso_contents(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        dir_mount = self.files._get_path_mountpath(args)
+        file_mount = self.files._get_path_mountfile(args, template)
+        dir_intermediate = self.files._get_path_intermediate(args)
+        self.files.unmount_folder(dir_mount)
+        if self.files.mount_folder(file_mount, dir_mount):
+            os.makedirs(dir_intermediate, exist_ok=True)
+            copied = self.files.copy_folder_iso(dir_mount, dir_intermediate)
+            copied = self.files.chmod(dir_intermediate, privilege=0o200)
+            self.files.unmount_folder(dir_mount)
+            if copied:
+                log_info(f"Extracted ISO: {file_mount}")
+                return True
+        return False
+
+    def _extract_virtio_contents(
+        self, args: TaskConfig, template: TemplateConfig
+    ) -> bool:
+        if template.virtio_name == "":
+            return True
+        dir_mount = self.files._get_path_mountvirtio(args, template)
+        file_mount = self.files._get_path_isovirtio(args, template)
+        dir_intermediate = self.files._get_path_intermediate(args)
+        dst = f"{dir_intermediate}/umi/virtio"
+        if self.files.mount_folder(file_mount, dir_mount, "loop"):
+            os.makedirs(dst, exist_ok=True)
+            copied = self.files.copy_folder_iso(dir_mount, dst)
+            copied = self.files.chmod(dst, privilege=0o200)
+            self.files.unmount_folder(dir_mount)
+            if copied:
+                log_info(f"Copied virt : {file_mount}")
+                return True
+        return False
+
+    def _copy_addons(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        if args.addons.answerfile.answerfile_enabled:
+            if self._copy_addon("answerfile", args, template) is False:
+                return False
+        if args.addons.grub.grub_enabled:
+            if self._copy_addon("grub", args, template) is False:
+                return False
+        if args.addons.ssh.ssh_enabled:
+            if self._copy_addon("ssh", args, template) is False:
+                return False
+        if args.addons.postinstall.postinstall_enabled:
+            if self._copy_addon("postinstall", args, template) is False:
+                return False
+        return True
+
+    def _prepare_bootloader(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        if template.iso_type == "windows":
+            return self._create_efidisk_windows(args)
+        return self._create_irmod_linux(args)
+
+    def _generate_iso(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        dst = self.files._get_path_isopath(args)
+        fullinter = self.files._get_path_intermediate(args)
+        if self.isogen.create_iso(
+            args, template, fullinter, template.name, dst, args.target.file_mbr
+        ):
+            log_info(f"Created ISO  : {dst}.{args.target.file_extension}")
+            return True
+        return False

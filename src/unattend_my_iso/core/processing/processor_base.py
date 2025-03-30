@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 from unattend_my_iso.addons.answerfile import AnswerFileAddon
 from unattend_my_iso.addons.grub import GrubAddon
 from unattend_my_iso.addons.addon_base import UmiAddon
@@ -10,7 +11,7 @@ from unattend_my_iso.core.files.file_manager import UmiFileManager
 from unattend_my_iso.core.iso.iso_generator import UmiIsoGenerator
 from unattend_my_iso.core.vm.hypervisor_base import UmiHypervisorBase
 from unattend_my_iso.core.vm.hypervisor_kvm import UmiHypervisorKvm
-from unattend_my_iso.common.logging import log_debug
+from unattend_my_iso.common.logging import log_debug, log_error, log_info
 from unattend_my_iso.common.config import (
     SysConfig,
     TaskConfig,
@@ -36,6 +37,53 @@ class TaskProcessorBase:
         self._get_addons()
         self._get_templates()
 
+    def _create_efidisk_windows(self, args: TaskConfig) -> bool:
+        dstinter = self.files._get_path_intermediate(args)
+        try:
+            if self.isogen.create_efidisk_windows(args, dstinter) is False:
+                log_error(f"Error creating efidisk for windows: {dstinter}")
+                return False
+        except Exception as exe:
+            log_error(f"Exception: {exe}")
+        return True
+
+    def _create_irmod_linux(self, args: TaskConfig) -> bool:
+        dstinter = self.files._get_path_intermediate(args)
+        modpath = f"{dstinter}/irmod"
+        initrdlist = self._extract_ramdisks(dstinter)
+        try:
+            for initrd in initrdlist:
+                subdir = os.path.dirname(initrd)
+                if subdir in args.addons.grub.initrd_list:
+                    if self.isogen.create_irmod(subdir, modpath, dstinter) is False:
+                        log_error(f"Error creating irmod: {subdir}")
+                        return False
+                else:
+                    log_info(f"Skipped irmod: {initrd}")
+        except Exception as exe:
+            log_error(f"Exception: {exe}")
+        return True
+
+    def _extract_ramdisks(self, path: str) -> list[str]:
+        matches = []
+        for root, _, files in os.walk(path):
+            for file in files:
+                if file.startswith("initrd") and file.endswith(".gz"):
+                    filepath = os.path.join(root, file)
+                    filepath = filepath.removeprefix(path)
+                    if filepath.startswith("/"):
+                        filepath = filepath.removeprefix("/")
+                    matches.append(filepath)
+        return matches
+
+    def _copy_addon(
+        self, name: str, args: TaskConfig, template: TemplateConfig
+    ) -> bool:
+        addon = self.addons[name]
+        success = addon.integrate_addon(args, template)
+        log_info(f"Addon update : {addon.addon_name} -> {success}")
+        return success
+
     def _get_addons(self):
         grub = GrubAddon()
         ssh = SshAddon()
@@ -50,9 +98,12 @@ class TaskProcessorBase:
 
     def _get_templates(self):
         self.templates = read_templates_isos(self.sysconfig.template_path)
-        # log_debug("Enumerate Templates:")
-        # for t in self.templates.values():
-        #     log_debug(f" -- Template:  {t.name}")
+
+    def _get_task_template(self, args: TaskConfig) -> Optional[TemplateConfig]:
+        name = args.target.template
+        if name in self.templates.keys():
+            return self.templates[name]
+        return None
 
     def _download_file(self, args: TaskConfig, url: str, name: str) -> bool:
         fullname = self.files._get_path_isofile(args)

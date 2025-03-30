@@ -1,5 +1,5 @@
 import logging
-from unattend_my_iso.cli.cli_reader import CommandlineReader
+from unattend_my_iso.core.reader.cli_reader import CommandlineReader
 from unattend_my_iso.common.logging import init_logger
 from unattend_my_iso.core.processing.processor import TaskProcessor
 
