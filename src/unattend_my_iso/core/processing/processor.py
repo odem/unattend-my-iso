@@ -1,8 +1,5 @@
 from unattend_my_iso.common.common import TaskResult
-from unattend_my_iso.common.config import (
-    TaskConfig,
-    get_config,
-)
+from unattend_my_iso.common.config import TaskConfig, get_config
 from unattend_my_iso.core.processing.processor_task_isogen import TaskProcessorIsogen
 from unattend_my_iso.core.processing.processor_task_vmrun import TaskProcessorVmRun
 from unattend_my_iso.common.logging import log_debug, log_error

@@ -20,7 +20,26 @@ class CommandlineReader:
             usage="%(prog)s [options]",
             formatter_class=argparse.RawTextHelpFormatter,
             description=textwrap.dedent("Builds and runs unattended iso images"),
-            epilog="",
+            epilog="""\
+    Examples:
+    --------------------------------------------------
+
+    High Verbosity:
+        python3 -m src.unattend_my_iso.main -rv 3
+
+    Build ISO with template debian12:
+        python3 -m src.unattend_my_iso.main -tt debian12
+
+    Build ISO manually:
+        python3 -m src.unattend_my_iso.main -tt debian12 -tp extract
+        python3 -m src.unattend_my_iso.main -tt debian12 -tp addons
+        python3 -m src.unattend_my_iso.main -tt debian12 -tp irmod
+        python3 -m src.unattend_my_iso.main -tt debian12 -tp iso
+
+    Run ISO:
+        python3 -m src.unattend_my_iso.main -tt debian12 -tp run
+
+            """,
         )
         return p
 

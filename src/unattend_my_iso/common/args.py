@@ -1,5 +1,6 @@
 import os
 from dataclasses import dataclass, field
+from typing import Any, Optional
 
 # user
 HOMEDIR = os.path.expanduser("~")
@@ -48,25 +49,7 @@ class AddonArgsAnswerFile:
     user_other_name: str = "umi"
     user_other_fullname: str = "umi"
     user_other_password: str = "umipass"
-    packages_install: list[str] = field(
-        default_factory=lambda: [
-            "openssh-server",
-            "build-essential",
-            "vim",
-            "git",
-            "make",
-            "debconf",
-            "sudo",
-            "lsb-release",
-            "net-tools",
-            "psmisc",
-            "dnsutils",
-            "fontconfig",
-            "curl",
-            "gnupg",
-            "bsdmainutils",
-        ]
-    )
+    packages_install: list[str] = field(default_factory=lambda: [])
     grub_install_device: str = "default"
 
 
@@ -120,3 +103,19 @@ class TargetArgs:
     file_mbr: str = "/usr/lib/ISOLINUX/isohdpfx.bin"
     template: str = "win11"
     proctype: str = "vmbuild_all"
+
+
+def get_group_arguments(name: str) -> Optional[Any]:
+    if name == "target":
+        return TargetArgs()
+    elif name == "run":
+        return RunArgs()
+    elif name == "addon_ssh":
+        return AddonArgsSsh()
+    elif name == "addon_grub":
+        return AddonArgsGrub()
+    elif name == "addon_postinstall":
+        return AddonArgsPostinstall()
+    elif name == "addon_answerfile":
+        return AddonArgsAnswerFile()
+    return None

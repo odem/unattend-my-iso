@@ -45,6 +45,8 @@ class PostinstallAddon(UmiAddon):
         return True
 
     def _create_config(self, args: TaskConfig) -> bool:
+        if args.addons.postinstall.create_config is False:
+            return True
         interpath = args.sys.intermediate_path
         intername = args.target.template
         dst = f"{interpath}/{intername}/umi"

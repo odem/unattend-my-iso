@@ -10,3 +10,57 @@ answerfile = "preseed.cfg"
 path_ssh = "ssh"
 path_grub = "grub"
 path_postinstall = "postinstall"
+
+[addon_answerfile]
+host_name = "debian12"
+host_domain = "local"
+net_dhcp = true
+package_install = [
+  "openssh-server",
+  "build-essential",
+  "vim",
+  "git",
+  "make",
+  "debconf",
+  "sudo",
+  "lsb-release",
+  "net-tools",
+  "psmisc",
+  "dnsutils",
+  "fontconfig",
+  "curl",
+  "gnupg",
+  "bsdmainutils",
+]
+
+# [target]
+# file_prefix = "umispecial_"
+# [run]
+# instname = "templatename123"
+# [addon_grub]
+# grub_enabled = false
+# grub_theme = "showroom"
+# grub_icons = "light"
+# [addon_postinstall]
+# postinstall_enabled = false
+# create_config = false
+# [addon_answerfile]
+# host_name = "TOML"
+# host_domain = "TOML_DOMAIN"
+# package_install = [
+#   "openssh-server",
+#   "build-essential",
+#   "vim",
+#   "git",
+#   "make",
+#   "debconf",
+#   "sudo",
+#   "lsb-release",
+#   "net-tools",
+#   "psmisc",
+#   "dnsutils",
+#   "fontconfig",
+#   "curl",
+#   "gnupg",
+#   "bsdmainutils",
+# ]
