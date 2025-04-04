@@ -9,7 +9,8 @@ iso_type = "linux"
 answerfile = "preseed.cfg"
 path_ssh = "ssh"
 path_grub = "grub"
-path_postinstall = "postinstall"
+path_postinstall = ""
+file_postinstall = "postinstall.bash"
 
 [addon_answerfile]
 host_name = "debian12"
@@ -37,12 +38,13 @@ package_install = [
 # file_prefix = "umispecial_"
 # [run]
 # instname = "templatename123"
-# [addon_grub]
+[addon_grub]
 # grub_enabled = false
-# grub_theme = "showroom"
+grub_theme = "showroom"
 # grub_icons = "light"
-# [addon_postinstall]
+[addon_postinstall]
 # postinstall_enabled = false
+enable_grub_theme = true
 # create_config = false
 # [addon_answerfile]
 # host_name = "TOML"

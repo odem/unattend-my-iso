@@ -2,6 +2,7 @@ import os
 from typing_extensions import override
 from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
+from unattend_my_iso.common.logging import log_debug, log_error
 from unattend_my_iso.common.model import Replaceable
 
 
@@ -11,21 +12,24 @@ class AnswerFileAddon(UmiAddon):
 
     @override
     def integrate_addon(self, args: TaskConfig, template: TemplateConfig) -> bool:
-        src = self.files._get_path_template(args)
-        inter = self.files._get_path_intermediate(args)
-        srcpreseed = f"{src}/{template.answerfile}"
-        interpreseed = f"{inter}/{template.answerfile}"
-        if self.files.cp(srcpreseed, inter) is False:
+        if self.copy_answerfile(args, template) is False:
             return False
+        return True
 
-        if template.iso_type == "windows":
-            srcbackground = f"{src}/{self.addon_name}/background.png"
-            dstbackground = f"{inter}/umi/postinstall/images"
-            os.makedirs(dstbackground, exist_ok=True)
-            if self.files.cp(srcbackground, dstbackground) is False:
+    def copy_answerfile(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        inter = self.files._get_path_intermediate(args)
+        interpreseed = f"{inter}/{template.answerfile}"
+        srcpreseed = self.get_template_path_optional(
+            "answerfile", template.answerfile, args
+        )
+        if os.path.exists(srcpreseed):
+            if self.files.cp(srcpreseed, inter) is False:
                 return False
-        rules = self._create_replacements(args, interpreseed)
-        return self._apply_replacements(rules)
+            rules = self._create_replacements(args, interpreseed)
+            return self._apply_replacements(rules)
+        else:
+            log_error(f"Path does not exist: {srcpreseed}")
+        return False
 
     def _create_replacements(self, args: TaskConfig, preseed: str) -> list[Replaceable]:
         c = args.addons.answerfile
@@ -47,9 +51,6 @@ class AnswerFileAddon(UmiAddon):
                 Replaceable(preseed, "CFG_TIME_UTC", "true" if c.time_utc else "false"),
                 Replaceable(preseed, "CFG_TIME_ZONE", c.time_zone),
                 Replaceable(preseed, "CFG_TIME_NTP", "true" if c.time_ntp else "false"),
-                Replaceable(
-                    preseed, "CFG_PACKAGES_INSTALL", " ".join(c.packages_install)
-                ),
                 Replaceable(preseed, "CFG_USER_OTHER_NAME", c.user_other_name),
                 Replaceable(preseed, "CFG_USER_OTHER_FULLNAME", c.user_other_fullname),
                 Replaceable(preseed, "CFG_USER_OTHER_PASSWORD", c.user_other_password),
@@ -64,6 +65,9 @@ class AnswerFileAddon(UmiAddon):
                     preseed,
                     "CFG_USER_OTHER_ENABLED",
                     "true" if c.user_other_enabled else "false",
+                ),
+                Replaceable(
+                    preseed, "CFG_PACKAGES_INSTALL", " ".join(c.packages_install)
                 ),
             ]
         return rules

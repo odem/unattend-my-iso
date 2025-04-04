@@ -1,4 +1,5 @@
 from dataclasses import dataclass, fields, is_dataclass
+import os
 from typing import Any, Optional
 from unattend_my_iso.common.args import (
     AddonArgs,
@@ -20,11 +21,11 @@ DEFAULT_TEMPLATE = "debian12"
 
 @dataclass
 class SysConfig:
-    template_path: str
-    mnt_path: str
-    intermediate_path: str
-    iso_path: str
-    vm_path: str
+    path_templates: str
+    path_mnt: str
+    path_intermediate: str
+    path_iso: str
+    path_vm: str
     tool_version: str
 
 
@@ -48,15 +49,16 @@ class TemplateConfig:
     path_ssh: str
     path_grub: str
     path_postinstall: str
+    file_postinstall: str
 
 
 def get_cfg_sys(work_path: str) -> SysConfig:
     return SysConfig(
-        template_path=f"{work_path}/templates",
-        mnt_path=f"{work_path}/data/mounts",
-        intermediate_path=f"{work_path}/data/out",
-        iso_path=f"{work_path}/data/iso",
-        vm_path=f"{work_path}/data/vm",
+        path_templates=f"{work_path}/templates",
+        path_mnt=f"{work_path}/data/mounts",
+        path_intermediate=f"{work_path}/data/out",
+        path_iso=f"{work_path}/data/iso",
+        path_vm=f"{work_path}/data/vm",
         tool_version=APP_VERSION,
     )
 
@@ -85,7 +87,7 @@ def _match_group_with_template(
     if result is None or is_dataclass(result) is False:
         log_error(f"result is not a valid dataclass: {result}")
         return None
-    file_template = f"{template_path}/{template_name}/desc.toml"
+    file_template = f"{template_path}/iso/{template_name}/desc.toml"
     toml_group = read_template_group(file_template, target)
     if toml_group is None:
         log_error(f"client config is not a valid dataclass: {toml_group}")
@@ -122,6 +124,18 @@ def _get_normalized_value(obj_dest, obj_src, name: str) -> Optional[Any]:
             lowername = str(val).lower()
             if lowername in ("true", "false"):
                 val = True if lowername == "true" else False
+        if type(getattr(obj_dest, name)) is list:
+            if isinstance(getattr(obj_src, name), list):
+                testval = "".join(val)
+                if isinstance(testval, str):
+                    if testval.startswith("[") and testval.endswith("]"):
+                        testval = testval[1:-1]
+                        if testval.startswith("(") and testval.endswith(")"):
+                            testval = testval[1:-1]
+                            if "," in testval:
+                                arr = testval.split(sep=",")
+                                val = [(arr[0], arr[1])]
+                                os._exit(0)
     return val
 
 
@@ -137,27 +151,27 @@ def get_config(work_path: str) -> Optional[TaskConfig]:
     else:
         template_name = cli_target.template
         log_debug(f"Use template : {template_name}")
-    cfg_target = _match_group("target", template_name, cfg_sys.template_path)
+    cfg_target = _match_group("target", template_name, cfg_sys.path_templates)
     if cfg_target is None or isinstance(cfg_target, TargetArgs) is False:
         log_error(f"Matched target config invalid: {cfg_target}")
         return None
-    cfg_run = _match_group("run", template_name, cfg_sys.template_path)
+    cfg_run = _match_group("run", template_name, cfg_sys.path_templates)
     if cfg_run is None or isinstance(cfg_run, RunArgs) is False:
         log_error(f"Matched run config invalid: {cfg_run}")
         return None
-    cfg_ssh = _match_group("addon_ssh", template_name, cfg_sys.template_path)
+    cfg_ssh = _match_group("addon_ssh", template_name, cfg_sys.path_templates)
     if cfg_ssh is None or isinstance(cfg_ssh, AddonArgsSsh) is False:
         log_error(f"Matched addon_ssh config invalid: {cfg_ssh}")
         return None
-    cfg_grub = _match_group("addon_grub", template_name, cfg_sys.template_path)
+    cfg_grub = _match_group("addon_grub", template_name, cfg_sys.path_templates)
     if cfg_grub is None or isinstance(cfg_grub, AddonArgsGrub) is False:
         log_error(f"Matched addon_grub config invalid: {cfg_grub}")
         return None
-    cfg_post = _match_group("addon_postinstall", template_name, cfg_sys.template_path)
+    cfg_post = _match_group("addon_postinstall", template_name, cfg_sys.path_templates)
     if cfg_post is None or isinstance(cfg_post, AddonArgsPostinstall) is False:
         log_error(f"Matched addon_postinstall config invalid: {cfg_post}")
         return None
-    cfg_answer = _match_group("addon_answerfile", template_name, cfg_sys.template_path)
+    cfg_answer = _match_group("addon_answerfile", template_name, cfg_sys.path_templates)
     if cfg_answer is None or isinstance(cfg_answer, AddonArgsAnswerFile) is False:
         log_error(f"Matched addon_answerfile config invalid: {cfg_answer}")
         return None

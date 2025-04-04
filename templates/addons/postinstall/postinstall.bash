@@ -1,6 +1,6 @@
 #!/bin/bash
 
-user=CFG_USER_OTHER_NAME
+user=umi
 
 # Globals
 export DEBIAN_FRONTEND=noninteractive

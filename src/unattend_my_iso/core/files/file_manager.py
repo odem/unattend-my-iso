@@ -108,17 +108,17 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
         return True
 
     def _get_path_isovirtio(self, args: TaskConfig, template: TemplateConfig) -> str:
-        isopath = args.sys.iso_path
+        isopath = args.sys.path_iso
         isoname = template.virtio_name
         return f"{isopath}/{isoname}"
 
     def _get_path_isosource(self, args: TaskConfig, template: TemplateConfig) -> str:
-        isopath = args.sys.iso_path
+        isopath = args.sys.path_iso
         isoname = template.iso_name
         return f"{isopath}/{isoname}"
 
     def _get_path_isopath(self, args: TaskConfig) -> str:
-        isopath = args.sys.iso_path
+        isopath = args.sys.path_iso
         isoname = args.target.template
         isoprefix = args.target.file_prefix
         return f"{isopath}/{isoprefix}{isoname}"
@@ -128,29 +128,37 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
         return f"{isopath}.{args.target.file_extension}"
 
     def _get_path_intermediate(self, args: TaskConfig) -> str:
-        interpath = args.sys.intermediate_path
+        interpath = args.sys.path_intermediate
         intername = args.target.template
         return f"{interpath}/{intername}"
 
     def _get_path_template(self, args: TaskConfig) -> str:
-        templatepath = args.sys.template_path
+        templatepath = args.sys.path_templates
         templatename = args.target.template
-        return f"{templatepath}/{templatename}"
+        return f"{templatepath}/iso/{templatename}"
+
+    def _get_path_template_addon(self, name: str, args: TaskConfig) -> str:
+        templatepath = args.sys.path_templates
+        return f"{templatepath}/addons/{name}"
+
+    def _get_path_addon_grub_theme(self, args: TaskConfig) -> str:
+        srctmpl = self._get_path_template_addon("grub", args)
+        return f"{srctmpl}/themes/{args.addons.grub.grub_theme}"
 
     def _get_path_mountfile(self, args: TaskConfig, template: TemplateConfig) -> str:
-        isopath = args.sys.iso_path
+        isopath = args.sys.path_iso
         isoname = template.iso_name
         return f"{isopath}/{isoname}"
 
     def _get_path_mountvirtio(self, args: TaskConfig, template: TemplateConfig) -> str:
-        isopath = args.sys.mnt_path
+        isopath = args.sys.path_mnt
         isoname = template.virtio_name
         return f"{isopath}/{isoname}"
 
     def _get_path_mountpath(self, args: TaskConfig) -> str:
-        mntpath = args.sys.mnt_path
+        mntpath = args.sys.path_mnt
         targetname = args.target.template
         return f"{mntpath}/{targetname}"
 
     def _get_path_vm(self, args: TaskConfig):
-        return f"{args.sys.vm_path}/{args.run.instname}"
+        return f"{args.sys.path_vm}/{args.run.instname}"

@@ -3,12 +3,94 @@ import subprocess
 from typing_extensions import override
 from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
-from unattend_my_iso.common.logging import log_debug
+from unattend_my_iso.common.logging import log_debug, log_error
 
 
 class SshAddon(UmiAddon):
     def __init__(self):
         UmiAddon.__init__(self, "ssh")
+
+    @override
+    def integrate_addon(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        if self.copy_keyfiles(args, template) is False:
+            return False
+        if self.copy_authorized_keys(args, template) is False:
+            return False
+        if self.copy_client_config(args, template) is False:
+            return False
+        if self.copy_daemon_config(args, template) is False:
+            return False
+        return True
+
+    def copy_keyfiles(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        dst = self.files._get_path_intermediate(args)
+        keyfile = args.addons.ssh.config_key
+        srckeypriv = self.get_template_path_optional(
+            "ssh", args.addons.ssh.config_key, args
+        )
+        srckeypub = f"{srckeypriv}.pub"
+        dstssh = f"{dst}/umi/ssh"
+        if os.path.exists(srckeypriv):
+            os.makedirs(dstssh, exist_ok=True)
+            if args.addons.ssh.keygen:
+                if self._generate_key(srckeypriv) is False:
+                    log_error("Generate key failed")
+                    return False
+            if srckeypriv != "" and os.path.exists(srckeypriv):
+                log_debug(f"File Copy    : {srckeypriv}")
+                if self.files.cp(srckeypriv, f"{dstssh}/{keyfile}") is False:
+                    log_error("Copy key priv failed")
+                    return False
+                log_debug(f"File Copy    : {srckeypub}")
+                if self.files.cp(srckeypub, f"{dstssh}/{keyfile}.pub") is False:
+                    log_error("Copy key pub failed")
+                    return False
+            return True
+        return False
+
+    def copy_authorized_keys(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        filename = args.addons.ssh.config_auth
+        appendfile = args.addons.ssh.config_auth_append
+        srcssh = self.get_template_path_optional("ssh", filename, args)
+        dst = self.files._get_path_intermediate(args)
+        dstssh = f"{dst}/umi/ssh/{filename}"
+        if os.path.exists(srcssh):
+            if filename != "" and os.path.exists(srcssh):
+                log_debug(f"File Copy    : {srcssh}")
+                if self.files.cp(srcssh, dstssh) is False:
+                    return False
+                if appendfile != "" and os.path.exists(appendfile):
+                    contents = self.files.read_file(appendfile)
+                    return self.files.append_to_file(dstssh, contents)
+            return True
+        return False
+
+    def copy_client_config(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        dst = self.files._get_path_intermediate(args)
+        filename = args.addons.ssh.config_client
+        srcssh = self.get_template_path_optional("ssh", filename, args)
+        dstssh = f"{dst}/umi/ssh/{filename}"
+        if os.path.exists(srcssh):
+            os.makedirs(dstssh, exist_ok=True)
+            if filename != "" and os.path.exists(f"{srcssh}"):
+                log_debug(f"File Copy    : {srcssh}")
+                if self.files.cp(srcssh, dstssh) is False:
+                    return False
+            return True
+        return False
+
+    def copy_daemon_config(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        dst = self.files._get_path_intermediate(args)
+        filename = args.addons.ssh.config_daemon
+        srcssh = self.get_template_path_optional("ssh", filename, args)
+        dstssh = f"{dst}/umi/ssh/{filename}"
+        if os.path.exists(srcssh):
+            if filename != "" and os.path.exists(srcssh):
+                log_debug(f"File Copy    : {srcssh} {dstssh}")
+                if self.files.cp(srcssh, dstssh) is False:
+                    return False
+            return True
+        return False
 
     def _generate_key(self, keyfile: str):
         msg = "y\n"
@@ -20,49 +102,3 @@ class SshAddon(UmiAddon):
             capture_output=False,
             text=False,
         )
-
-    @override
-    def integrate_addon(self, args: TaskConfig, template: TemplateConfig) -> bool:
-        templatepath = args.sys.template_path
-        templatename = args.target.template
-        interpath = args.sys.intermediate_path
-        intername = args.target.template
-        f_client = args.addons.ssh.config_client
-        f_daemon = args.addons.ssh.config_daemon
-        f_auth = args.addons.ssh.config_auth
-        f_authapp = args.addons.ssh.config_auth_append
-        f_key = args.addons.ssh.config_key
-        dst = f"{interpath}/{intername}"
-        src = f"{templatepath}/{templatename}"
-        srcssh = f"{src}/{template.path_ssh}"
-        dstssh = f"{dst}/umi/ssh"
-        srcsshkey = f"{srcssh}/{f_key}"
-
-        os.makedirs(dstssh, exist_ok=True)
-        if args.addons.ssh.keygen:
-            if self._generate_key(srcsshkey) is False:
-                return False
-        if f_key != "" and os.path.exists(srcsshkey):
-            log_debug(f"File Copy    : {srcsshkey}")
-            if self.files.cp(srcsshkey, f"{dstssh}/{f_key}") is False:
-                return False
-            log_debug(f"File Copy    : {srcssh}/{f_key}.pub")
-            if self.files.cp(f"{srcssh}/{f_key}.pub", f"{dstssh}/{f_key}.pub") is False:
-                return False
-        if f_client != "" and os.path.exists(f"{srcssh}/{f_client}"):
-            log_debug(f"File Copy    : {srcssh}/{f_client}")
-            if self.files.cp(f"{srcssh}/{f_client}", f"{dstssh}/{f_client}") is False:
-                return False
-        if f_daemon != "" and os.path.exists(f"{srcssh}/{f_daemon}"):
-            log_debug(f"File Copy    : {srcssh}/{f_daemon}")
-            if self.files.cp(f"{srcssh}/{f_daemon}", f"{dstssh}/{f_daemon}") is False:
-                return False
-        if f_auth != "" and os.path.exists(f"{srcssh}/{f_auth}"):
-            log_debug(f"File Copy    : {srcssh}/{f_auth}")
-            if self.files.cp(f"{srcssh}/{f_auth}", f"{dstssh}/{f_auth}") is False:
-                return False
-            if f_authapp != "" and os.path.exists(f_authapp):
-                contents = self.files.read_file(f_authapp)
-                self.files.append_to_file(f"{dstssh}/{f_auth}", contents)
-
-        return True

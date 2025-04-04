@@ -83,7 +83,7 @@ class UmiIsoGenerator:
         log_info(f"Created irmod: {path_src}")
 
     def create_efidisk_windows(self, args: TaskConfig, infolder: str):
-        mntpath = args.sys.mnt_path
+        mntpath = args.sys.path_mnt
         dstmount = f"{mntpath}/efiboot"
         dstmgr = f"{dstmount}/efi/boot"
         srcefi = f"{infolder}/efiboot.img"

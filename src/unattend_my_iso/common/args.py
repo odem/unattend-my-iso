@@ -17,7 +17,7 @@ class RunArgs:
     daemonize: bool = True
     uefi_ovmf_vars: str = "/usr/share/OVMF/OVMF_VARS.fd"
     uefi_ovmf_code: str = "/usr/share/OVMF/OVMF_CODE.fd"
-    net_ports: list[tuple[int, int]] = field(default_factory=lambda: [(2222, 22)])
+    net_ports: list[tuple[int, int]] = field(default_factory=lambda: [])
     net_devs: list[str] = field(default_factory=lambda: ["nat"])
     res_cpu: int = 4
     res_mem: int = 4096
@@ -57,7 +57,7 @@ class AddonArgsAnswerFile:
 class AddonArgsSsh:
     ssh_enabled: bool = True
     keygen: bool = True
-    config_client: str = "config"
+    config_client: str = ""
     config_daemon: str = "sshd_config"
     config_auth: str = "authorized_keys"
     config_auth_append: str = f"{HOMEDIR}/.ssh/id_rsa.pub"

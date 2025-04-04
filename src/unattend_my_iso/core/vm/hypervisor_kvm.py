@@ -126,7 +126,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
     def _create_static_run_command(
         self, args: TaskConfig, args_hv: HypervisorArgs
     ) -> list[str]:
-        vmdir = f"{args.sys.vm_path}/{args.run.instname}"
+        vmdir = f"{args.sys.path_vm}/{args.run.instname}"
         pidfile = f"{vmdir}/vm.pid"
         smpinfo = f"{args_hv.sys_cpu},sockets=1,cores={args_hv.sys_cpu},threads=1"
         machineinfo = "q35,kernel_irqchip=on,accel=kvm,usb=off,vmport=off,smm=on"
@@ -173,7 +173,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         return arr_cdrom
 
     def _create_uefi_args(self, args: TaskConfig, args_hv: HypervisorArgs) -> list[str]:
-        vmdir = f"{args.sys.vm_path}/{args.run.instname}"
+        vmdir = f"{args.sys.path_vm}/{args.run.instname}"
         efidisk = f"{vmdir}/OVMF_VARS.fd"
         if args_hv.uefi is True:
             if self._prepare_disk_efi(args, efidisk):
@@ -195,6 +195,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             if dev != "" and dev.startswith("nat"):
                 arr_fwd = []
                 for el in args_hv.portfwd:
+                    log_debug(f"EL: {el}")
                     arr_fwd += [f"hostfwd=tcp::{el[0]}-:{el[1]}"]
                 userstr = f'user,{",".join(arr_fwd)}'
                 arr_netdevs += ["-net", "nic,model=virtio", "-net", userstr]

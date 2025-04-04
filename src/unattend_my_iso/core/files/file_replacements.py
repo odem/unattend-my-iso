@@ -16,5 +16,5 @@ class UmiFileReplacements:
             log_debug(f"File Replace : '{find}' with '{replace}' in {file_path}")
             return True
         except Exception as e:
-            log_error(f"An error occurred: {e}")
+            log_error(f"An error occurred during file replacemnt: {file_path} -> {e}")
         return False

@@ -2,7 +2,7 @@ import os
 from typing_extensions import override
 from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
-from unattend_my_iso.common.logging import log_debug
+from unattend_my_iso.common.logging import log_debug, log_error
 from unattend_my_iso.common.model import Replaceable
 
 
@@ -12,45 +12,90 @@ class PostinstallAddon(UmiAddon):
 
     @override
     def integrate_addon(self, args: TaskConfig, template: TemplateConfig) -> bool:
-        templatepath = args.sys.template_path
-        templatename = args.target.template
-        interpath = args.sys.intermediate_path
-        intername = args.target.template
-        srctmpl = f"{templatepath}/{templatename}"
-        srctheme = f"{srctmpl}/grub/themes/{args.addons.grub.grub_theme}"
-        dst = f"{interpath}/{intername}/umi"
-        dstpost = f"{dst}/postinstall"
-        dsttheme = f"{dst}/theme"
-        dstthemefile = f"{dsttheme}/theme.txt"
-        if template.iso_type == "windows":
-            postfolder = f"{srctmpl}/{template.path_postinstall}"
-            postfile = f"{dstpost}/postinstall.bat"
-        else:
-            postfolder = f"{srctmpl}/{template.path_postinstall}"
-            postfile = f"{dstpost}/postinstall.bash"
-            if args.addons.postinstall.enable_grub_theme:
-                os.makedirs(dsttheme, exist_ok=True)
-                if self.files.cp(srctheme, dsttheme) is False:
-                    return False
-                rules = self._create_replacements_theme(args, dstthemefile)
-                if self._apply_replacements(rules) is False:
-                    return False
-        if self.files.cp(postfolder, dstpost) is False:
+        if self.copy_postinstall(args, template) is False:
+            return False
+        if self.copy_theme(args, template) is False:
             return False
         if self._create_config(args) is False:
+            return False
+        return True
+
+    def copy_postinstall(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        if self.copy_postinstaller_dir(args, template) is False:
+            return False
+        postfile = self.copy_postinstaller_file(args, template)
+        if postfile == "":
             return False
         rules = self._create_replacements_postinst(args, postfile)
         if self._apply_replacements(rules) is False:
             return False
         return True
 
+    def copy_postinstaller_file(
+        self, args: TaskConfig, template: TemplateConfig
+    ) -> str:
+        srctmpl = self.files._get_path_template(args)
+        srcaddon = self.files._get_path_template_addon("postinstall", args)
+        interpath = self.files._get_path_intermediate(args)
+        postfile = f"{srctmpl}/{template.file_postinstall}"
+        dst = f"{interpath}/umi/postinstall"
+        dstfile = f"{dst}/{template.file_postinstall}"
+        if os.path.exists(dst) is False:
+            os.makedirs(dst)
+        if os.path.exists(postfile) is False:
+            postfile = f"{srcaddon}/{template.file_postinstall}"
+        if template.file_postinstall != "" and os.path.exists(postfile) is False:
+            log_error("Postinstall file does not exist")
+            return ""
+        if self.files.cp(postfile, dstfile) is False:
+            return ""
+        return postfile
+
+    def copy_postinstaller_dir(
+        self, args: TaskConfig, template: TemplateConfig
+    ) -> bool:
+        interpath = self.files._get_path_intermediate(args)
+        dst = f"{interpath}/umi/postinstall"
+        dstfile = f"{interpath}/umi/postinstall/{template.file_postinstall}"
+        srcpath = self.get_template_path_optional(
+            "postinstall", template.path_postinstall, args
+        )
+        if template.path_postinstall != "":
+            if os.path.exists(srcpath):
+                os.makedirs(dst, exist_ok=True)
+                if self.files.cp(srcpath, dstfile) is False:
+                    log_error("Postinstall copy failed")
+                    return False
+        return True
+
+    def copy_theme(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        srcpath = self.get_template_path_optional(
+            "grub", f"themes/{args.addons.grub.grub_theme}", args
+        )
+        interpath = self.files._get_path_intermediate(args)
+        dst = f"{interpath}/umi/theme"
+        dstthemefile = f"{dst}/theme.txt"
+        if template.iso_type == "windows":
+            return True
+
+        if args.addons.postinstall.enable_grub_theme:
+            if os.path.exists(srcpath) is False:
+                log_error(f"Themefiles not available: {args.addons.grub.grub_theme}")
+                return False
+            if os.path.exists(srcpath):
+                os.makedirs(dst, exist_ok=True)
+            if self.files.cp(srcpath, dst) is False:
+                return False
+            rules = self._create_replacements_theme(args, dstthemefile)
+            if self._apply_replacements(rules) is False:
+                return False
+        return True
+
     def _create_config(self, args: TaskConfig) -> bool:
         if args.addons.postinstall.create_config is False:
             return True
-        interpath = args.sys.intermediate_path
-        intername = args.target.template
-        dst = f"{interpath}/{intername}/umi"
-        dstconf = f"{dst}/config"
+        interpath = self.files._get_path_intermediate(args)
+        dstconf = f"{interpath}/umi/config"
         dstconffile = f"{dstconf}/env.bash"
         os.makedirs(dstconf, exist_ok=True)
         name = args.target.template

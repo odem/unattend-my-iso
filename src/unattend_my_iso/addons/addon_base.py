@@ -1,6 +1,8 @@
+import os
 import re
 import glob
 from abc import ABC, abstractmethod
+from unattend_my_iso.common.logging import log_debug, log_error
 from unattend_my_iso.common.model import Replaceable
 from unattend_my_iso.core.files.file_manager import UmiFileManager
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
@@ -16,13 +18,25 @@ class UmiAddon(ABC):
         self.files = UmiFileManager()
         self.replacements = []
 
-    def do_replacements(self) -> bool:
-        for rule in self.replacements:
-            self.files.replace_string(rule.filename, rule.searchterm, rule.replacement)
-        return True
+    def get_template_path_optional(
+        self, addon: str, subpath: str, args: TaskConfig
+    ) -> str:
+        srctmpl = self.files._get_path_template(args)
+        srcaddon = self.files._get_path_template_addon(addon, args)
+        srcsub = f"{srctmpl}/{addon}/{subpath}"
+
+        if subpath != "":
+            if os.path.exists(srcsub) is False:
+                log_debug(f"Not in searchpath: {srcsub}")
+                srcsub = f"{srcaddon}/{subpath}"
+                if os.path.exists(srcsub) is False:
+                    log_error(f"Not in searchpath: {srcsub}")
+                    return ""
+        return srcsub
 
     def _extract_kernel_version_image(self, path: str) -> str:
-        pattern = f"{path}/pool/main/l/linux-signed-amd64/linux-image-*-amd64_*.deb"
+        searchfolder = f"{path}/pool/main/l/linux-signed-amd64"
+        pattern = f"{searchfolder}/linux-image-*-amd64_*.deb"
         files = glob.glob(pattern)
         version_regex = re.compile(r"linux-image-(\d+\.\d+\.\d+-\d+)-amd*")
         for file in files:
@@ -33,7 +47,8 @@ class UmiAddon(ABC):
         return "X.Y.Z-W"
 
     def _extract_kernel_version_headers(self, path: str) -> str:
-        pattern = f"{path}/pool/main/l/linux/linux-headers-*_all.deb"
+        searchfolder = f"{path}/pool/main/l"
+        pattern = f"{searchfolder}/linux-headers-*_all.deb"
         files = glob.glob(pattern)
         version_regex = re.compile(r"linux-headers-(\d+\.\d+\.\d+-\d+)-common")
         for file in files:
@@ -47,12 +62,19 @@ class UmiAddon(ABC):
         kernel = self._extract_kernel_version_headers(path)
         if kernel == "X.Y.Z-W":
             kernel = self._extract_kernel_version_image(path)
+        if kernel == "X.Y.Z-W":
+            log_debug(f"Kernelversion not extracted: {path}")
         return kernel
 
     def _apply_replacements(self, replacements: list[Replaceable]) -> bool:
         for rule in replacements:
             self.replacements.append(rule)
         return self.do_replacements()
+
+    def do_replacements(self) -> bool:
+        for rule in self.replacements:
+            self.files.replace_string(rule.filename, rule.searchterm, rule.replacement)
+        return True
 
     @abstractmethod
     def integrate_addon(self, args: TaskConfig, template: TemplateConfig) -> bool:

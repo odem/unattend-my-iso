@@ -44,7 +44,7 @@ class TaskProcessorBase:
                 log_error(f"Error creating efidisk for windows: {dstinter}")
                 return False
         except Exception as exe:
-            log_error(f"Exception: {exe}")
+            log_error(f"Exception on efidisk: {exe}")
         return True
 
     def _create_irmod_linux(self, args: TaskConfig) -> bool:
@@ -61,7 +61,7 @@ class TaskProcessorBase:
                 else:
                     log_info(f"Skipped irmod: {initrd}")
         except Exception as exe:
-            log_error(f"Exception: {exe}")
+            log_error(f"Exception on irmod: {exe}")
         return True
 
     def _extract_ramdisks(self, path: str) -> list[str]:
@@ -97,7 +97,8 @@ class TaskProcessorBase:
         }
 
     def _get_templates(self):
-        self.templates = read_templates_isos(self.sysconfig.template_path)
+        searchpath = f"{self.sysconfig.path_templates}/iso"
+        self.templates = read_templates_isos(searchpath)
 
     def _get_task_template(self, args: TaskConfig) -> Optional[TemplateConfig]:
         name = args.target.template
@@ -107,7 +108,7 @@ class TaskProcessorBase:
 
     def _download_file(self, args: TaskConfig, url: str, name: str) -> bool:
         fullname = self.files._get_path_isofile(args)
-        self.files.http_download(url=url, name=name, dir=self.sysconfig.iso_path)
+        self.files.http_download(url=url, name=name, dir=self.sysconfig.path_iso)
         return self.exists(fullname)
 
     def _get_success_result(self, msg: str = ""):
@@ -129,7 +130,7 @@ class TaskProcessorBase:
         log_debug(f"Addons: {args.addons}")
         log_debug(f"Target: {args.target}")
         log_debug("System:")
-        log_debug(f"  Templates -> {args.sys.template_path}")
-        log_debug(f"  Mounts    -> {args.sys.mnt_path }")
-        log_debug(f"  out       -> {args.sys.intermediate_path}")
-        log_debug(f"  Iso       -> {args.sys.iso_path}")
+        log_debug(f"  Templates -> {args.sys.path_templates}")
+        log_debug(f"  Mounts    -> {args.sys.path_mnt }")
+        log_debug(f"  out       -> {args.sys.path_intermediate}")
+        log_debug(f"  Iso       -> {args.sys.path_iso}")
