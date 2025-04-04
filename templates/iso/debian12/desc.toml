@@ -9,14 +9,14 @@ iso_type = "linux"
 answerfile = "preseed.cfg"
 path_ssh = "ssh"
 path_grub = "grub"
-path_postinstall = ""
+path_postinstall = "postinstall"
 file_postinstall = "postinstall.bash"
 
 [addon_answerfile]
 host_name = "debian12"
 host_domain = "local"
-net_dhcp = true
-package_install = [
+net_dhcp = false
+packages_install = [
   "openssh-server",
   "build-essential",
   "vim",
@@ -43,26 +43,11 @@ package_install = [
 grub_theme = "showroom"
 # grub_icons = "light"
 [addon_postinstall]
+copy_additional_scripts = [
+  "postinstall_apt.bash",
+  "postinstall_ssh.bash",
+  "postinstall_locale.bash",
+]
 # postinstall_enabled = false
 enable_grub_theme = true
 # create_config = false
-# [addon_answerfile]
-# host_name = "TOML"
-# host_domain = "TOML_DOMAIN"
-# package_install = [
-#   "openssh-server",
-#   "build-essential",
-#   "vim",
-#   "git",
-#   "make",
-#   "debconf",
-#   "sudo",
-#   "lsb-release",
-#   "net-tools",
-#   "psmisc",
-#   "dnsutils",
-#   "fontconfig",
-#   "curl",
-#   "gnupg",
-#   "bsdmainutils",
-# ]

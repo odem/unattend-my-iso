@@ -27,10 +27,10 @@ class UmiAddon(ABC):
 
         if subpath != "":
             if os.path.exists(srcsub) is False:
-                log_debug(f"Not in searchpath: {srcsub}")
+                log_debug(f"Not in searchpath: {subpath}")
                 srcsub = f"{srcaddon}/{subpath}"
                 if os.path.exists(srcsub) is False:
-                    log_error(f"Not in searchpath: {srcsub}")
+                    log_error(f"Not in searchpath: {subpath}")
                     return ""
         return srcsub
 

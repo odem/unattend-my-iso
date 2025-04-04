@@ -14,6 +14,10 @@ class PostinstallAddon(UmiAddon):
     def integrate_addon(self, args: TaskConfig, template: TemplateConfig) -> bool:
         if self.copy_postinstall(args, template) is False:
             return False
+        if self.copy_postinstaller_additional_scripts(args, template) is False:
+            return False
+        if self._copy_bashrc(args) is False:
+            return False
         if self.copy_theme(args, template) is False:
             return False
         if self._create_config(args) is False:
@@ -40,8 +44,6 @@ class PostinstallAddon(UmiAddon):
         postfile = f"{srctmpl}/{template.file_postinstall}"
         dst = f"{interpath}/umi/postinstall"
         dstfile = f"{dst}/{template.file_postinstall}"
-        if os.path.exists(dst) is False:
-            os.makedirs(dst)
         if os.path.exists(postfile) is False:
             postfile = f"{srcaddon}/{template.file_postinstall}"
         if template.file_postinstall != "" and os.path.exists(postfile) is False:
@@ -54,18 +56,35 @@ class PostinstallAddon(UmiAddon):
     def copy_postinstaller_dir(
         self, args: TaskConfig, template: TemplateConfig
     ) -> bool:
+        srcpath = self.get_template_path_optional("postinstall", "", args)
         interpath = self.files._get_path_intermediate(args)
-        dst = f"{interpath}/umi/postinstall"
-        dstfile = f"{interpath}/umi/postinstall/{template.file_postinstall}"
-        srcpath = self.get_template_path_optional(
-            "postinstall", template.path_postinstall, args
-        )
+        dstdir = f"{interpath}/umi/{template.path_postinstall}"
+        os.makedirs(dstdir, exist_ok=True)
         if template.path_postinstall != "":
             if os.path.exists(srcpath):
-                os.makedirs(dst, exist_ok=True)
-                if self.files.cp(srcpath, dstfile) is False:
+                if self.files.cp(srcpath, dstdir) is False:
                     log_error("Postinstall copy failed")
                     return False
+            else:
+                log_error(f"Invalid src path: {srcpath}")
+                return False
+        return True
+
+    def copy_postinstaller_additional_scripts(
+        self, args: TaskConfig, template: TemplateConfig
+    ) -> bool:
+        interpath = self.files._get_path_intermediate(args)
+        dst = f"{interpath}/umi/postinstall"
+
+        for filename in args.addons.postinstall.copy_additional_scripts:
+            srcpath = self.get_template_path_optional("postinstall", filename, args)
+            dstfile = f"{interpath}/umi/postinstall/{filename}"
+            if template.path_postinstall != "":
+                if os.path.exists(srcpath):
+                    os.makedirs(dst, exist_ok=True)
+                    if self.files.cp(srcpath, dstfile) is False:
+                        log_error("Postinstall copy failed")
+                        return False
         return True
 
     def copy_theme(self, args: TaskConfig, template: TemplateConfig) -> bool:
@@ -115,6 +134,20 @@ class PostinstallAddon(UmiAddon):
         if self.files.append_to_file(dstconffile, contents) is False:
             return False
         return self.files.chmod(dstconffile, 777)
+
+    def _copy_bashrc(self, args: TaskConfig) -> bool:
+        if args.addons.postinstall.bashrc_file == "":
+            return True
+        srcfile = self.get_template_path_optional(
+            "postinstall", args.addons.postinstall.bashrc_file, args
+        )
+        if os.path.exists(srcfile):
+            interpath = self.files._get_path_intermediate(args)
+            dstconf = f"{interpath}/umi/config"
+            dstconffile = f"{dstconf}/{args.addons.postinstall.bashrc_file}"
+            os.makedirs(dstconf, exist_ok=True)
+            return self.files.cp(srcfile, dstconffile)
+        return False
 
     def _create_replacements_theme(
         self, args: TaskConfig, themefile: str

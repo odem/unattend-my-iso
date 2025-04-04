@@ -69,6 +69,14 @@ class AddonArgsPostinstall:
     postinstall_enabled: bool = True
     enable_grub_theme: bool = True
     create_config: bool = True
+    bashrc_file: str = ".bashrc"
+    copy_additional_scripts: list[str] = field(
+        default_factory=lambda: [
+            "postinstall_apt.bash",
+            "postinstall_ssh.bash",
+            "postinstall_locale.bash",
+        ]
+    )
 
 
 @dataclass
