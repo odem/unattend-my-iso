@@ -46,8 +46,6 @@ class TemplateConfig:
     iso_url: str
     iso_type: str
     answerfile: str
-    path_ssh: str
-    path_grub: str
     path_postinstall: str
     file_postinstall: str
 

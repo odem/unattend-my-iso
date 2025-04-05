@@ -14,8 +14,10 @@ PROJECT_AUTHOR:=jb
 PROJECT_EMAIL:=foo@bar.baz
 PROJECT_VERSION:=0.0.1
 DIR_VENV?=.venv
-TARGET ?= "all"
-TEMPLATE ?= "debian12"
+TARGET?="all"
+TEMPLATE?="debian12"
+VERBOSITY?=3
+DAEMONIZE?=false
 
 # Help
 usage:
@@ -48,7 +50,9 @@ install: build
 		pip install --editable .
 start: 
 	@source $(DIR_VENV)/bin/activate ; \
-		python3 -m src.$(PROJECT_NAME).main -tt $(TEMPLATE) -tp $(TARGET) -rv 3
+		python3 -m src.$(PROJECT_NAME).main \
+			-tt $(TEMPLATE) -tp $(TARGET) \
+			-rD $(DAEMONIZE) -rv $(VERBOSITY)
 stop:
 	echo "Stop"
 help: 

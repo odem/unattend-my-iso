@@ -1,6 +1,15 @@
 #!/bin/bash
 
 user=umi
+JOBS=("/opt/umi/postinstall/postinstall_apt.bash" "/opt/umi/postinstall/postinstall_locale.bash" "/opt/umi/postinstall/postinstall_ssh.bash" "/opt/umi/postinstall/postinstall_mps.bash")
+append_job() {
+    if [[ -f $1 ]] ; then
+        echo "exists: $1"
+        echo "$1 $2" >> /firstboot.bash
+    else
+        echo "Not valid: $1 $2"
+    fi
+}
 
 # Copy bashrc
 if [[ -f /opt/umi/config/.bashrc ]] ; then
@@ -25,10 +34,12 @@ EOF
 # preseed-launcher
 cat <<EOF > /firstboot.bash
 #!/bin/bash
-/opt/umi/postinstall/postinstall_apt.bash
-/opt/umi/postinstall/postinstall_locale.bash
-/opt/umi/postinstall/postinstall_ssh.bash
-/opt/umi/postinstall/postinstall_mps.bash $user
+EOF
+for str in ${JOBS[@]}; do # Do not quote!
+    append_job "$str" "$user"
+done
+
+cat <<EOF >> /firstboot.bash
 systemctl disable firstboot.service
 rm -rf /etc/systemd/service/firstboot.service
 rm -rf /firstboot.bash
@@ -40,6 +51,3 @@ EOF
 chmod +x /firstboot.bash
 systemctl daemon-reload
 systemctl enable firstboot
-
-
-

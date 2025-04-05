@@ -1,7 +1,5 @@
 #!/bin/bash
 
-user=umi
-
 # Globals
 export DEBIAN_FRONTEND=noninteractive
 LOCALESTR=en_US.UTF-8
@@ -14,20 +12,13 @@ locale-gen LANG="$LOCALESTR"
 update-locale
     LANG="$LOCALESTR" \
     LANGUAGE="$LOCALESTR" \
-    LC_LANG="$LOCALESTR" \
     LC_ALL="$LOCALESTR" \
     LC_CTYPE="$LOCALESTR" \
     LC_NUMERIC="$LOCALESTR" \
     LC_TIME="$LOCALESTR" \
     LC_COLLATE="$LOCALESTR" \
     LC_MONETARY="$LOCALESTR" \
-    LC_MESSAGES="$LOCALESTR" \
-    LC_PAPER="$LOCALESTR" \
-    LC_NAME="$LOCALESTR" \
-    LC_ADDRESS="$LOCALESTR" \
-    LC_TELEPHONE="$LOCALESTR" \
-    LC_MEASUREMENT="$LOCALESTR" \
-    LC_IDENTIFICATION="$LOCALESTR" \
+    LC_MESSAGES="$LOCALESTR"
 
 echo "LANG=$LOCALESTR">/etc/default/locale
 echo "LANGUAGE=$LOCALESTR">/etc/default/locale
@@ -47,6 +38,7 @@ XKBVARIANT="nodeadkeys"
 XKBOPTIONS="compose:menu"
 BACKSPACE="guess"
 EOF
+apt-get install -y keyboard-configuration
 dpkg-reconfigure -f noninteractive keyboard-configuration
 
 # console
@@ -58,6 +50,7 @@ FONTFACE="Terminus"
 FONTSIZE="8x16"
 VIDEOMODE=
 EOF
+apt-get install -y console-setup
 dpkg-reconfigure -f noninteractive console-setup
 systemctl enable console-setup.service
 systemctl restart console-setup.service

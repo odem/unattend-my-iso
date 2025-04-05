@@ -1,3 +1,4 @@
+import os
 from unattend_my_iso.common.logging import log_debug, log_error
 
 
@@ -13,7 +14,9 @@ class UmiFileReplacements:
             updated_content = content.replace(find, replace)
             with open(file_path, "w") as file:
                 file.write(updated_content)
-            log_debug(f"File Replace : '{find}' with '{replace}' in {file_path}")
+            basename = os.path.basename(file_path)
+
+            log_debug(f"File Replace : '{find}' with '{replace}' in {basename}")
             return True
         except Exception as e:
             log_error(f"An error occurred during file replacemnt: {file_path} -> {e}")

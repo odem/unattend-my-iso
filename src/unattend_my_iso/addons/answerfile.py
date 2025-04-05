@@ -18,12 +18,14 @@ class AnswerFileAddon(UmiAddon):
 
     def copy_answerfile(self, args: TaskConfig, template: TemplateConfig) -> bool:
         inter = self.files._get_path_intermediate(args)
-        interpreseed = f"{inter}/{template.answerfile}"
+        interpreseed = f"{inter}/preseed.cfg"
+        if template.iso_type == "windows":
+            interpreseed = f"{inter}/autounattend.xml"
         srcpreseed = self.get_template_path_optional(
             "answerfile", template.answerfile, args
         )
         if os.path.exists(srcpreseed):
-            if self.files.cp(srcpreseed, inter) is False:
+            if self.files.cp(srcpreseed, interpreseed) is False:
                 return False
             rules = self._create_replacements(args, interpreseed)
             return self._apply_replacements(rules)
