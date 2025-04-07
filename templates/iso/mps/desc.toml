@@ -1,0 +1,51 @@
+
+[description]
+name = "mps"
+virtio_name = ""
+virtio_url = ""
+iso_name = "debian-12.10.0-amd64-netinst.iso"
+iso_url = "https://chuangtzu.ftp.acc.umu.se/debian-cd/current/amd64/iso-cd/debian-12.10.0-amd64-netinst.iso"
+iso_type = "linux"
+answerfile = "preseed_dhcp.cfg"
+path_postinstall = "postinstall"
+file_postinstall = "postinstall.bash"
+
+[addon_answerfile]
+host_name = "debian12"
+host_domain = "local"
+net_dhcp = false
+packages_install = [
+  "openssh-server",
+  "build-essential",
+  "vim",
+  "git",
+  "make",
+  "debconf",
+  "sudo",
+  "lsb-release",
+  "net-tools",
+  "psmisc",
+  "dnsutils",
+  "fontconfig",
+  "curl",
+  "gnupg",
+  "bsdmainutils",
+]
+
+# [target]
+# file_prefix = "umispecial_"
+# [run]
+# instname = "templatename123"
+[addon_grub]
+# grub_enabled = false
+grub_theme = "anon"
+# grub_icons = "light"
+[addon_postinstall]
+copy_additional_scripts = [
+  "postinstall_apt.bash",
+  "postinstall_ssh.bash",
+  "postinstall_locale.bash",
+]
+# postinstall_enabled = false
+enable_grub_theme = true
+# create_config = false
