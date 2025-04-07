@@ -1,12 +1,14 @@
-from dataclasses import dataclass, fields, is_dataclass
+from dataclasses import dataclass, field, fields, is_dataclass
 import os
 from typing import Any, Optional
+from typing_extensions import override
 from unattend_my_iso.common.args import (
     AddonArgs,
     AddonArgsAnswerFile,
     AddonArgsGrub,
     AddonArgsPostinstall,
     AddonArgsSsh,
+    ArgumentBase,
     RunArgs,
     TargetArgs,
     get_group_arguments,
@@ -38,16 +40,17 @@ class TaskConfig:
 
 
 @dataclass
-class TemplateConfig:
+class TemplateConfig(ArgumentBase):
     name: str
     virtio_name: str
     virtio_url: str
     iso_name: str
     iso_url: str
     iso_type: str
-    answerfile: str
-    path_postinstall: str
-    file_postinstall: str
+    answerfile: str = ""
+    path_postinstall: str = ""
+    file_postinstall: str = ""
+    optional_params: dict[str, Any] = field(default_factory=lambda: {})
 
 
 def get_cfg_sys(work_path: str) -> SysConfig:

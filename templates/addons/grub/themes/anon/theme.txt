@@ -31,7 +31,7 @@ terminal-height: "50%"
   width = 100%
   text = "Target Host: CFG_HOST.CFG_DOMAIN (CFG_TYPE CFG_KERNEL)"
   align = "center"
-  color = "#FFFF00"
+  color = "#ffff00"
 }
 # Version Label
 + label {
@@ -40,7 +40,7 @@ terminal-height: "50%"
   width = 100%
   text = "UMI VERSION: CFG_VERSION"
   align = "center"
-  color = "#FF0000"
+  color = "#0000ff"
 }
 # ------------------------------------------------------------------------------
 # Menu
@@ -55,8 +55,8 @@ terminal-height: "50%"
   icon_height = 16
   item_spacing = 10
   item_icon_space = 10
-  item_color = "#222222"
-  selected_item_color = "#ffffff"
+  item_color = "#ffffff"
+  selected_item_color = "#ff2222"
 }
 # ------------------------------------------------------------------------------
 # Bottom
@@ -68,6 +68,6 @@ terminal-height: "50%"
   height = 20
   text = "@KEYMAP_MIDDLE@"
   align = "center"
-  color = "#ff0000"
+  color = "#00ff00"
 }
 

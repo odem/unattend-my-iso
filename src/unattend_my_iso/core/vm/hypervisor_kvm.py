@@ -194,9 +194,8 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         for dev in args_hv.netdevs:
             if dev != "" and dev.startswith("nat"):
                 arr_fwd = []
-                for el in args_hv.portfwd:
-                    log_debug(f"EL: {el}")
-                    arr_fwd += [f"hostfwd=tcp::{el[0]}-:{el[1]}"]
+                for key, val in args_hv.portfwd.items():
+                    arr_fwd += [f"hostfwd=tcp::{key}-:{val}"]
                 userstr = f'user,{",".join(arr_fwd)}'
                 arr_netdevs += ["-net", "nic,model=virtio", "-net", userstr]
             elif dev != "" and dev.startswith("tap"):

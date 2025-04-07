@@ -2,13 +2,66 @@ import os
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
+from unattend_my_iso.common.logging import log_debug
+
 # user
 HOMEDIR = os.path.expanduser("~")
 USER = os.getlogin()
 
 
+class ArgumentBase:
+    def get_config_values(self) -> dict[str, Any]:
+        result = {}
+        for el in vars(self):
+            val = self.__dict__[el]
+            result[f"CFG_{el.upper()}"] = val
+        return result
+
+    def get_env_vars(self) -> list[str]:
+        result = []
+        values = self.get_config_values()
+        for key, val in values.items():
+            if isinstance(val, dict):
+                normlist = self.normalize_dict(val)
+                for normentry in normlist:
+                    result.append(normentry)
+            else:
+                normval = self.normalize_value(val)
+                result.append(f"{key}={normval}")
+        return result
+
+    def normalize_value(self, val: Any) -> str:
+        if isinstance(val, bool):
+            return "1" if val is True else "0"
+        elif isinstance(val, str):
+            return f'"{val}"'
+        elif isinstance(val, int):
+            return str(val)
+        elif isinstance(val, tuple):
+            return f'"{val[0]},{val[1]}"'
+        elif isinstance(val, list):
+            result = ["("]
+            for listval in val:
+                normval = self.normalize_value(listval)
+                result.append(normval)
+            result += [")"]
+            return " ".join(result)
+        else:
+            return str(val)
+
+    def normalize_dict(self, val: Any) -> list[str]:
+        if isinstance(val, dict):
+            result = []
+            for key, innerval in val.items():
+                normval = self.normalize_value(innerval)
+                result.append(f"{key}={normval}")
+            return result
+        else:
+            return []
+
+
 @dataclass
-class RunArgs:
+class RunArgs(ArgumentBase):
     instname: str = "testvm"
     verbosity: int = 1
     diskname: str = "disk1.qcow2"
@@ -17,16 +70,16 @@ class RunArgs:
     daemonize: bool = True
     uefi_ovmf_vars: str = "/usr/share/OVMF/OVMF_VARS.fd"
     uefi_ovmf_code: str = "/usr/share/OVMF/OVMF_CODE.fd"
-    net_ports: list[tuple[int, int]] = field(default_factory=lambda: [])
+    net_ports: list[tuple[int, int]] = field(default_factory=lambda: [(2222, 22)])
     net_devs: list[str] = field(default_factory=lambda: ["nat"])
     res_cpu: int = 4
     res_mem: int = 4096
-    homedir: str = HOMEDIR
-    user: str = USER
+    build_homedir: str = HOMEDIR
+    build_user: str = USER
 
 
 @dataclass
-class AddonArgsAnswerFile:
+class AddonArgsAnswerFile(ArgumentBase):
     answerfile_enabled: bool = True
     locale_string: str = "en_US"
     locale_multi: str = "en_US.UTF-8"
@@ -54,7 +107,7 @@ class AddonArgsAnswerFile:
 
 
 @dataclass
-class AddonArgsSsh:
+class AddonArgsSsh(ArgumentBase):
     ssh_enabled: bool = True
     keygen: bool = True
     config_client: str = ""
@@ -65,7 +118,7 @@ class AddonArgsSsh:
 
 
 @dataclass
-class AddonArgsPostinstall:
+class AddonArgsPostinstall(ArgumentBase):
     postinstall_enabled: bool = True
     enable_grub_theme: bool = True
     create_config: bool = True
@@ -80,7 +133,7 @@ class AddonArgsPostinstall:
 
 
 @dataclass
-class AddonArgsGrub:
+class AddonArgsGrub(ArgumentBase):
     grub_enabled: bool = True
     grub_theme: str = "default"
     grub_icons: str = ""
@@ -103,9 +156,18 @@ class AddonArgs:
     grub: AddonArgsGrub
     postinstall: AddonArgsPostinstall
 
+    def get_env_vars(self) -> list[str]:
+        result = [
+            *(self.answerfile.get_env_vars()),
+            *(self.ssh.get_env_vars()),
+            *(self.grub.get_env_vars()),
+            *(self.postinstall.get_env_vars()),
+        ]
+        return result
+
 
 @dataclass
-class TargetArgs:
+class TargetArgs(ArgumentBase):
     file_prefix: str = "umi_"
     file_extension: str = "iso"
     file_mbr: str = "/usr/lib/ISOLINUX/isohdpfx.bin"

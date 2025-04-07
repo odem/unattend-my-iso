@@ -1,13 +1,15 @@
 #!/bin/bash
 
-user=umi
+user=CFG_USER_OTHER_NAME
+password=CFG_USER_OTHER_PASSWORD
+
 JOBS=("/opt/umi/postinstall/postinstall_apt.bash" "/opt/umi/postinstall/postinstall_locale.bash" "/opt/umi/postinstall/postinstall_ssh.bash" "/opt/umi/postinstall/postinstall_mps.bash")
 append_job() {
     if [[ -f $1 ]] ; then
-        echo "exists: $1"
-        echo "$1 $2" >> /firstboot.bash
+        echo "exists: $1 $2 $3"
+        echo "$1" "$2" "$3" >> /firstboot.bash
     else
-        echo "Not valid: $1 $2"
+        echo "Not valid: $1 $2 $3"
     fi
 }
 
@@ -36,7 +38,7 @@ cat <<EOF > /firstboot.bash
 #!/bin/bash
 EOF
 for str in ${JOBS[@]}; do # Do not quote!
-    append_job "$str" "$user"
+    append_job "$str" "$user" "$password"
 done
 
 cat <<EOF >> /firstboot.bash

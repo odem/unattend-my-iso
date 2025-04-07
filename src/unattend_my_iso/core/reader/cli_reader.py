@@ -393,15 +393,15 @@ class CommandlineReader:
             help="Name of the vm (0=error,1=warn,2=info,3=debug)",
         )
         group_target.add_argument(
-            "-ru",
-            "--user",
+            "-rbu",
+            "--build_user",
             type=str,
             default=None,
             help="The utilized user",
         )
         group_target.add_argument(
-            "-rh",
-            "--homedir",
+            "-rbh",
+            "--build_homedir",
             type=str,
             default=None,
             help="The homefolder to use",

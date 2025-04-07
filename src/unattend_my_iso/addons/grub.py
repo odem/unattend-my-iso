@@ -13,15 +13,15 @@ class GrubAddon(UmiAddon):
     def integrate_addon(self, args: TaskConfig, template: TemplateConfig) -> bool:
         if template.iso_type == "windows":
             return True
-        if self.copy_grub(args, template) is False:
+        if self.copy_grub(args) is False:
             return False
-        if self.copy_theme(args, template) is False:
+        if self.copy_theme(args) is False:
             return False
         if self.copy_memtest(args) is False:
             return False
         return True
 
-    def copy_grub(self, args: TaskConfig, template: TemplateConfig) -> bool:
+    def copy_grub(self, args: TaskConfig) -> bool:
         srcgrub = self.get_template_path_optional("grub", "grub.cfg", args)
         dst = self.files._get_path_intermediate(args)
         dstgrub = f"{dst}/boot/grub"
@@ -31,7 +31,7 @@ class GrubAddon(UmiAddon):
         rules = self._create_replacements_grub(args, dst, dstgrubfile)
         return self._apply_replacements(rules)
 
-    def copy_theme(self, args: TaskConfig, template: TemplateConfig) -> bool:
+    def copy_theme(self, args: TaskConfig) -> bool:
         dst = self.files._get_path_intermediate(args)
         themename = args.addons.grub.grub_theme
         themeicons = args.addons.grub.grub_icons

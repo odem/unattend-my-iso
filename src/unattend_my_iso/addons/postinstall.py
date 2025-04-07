@@ -20,7 +20,7 @@ class PostinstallAddon(UmiAddon):
             return False
         if self.copy_theme(args, template) is False:
             return False
-        if self._create_config(args) is False:
+        if self._create_config(args, template) is False:
             return False
         return True
 
@@ -38,20 +38,20 @@ class PostinstallAddon(UmiAddon):
     def copy_postinstaller_file(
         self, args: TaskConfig, template: TemplateConfig
     ) -> str:
-        srctmpl = self.files._get_path_template(args)
-        srcaddon = self.files._get_path_template_addon("postinstall", args)
         interpath = self.files._get_path_intermediate(args)
-        postfile = f"{srctmpl}/{template.file_postinstall}"
+        postfile = self.get_template_path_optional(
+            "postinstall", template.file_postinstall, args
+        )
         dst = f"{interpath}/umi/postinstall"
         dstfile = f"{dst}/{template.file_postinstall}"
-        if os.path.exists(postfile) is False:
-            postfile = f"{srcaddon}/{template.file_postinstall}"
+        if os.path.exists(dst) is False:
+            os.makedirs(dst)
         if template.file_postinstall != "" and os.path.exists(postfile) is False:
             log_error("Postinstall file does not exist")
             return ""
         if self.files.cp(postfile, dstfile) is False:
             return ""
-        return postfile
+        return dstfile
 
     def copy_postinstaller_dir(
         self, args: TaskConfig, template: TemplateConfig
@@ -110,24 +110,44 @@ class PostinstallAddon(UmiAddon):
                 return False
         return True
 
-    def _create_config(self, args: TaskConfig) -> bool:
+    def _create_config(self, args: TaskConfig, template: TemplateConfig) -> bool:
         if args.addons.postinstall.create_config is False:
             return True
         interpath = self.files._get_path_intermediate(args)
         dstconf = f"{interpath}/umi/config"
         dstconffile = f"{dstconf}/env.bash"
         os.makedirs(dstconf, exist_ok=True)
-        name = args.target.template
-        hostname = args.addons.answerfile.host_name
-        domain = args.addons.answerfile.host_domain
-        version = args.sys.tool_version
+
+        cfg_run = args.run.get_env_vars()
+        cfg_target = args.target.get_env_vars()
+        cfg_template = template.get_env_vars()
+        cfg_grub = args.addons.grub.get_env_vars()
+        cfg_ssh = args.addons.ssh.get_env_vars()
+        cfg_postinst = args.addons.postinstall.get_env_vars()
+        cfg_answerfile = args.addons.answerfile.get_env_vars()
+
         arr = [
             "#!/bin/bash",
-            f"CFG_TYPE={name}",
-            f"CFG_HOST={hostname}",
-            f"CFG_DOMAIN={domain}",
-            f"CFG_VERSION={version}",
+            "\n# Template Config",
+            *cfg_template,
+            "\n# Run Args",
+            *cfg_run,
+            "\n# Target Args ",
+            *cfg_target,
+            "\n# Grub Addon Args ",
+            *cfg_grub,
+            "\n# SSH Addon Args ",
+            *cfg_ssh,
+            "\n# Answerfile Addon Args ",
+            *cfg_answerfile,
+            "\n# Postinstall Addon Args ",
+            *cfg_postinst,
+            # f"CFG_TYPE={name}",
+            # f"CFG_HOST={hostname}",
+            # f"CFG_DOMAIN={domain}",
+            # f"CFG_VERSION={version}",
         ]
+
         contents = "\n".join(arr)
         if os.path.exists(dstconffile):
             self.files.rm(dstconffile)
@@ -155,6 +175,7 @@ class PostinstallAddon(UmiAddon):
         name = args.target.template
         hostname = args.addons.answerfile.host_name
         domain = args.addons.answerfile.host_domain
+        ip = args.addons.answerfile.net_ip
         version = args.sys.tool_version
         dst = self.files._get_path_intermediate(args)
         kernel = self._extract_kernel_version(dst)
@@ -164,7 +185,7 @@ class PostinstallAddon(UmiAddon):
                 Replaceable(themefile, "CFG_TYPE", name),
                 Replaceable(themefile, "CFG_HOST", hostname),
                 Replaceable(themefile, "CFG_DOMAIN", domain),
-                Replaceable(themefile, "CFG_IP", hostname),
+                Replaceable(themefile, "CFG_IP", ip),
                 Replaceable(themefile, "CFG_KERNEL", kernel),
                 Replaceable(themefile, "CFG_VERSION", version),
             ]
@@ -176,4 +197,5 @@ class PostinstallAddon(UmiAddon):
         c = args.addons.answerfile
         return [
             Replaceable(postinst, "CFG_USER_OTHER_NAME", c.user_other_name),
+            Replaceable(postinst, "CFG_USER_OTHER_PASSWORD", c.user_other_password),
         ]
