@@ -79,10 +79,10 @@ class TaskProcessorIsogen(TaskProcessorBase):
 
         srciso = self.files._get_path_isosource(args, template)
         if self.exists(srciso):
-            log_info("Download ISO  : Already present")
+            log_info("Download ISO : Already present")
             return True
         else:
-            log_info(f"Download ISO  : {srciso}")
+            log_info(f"Download ISO : {srciso}")
             return self._download_file(args, template.iso_url, template.iso_name)
 
     def _extract_iso_contents(self, args: TaskConfig, template: TemplateConfig) -> bool:
@@ -115,7 +115,7 @@ class TaskProcessorIsogen(TaskProcessorBase):
             copied = self.files.chmod(dst, privilege=0o200)
             self.files.unmount_folder(dir_mount)
             if copied:
-                log_info(f"Copied virt : {file_mount}")
+                log_info(f"Copied virt  : {file_mount}")
                 return True
         return False
 

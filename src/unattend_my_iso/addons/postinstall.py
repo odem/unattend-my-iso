@@ -66,7 +66,7 @@ class PostinstallAddon(UmiAddon):
                     log_error("Postinstall copy failed")
                     return False
             else:
-                log_error(f"Invalid src path: {srcpath}")
+                log_error(f"Invalid path : {srcpath}")
                 return False
         return True
 
@@ -77,20 +77,21 @@ class PostinstallAddon(UmiAddon):
         dst = f"{interpath}/umi/postinstall"
 
         for filename in args.addons.postinstall.copy_additional_scripts:
+            log_debug(f"Copy File    : {filename}")
             srcpath = self.get_template_path_optional("postinstall", filename, args)
             dstfile = f"{interpath}/umi/postinstall/{filename}"
-            if template.path_postinstall != "":
-                if os.path.exists(srcpath):
-                    os.makedirs(dst, exist_ok=True)
-                    if self.files.cp(srcpath, dstfile) is False:
-                        log_error("Postinstall copy failed")
-                        return False
+            # if template.path_postinstall != "":
+            if os.path.exists(srcpath):
+                os.makedirs(dst, exist_ok=True)
+                if self.files.cp(srcpath, dstfile) is False:
+                    log_error("Postinstall copy failed")
+                    return False
+            else:
+                log_error("Postinstall file does not exist")
+                return False
         return True
 
     def copy_theme(self, args: TaskConfig, template: TemplateConfig) -> bool:
-        srcpath = self.get_template_path_optional(
-            "grub", f"themes/{args.addons.grub.grub_theme}", args
-        )
         interpath = self.files._get_path_intermediate(args)
         dst = f"{interpath}/umi/theme"
         dstthemefile = f"{dst}/theme.txt"
@@ -98,6 +99,11 @@ class PostinstallAddon(UmiAddon):
             return True
 
         if args.addons.postinstall.enable_grub_theme:
+            if args.addons.grub.grub_theme == "default":
+                return True
+            srcpath = self.get_template_path_optional(
+                "grub", f"themes/{args.addons.grub.grub_theme}", args
+            )
             if os.path.exists(srcpath) is False:
                 log_error(f"Themefiles not available: {args.addons.grub.grub_theme}")
                 return False

@@ -10,7 +10,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         UmiHypervisorBase.__init__(self)
 
     def vm_run(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:
-        log_info(f"Running VM: {args_hv.name}")
+        log_info(f"Running VM   : {args_hv.name} (Daemonize: {args.run.daemonize})")
         runcmd = self._create_run_command(args, args_hv)
         if args.run.daemonize:
             proc = subprocess.Popen(
@@ -20,11 +20,12 @@ class UmiHypervisorKvm(UmiHypervisorBase):
                 stderr=subprocess.DEVNULL,
                 close_fds=True,
             )
-            log_info(f"VMRUN was initiated: {proc.pid}")
+            log_debug(f"Run command  : {' '.join(runcmd)}")
+            log_info(f"Process PID  : {proc.pid}")
         else:
             proc = subprocess.run(runcmd, capture_output=True, text=True)
             if proc.returncode != 0:
-                log_error(f"VMRUN not successful: {proc.stdout} {proc.stderr}")
+                log_error(f"VM Error     : {proc.stdout} {proc.stderr}")
                 return False
         return True
 
@@ -79,14 +80,13 @@ class UmiHypervisorKvm(UmiHypervisorBase):
                 subprocess.run(["pkill", "-f", "swtpm"])
             os.makedirs(socketdir, exist_ok=True)
             runcmd = self._create_tpm_command(socketdir)
-            log_debug(f"RUNCMD: {' '.join(runcmd)}")
             subprocess.Popen(
                 runcmd,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 close_fds=True,
             )
-            log_info("SWTPM was initiated")
+            log_info(f"swtpm inst   : {socketdir}")
         return True
 
     def _prepare_disk_efi(self, args: TaskConfig, efidisk: str) -> bool:
@@ -126,7 +126,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
     def _create_static_run_command(
         self, args: TaskConfig, args_hv: HypervisorArgs
     ) -> list[str]:
-        vmdir = f"{args.sys.path_vm}/{args.run.instname}"
+        vmdir = f"{args.sys.path_vm}/{args.run.vmname}"
         pidfile = f"{vmdir}/vm.pid"
         smpinfo = f"{args_hv.sys_cpu},sockets=1,cores={args_hv.sys_cpu},threads=1"
         machineinfo = "q35,kernel_irqchip=on,accel=kvm,usb=off,vmport=off,smm=on"
@@ -173,7 +173,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         return arr_cdrom
 
     def _create_uefi_args(self, args: TaskConfig, args_hv: HypervisorArgs) -> list[str]:
-        vmdir = f"{args.sys.path_vm}/{args.run.instname}"
+        vmdir = f"{args.sys.path_vm}/{args.run.vmname}"
         efidisk = f"{vmdir}/OVMF_VARS.fd"
         if args_hv.uefi is True:
             if self._prepare_disk_efi(args, efidisk):
@@ -194,8 +194,8 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         for dev in args_hv.netdevs:
             if dev != "" and dev.startswith("nat"):
                 arr_fwd = []
-                for key, val in args_hv.portfwd.items():
-                    arr_fwd += [f"hostfwd=tcp::{key}-:{val}"]
+                for el in args_hv.portfwd:
+                    arr_fwd += [f"hostfwd=tcp::{el[0]}-:{el[1]}"]
                 userstr = f'user,{",".join(arr_fwd)}'
                 arr_netdevs += ["-net", "nic,model=virtio", "-net", userstr]
             elif dev != "" and dev.startswith("tap"):

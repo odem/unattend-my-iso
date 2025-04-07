@@ -9,6 +9,10 @@ iso_type = "linux"
 answerfile = "preseed_dhcp.cfg"
 path_postinstall = "postinstall"
 file_postinstall = "postinstall.bash"
+optional_params = { FOO = "abc" }
+
+[run]
+vmname = "mps-test"
 
 [addon_answerfile]
 host_name = "debian12"
@@ -32,20 +36,28 @@ packages_install = [
   "bsdmainutils",
 ]
 
-# [target]
-# file_prefix = "umispecial_"
-# [run]
-# instname = "templatename123"
-[addon_grub]
-# grub_enabled = false
-grub_theme = "anon"
-# grub_icons = "light"
 [addon_postinstall]
 copy_additional_scripts = [
   "postinstall_apt.bash",
   "postinstall_ssh.bash",
   "postinstall_locale.bash",
 ]
+
+
+# [target]
+# file_prefix = "umispecial_"
+# [run]
+# vmname = "templatename123"
+[addon_grub]
+# grub_enabled = false
+grub_theme = "anon"
+# grub_icons = "light"
+# [addon_postinstall]
+# copy_additional_scripts = [
+#   "postinstall_apt.bash",
+#   "postinstall_ssh.bash",
+#   "postinstall_locale.bash",
+# ]
 # postinstall_enabled = false
 enable_grub_theme = true
 # create_config = false

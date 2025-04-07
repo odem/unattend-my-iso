@@ -87,9 +87,17 @@ class UmiIsoGenerator:
         dstmount = f"{mntpath}/efiboot"
         dstmgr = f"{dstmount}/efi/boot"
         srcefi = f"{infolder}/efiboot.img"
-        subprocess.run(["dd", "if=/dev/zero", f"of={srcefi}", "bs=1M", "count=64"])
-        subprocess.run(["/usr/sbin/mkfs.fat", "-F32", f"{infolder}/efiboot.img"])
-        log_debug(f"Create efidisk: {infolder}/efiboot.img")
+        subprocess.run(
+            ["dd", "if=/dev/zero", f"of={srcefi}", "bs=1M", "count=64"],
+            capture_output=True,
+            text=True,
+        )
+        subprocess.run(
+            ["/usr/sbin/mkfs.fat", "-F32", f"{infolder}/efiboot.img"],
+            capture_output=True,
+            text=True,
+        )
+        log_debug(f"Create efi   : {infolder}/efiboot.img")
         os.makedirs(dstmount, exist_ok=True)
         self.files.mount_folder(srcefi, dstmount, "loop")
         subprocess.run(["sudo", "mkdir", "-p", f"{dstmount}/efi/boot"])
@@ -102,7 +110,9 @@ class UmiIsoGenerator:
                 "1",
                 "Windows/Boot/EFI/bootmgfw.efi",
                 f"--dest-dir={dstmgr}",
-            ]
+            ],
+            capture_output=True,
+            text=True,
         )
         subprocess.run(
             [

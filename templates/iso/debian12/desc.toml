@@ -9,7 +9,10 @@ iso_type = "linux"
 answerfile = "preseed_dhcp.cfg"
 path_postinstall = ""
 file_postinstall = "postinstall.bash"
-optional_params = { FOO = "abc" }
+# optional_params = { FOO = "abc" }
+
+[run]
+vmname = "debian12-test"
 
 [addon_answerfile]
 host_name = "debian12"
@@ -32,8 +35,6 @@ packages_install = [
   "gnupg",
   "bsdmainutils",
 ]
-[addon_grub]
-grub_theme = "anon"
 
 [addon_postinstall]
 copy_additional_scripts = [
@@ -41,4 +42,3 @@ copy_additional_scripts = [
   "postinstall_ssh.bash",
   "postinstall_locale.bash",
 ]
-enable_grub_theme = true

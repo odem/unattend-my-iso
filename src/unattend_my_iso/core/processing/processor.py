@@ -39,4 +39,7 @@ class TaskProcessor(TaskProcessorIsogen, TaskProcessorVmRun):
         return self._get_error_result("Unknown task")
 
     def _process_result(self, result: TaskResult):
-        log_debug(f"Success: {result.success}, Msg:{result.msg}")
+        if result.success:
+            log_debug(f"Task Success : {result.success}")
+        else:
+            log_debug(f"Task Error   : Msg:{result.msg}")

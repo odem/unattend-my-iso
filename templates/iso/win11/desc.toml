@@ -7,5 +7,13 @@ iso_name = "Win11_24H2_German_x64.iso"
 iso_url = ""
 iso_type = "windows"
 answerfile = "autounattend.xml"
-path_postinstall = "postinstall"
+path_postinstall = ""
 file_postinstall = "postinstall.bat"
+
+
+[addon_answerfile]
+locale_string = "de_DE"
+locale_multi = "de_DE.UTF-8"
+
+[run]
+vmname = "win11-test"

@@ -3,85 +3,85 @@
   <settings pass="windowsPE">
     <component language="neutral" name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <SetupUILanguage>
-        <UILanguage>CFG_LOCALE_STRING</UILanguage>
+        <UILanguage>CFG_LOCALE_MULTI</UILanguage>
       </SetupUILanguage>
       <InputLocale>0407:00000407</InputLocale>
-      <SystemLocale>CFG_LOCALE_STRING</SystemLocale>
-      <UILanguage>CFG_LOCALE_STRING</UILanguage>
-      <UILanguageFallback>CFG_LOCALE_STRING</UILanguageFallback>
-      <UserLocale>CFG_LOCALE_STRING</UserLocale>
+      <SystemLocale>CFG_LOCALE_MULTI</SystemLocale>
+      <UILanguage>CFG_LOCALE_MULTI</UILanguage>
+      <UILanguageFallback>CFG_LOCALE_MULTI</UILanguageFallback>
+      <UserLocale>CFG_LOCALE_MULTI</UserLocale>
     </component>
-    <!-- <component language="neutral" name="Microsoft-Windows-PnPCustomizationsWinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> -->
-    <!--   <DriverPaths> -->
-    <!--     <PathAndCredentials wcm:action="add" wcm:keyValue="1"> -->
-    <!--       <Path>D:\umi\virtio\amd64\w11\</Path> -->
-    <!--     </PathAndCredentials> -->
-    <!--     <PathAndCredentials wcm:action="add" wcm:keyValue="1"> -->
-    <!--       <Path>D:\umi\virtio\vioscsi\w11\amd64\</Path> -->
-    <!--     </PathAndCredentials> -->
-    <!--     <PathAndCredentials wcm:action="add" wcm:keyValue="1"> -->
-    <!--       <Path>D:\umi\virtio\Balloon\w11\amd64\</Path> -->
-    <!--     </PathAndCredentials> -->
-    <!--     <PathAndCredentials wcm:action="add" wcm:keyValue="1"> -->
-    <!--       <Path>D:\umi\virtio\NetKVM\w11\amd64\</Path> -->
-    <!--     </PathAndCredentials> -->
-    <!--     <PathAndCredentials wcm:action="add" wcm:keyValue="1"> -->
-    <!--       <Path>D:\umi\virtio\viorng\w11\amd64\</Path> -->
-    <!--     </PathAndCredentials> -->
-    <!--     <PathAndCredentials wcm:action="add" wcm:keyValue="1"> -->
-    <!--       <Path>D:\umi\virtio\vioserial\w11\amd64\</Path> -->
-    <!--     </PathAndCredentials> -->
-    <!--     <PathAndCredentials wcm:action="add" wcm:keyValue="1"> -->
-    <!--       <Path>D:\umi\virtio\smbus\w11\amd64\</Path> -->
-    <!--     </PathAndCredentials> -->
-    <!--     <PathAndCredentials wcm:action="add" wcm:keyValue="1"> -->
-    <!--       <Path>D:\umi\virtio\pvpanic\w11\amd64\</Path> -->
-    <!--     </PathAndCredentials> -->
-    <!--   </DriverPaths> -->
-    <!-- </component> -->
+    <component language="neutral" name="Microsoft-Windows-PnPCustomizationsWinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <DriverPaths>
+        <PathAndCredentials wcm:action="add" wcm:keyValue="1">
+          <Path>D:\umi\virtio\amd64\w11\</Path>
+        </PathAndCredentials>
+        <PathAndCredentials wcm:action="add" wcm:keyValue="1">
+          <Path>D:\umi\virtio\vioscsi\w11\amd64\</Path>
+        </PathAndCredentials>
+        <PathAndCredentials wcm:action="add" wcm:keyValue="1">
+          <Path>D:\umi\virtio\Balloon\w11\amd64\</Path>
+        </PathAndCredentials>
+        <PathAndCredentials wcm:action="add" wcm:keyValue="1">
+          <Path>D:\umi\virtio\NetKVM\w11\amd64\</Path>
+        </PathAndCredentials>
+        <PathAndCredentials wcm:action="add" wcm:keyValue="1">
+          <Path>D:\umi\virtio\viorng\w11\amd64\</Path>
+        </PathAndCredentials>
+        <PathAndCredentials wcm:action="add" wcm:keyValue="1">
+          <Path>D:\umi\virtio\vioserial\w11\amd64\</Path>
+        </PathAndCredentials>
+        <PathAndCredentials wcm:action="add" wcm:keyValue="1">
+          <Path>D:\umi\virtio\smbus\w11\amd64\</Path>
+        </PathAndCredentials>
+        <PathAndCredentials wcm:action="add" wcm:keyValue="1">
+          <Path>D:\umi\virtio\pvpanic\w11\amd64\</Path>
+        </PathAndCredentials>
+      </DriverPaths>
+    </component>
     <component language="neutral" name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-      <!-- <DiskConfiguration> -->
-      <!--   <Disk wcm:action="add"> -->
-      <!--     <DiskID>0</DiskID> -->
-      <!--     <WillWipeDisk>true</WillWipeDisk> -->
-      <!--     <CreatePartitions> -->
-      <!--       <CreatePartition wcm:action="add"> -->
-      <!--         <Order>1</Order> -->
-      <!--         <Type>EFI</Type> -->
-      <!--         <Size>500</Size> -->
-      <!--       </CreatePartition> -->
-      <!--       <CreatePartition wcm:action="add"> -->
-      <!--         <Order>2</Order> -->
-      <!--         <Type>MSR</Type> -->
-      <!--         <Size>128</Size> -->
-      <!--       </CreatePartition> -->
-      <!--       <CreatePartition wcm:action="add"> -->
-      <!--         <Order>3</Order> -->
-      <!--         <Type>Primary</Type> -->
-      <!--         <Extend>true</Extend> -->
-      <!--       </CreatePartition> -->
-      <!--     </CreatePartitions> -->
-      <!--     <ModifyPartitions> -->
-      <!--       <ModifyPartition wcm:action="add"> -->
-      <!--         <Order>1</Order> -->
-      <!--         <PartitionID>1</PartitionID> -->
-      <!--         <Label>System</Label> -->
-      <!--         <Format>FAT32</Format> -->
-      <!--       </ModifyPartition> -->
-      <!--       <ModifyPartition wcm:action="add"> -->
-      <!--         <Order>2</Order> -->
-      <!--         <PartitionID>2</PartitionID> -->
-      <!--       </ModifyPartition> -->
-      <!--       <ModifyPartition wcm:action="add"> -->
-      <!--         <Order>3</Order> -->
-      <!--         <PartitionID>3</PartitionID> -->
-      <!--         <Label>OS</Label> -->
-      <!--         <Letter>C</Letter> -->
-      <!--         <Format>NTFS</Format> -->
-      <!--       </ModifyPartition> -->
-      <!--     </ModifyPartitions> -->
-      <!--   </Disk> -->
-      <!-- </DiskConfiguration> -->
+      <DiskConfiguration>
+        <Disk wcm:action="add">
+          <DiskID>0</DiskID>
+          <WillWipeDisk>true</WillWipeDisk>
+          <CreatePartitions>
+            <CreatePartition wcm:action="add">
+              <Order>1</Order>
+              <Type>EFI</Type>
+              <Size>500</Size>
+            </CreatePartition>
+            <CreatePartition wcm:action="add">
+              <Order>2</Order>
+              <Type>MSR</Type>
+              <Size>128</Size>
+            </CreatePartition>
+            <CreatePartition wcm:action="add">
+              <Order>3</Order>
+              <Type>Primary</Type>
+              <Extend>true</Extend>
+            </CreatePartition>
+          </CreatePartitions>
+          <ModifyPartitions>
+            <ModifyPartition wcm:action="add">
+              <Order>1</Order>
+              <PartitionID>1</PartitionID>
+              <Label>System</Label>
+              <Format>FAT32</Format>
+            </ModifyPartition>
+            <ModifyPartition wcm:action="add">
+              <Order>2</Order>
+              <PartitionID>2</PartitionID>
+            </ModifyPartition>
+            <ModifyPartition wcm:action="add">
+              <Order>3</Order>
+              <PartitionID>3</PartitionID>
+              <Label>OS</Label>
+              <Letter>C</Letter>
+              <Format>NTFS</Format>
+            </ModifyPartition>
+          </ModifyPartitions>
+        </Disk>
+      </DiskConfiguration>
       <ImageInstall>
         <OSImage>
           <InstallFrom>
@@ -90,11 +90,11 @@
               <Value>Windows 11 Pro</Value>
             </MetaData>
           </InstallFrom>
-          <!-- <InstallTo> -->
-          <!--   <DiskID>0</DiskID> -->
-          <!--   <PartitionID>3</PartitionID> -->
-          <!-- </InstallTo> -->
-          <!-- <InstallToAvailablePartition>false</InstallToAvailablePartition> -->
+          <InstallTo>
+            <DiskID>0</DiskID>
+            <PartitionID>3</PartitionID>
+          </InstallTo>
+          <InstallToAvailablePartition>false</InstallToAvailablePartition>
         </OSImage>
       </ImageInstall>
       <UserData>
@@ -120,10 +120,10 @@
   <settings pass="specialize">
     <component language="neutral" name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <InputLocale>0407:00000407</InputLocale>
-      <SystemLocale>CFG_LOCALE_STRING</SystemLocale>
-      <UILanguage>CFG_LOCALE_STRING</UILanguage>
-      <UILanguageFallback>CFG_LOCALE_STRING</UILanguageFallback>
-      <UserLocale>CFG_LOCALE_STRING</UserLocale>
+      <SystemLocale>CFG_LOCALE_MULTI</SystemLocale>
+      <UILanguage>CFG_LOCALE_MULTI</UILanguage>
+      <UILanguageFallback>CFG_LOCALE_MULTI</UILanguageFallback>
+      <UserLocale>CFG_LOCALE_MULTI</UserLocale>
     </component>
     <component language="neutral" name="Microsoft-Windows-Security-SPP-UX" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <SkipAutoActivation>true</SkipAutoActivation>

@@ -62,7 +62,7 @@ class ArgumentBase:
 
 @dataclass
 class RunArgs(ArgumentBase):
-    instname: str = "testvm"
+    vmname: str = "testvm"
     verbosity: int = 1
     diskname: str = "disk1.qcow2"
     disksize: int = 64
@@ -123,13 +123,7 @@ class AddonArgsPostinstall(ArgumentBase):
     enable_grub_theme: bool = True
     create_config: bool = True
     bashrc_file: str = ".bashrc"
-    copy_additional_scripts: list[str] = field(
-        default_factory=lambda: [
-            "postinstall_apt.bash",
-            "postinstall_ssh.bash",
-            "postinstall_locale.bash",
-        ]
-    )
+    copy_additional_scripts: list[str] = field(default_factory=lambda: [])
 
 
 @dataclass

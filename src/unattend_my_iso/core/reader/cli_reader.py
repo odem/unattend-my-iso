@@ -380,7 +380,7 @@ class CommandlineReader:
         )
         group_target.add_argument(
             "-rn",
-            "--instname",
+            "--vmname",
             type=str,
             default=None,
             help="Name of the vm",
