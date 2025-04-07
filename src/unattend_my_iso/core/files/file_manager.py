@@ -121,6 +121,10 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
         isopath = args.sys.path_iso
         isoname = args.target.template
         isoprefix = args.target.file_prefix
+        overlay = ""
+        if args.target.template_overlay != "":
+            overlay = args.target.template_overlay
+            return f"{isopath}/{isoprefix}{isoname}.{overlay}"
         return f"{isopath}/{isoprefix}{isoname}"
 
     def _get_path_isofile(self, args: TaskConfig) -> str:
@@ -130,6 +134,8 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
     def _get_path_intermediate(self, args: TaskConfig) -> str:
         interpath = args.sys.path_intermediate
         intername = args.target.template
+        if args.target.template_overlay != "":
+            return f"{interpath}/{intername}.{args.target.template_overlay}"
         return f"{interpath}/{intername}"
 
     def _get_path_template(self, args: TaskConfig) -> str:

@@ -15,7 +15,8 @@ PROJECT_EMAIL:=foo@bar.baz
 PROJECT_VERSION:=0.0.1
 DIR_VENV?=.venv
 TARGET?="all"
-TEMPLATE?="debian12"
+TEMPLATE?="mps"
+OVERLAY?="mps1"
 VERBOSITY?=3
 DAEMONIZE?=false
 
@@ -51,7 +52,7 @@ install: build
 start: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main \
-			-tt $(TEMPLATE) -tp $(TARGET) \
+			-tt $(TEMPLATE) -to "$(OVERLAY)" -tp $(TARGET) \
 			-rD $(DAEMONIZE) -rv $(VERBOSITY)
 stop:
 	echo "Stop"

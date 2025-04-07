@@ -2,7 +2,7 @@ import os
 from unattend_my_iso.common.common import TaskResult
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.core.processing.processor_base import TaskProcessorBase
-from unattend_my_iso.common.logging import log_info
+from unattend_my_iso.common.logging import log_debug, log_info
 
 
 class TaskProcessorIsogen(TaskProcessorBase):

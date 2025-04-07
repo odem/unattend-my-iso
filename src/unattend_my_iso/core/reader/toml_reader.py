@@ -14,7 +14,7 @@ class TomlReader:
                 with open(file, "rb") as f:
                     return tomllib.load(f)
             except Exception as exe:
-                log_error(f"Exception on toml read: {exe}")
+                log_error(f"Exception on toml read: {file} -> {exe}")
         else:
             log_error("Template config is not a valid file")
         return None

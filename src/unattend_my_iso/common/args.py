@@ -2,8 +2,6 @@ import os
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
-from unattend_my_iso.common.logging import log_debug
-
 # user
 HOMEDIR = os.path.expanduser("~")
 USER = os.getlogin()
@@ -42,7 +40,11 @@ class ArgumentBase:
         elif isinstance(val, list):
             result = ["("]
             for listval in val:
-                normval = self.normalize_value(listval)
+                if isinstance(listval, list):
+                    strlist = str(listval).removeprefix("[").removesuffix("]")
+                    normval = f'"{strlist}"'
+                else:
+                    normval = self.normalize_value(listval)
                 result.append(normval)
             result += [")"]
             return " ".join(result)
@@ -70,7 +72,7 @@ class RunArgs(ArgumentBase):
     daemonize: bool = True
     uefi_ovmf_vars: str = "/usr/share/OVMF/OVMF_VARS.fd"
     uefi_ovmf_code: str = "/usr/share/OVMF/OVMF_CODE.fd"
-    net_ports: list[tuple[int, int]] = field(default_factory=lambda: [(2222, 22)])
+    net_ports: list[list[int]] = field(default_factory=lambda: [[2222, 22]])
     net_devs: list[str] = field(default_factory=lambda: ["nat"])
     res_cpu: int = 4
     res_mem: int = 4096
@@ -166,6 +168,7 @@ class TargetArgs(ArgumentBase):
     file_extension: str = "iso"
     file_mbr: str = "/usr/lib/ISOLINUX/isohdpfx.bin"
     template: str = "win11"
+    template_overlay: str = ""
     proctype: str = "vmbuild_all"
 
 

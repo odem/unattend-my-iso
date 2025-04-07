@@ -13,7 +13,7 @@ class HypervisorArgs:
     cdrom: str
     disks: list[str]
     netdevs: list[str]
-    portfwd: list[tuple[int, int]]
+    portfwd: list[list[int]]
     sys_cpu: int
     sys_mem: int
 

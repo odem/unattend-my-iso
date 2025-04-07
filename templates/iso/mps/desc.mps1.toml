@@ -1,0 +1,13 @@
+
+[description]
+name = "mps1"
+optional_params = { val1 = "mps1" }
+
+[run]
+vmname = "mps1"
+net_ports = [[2221, 22]]
+
+[addon_answerfile]
+host_name = "mps1"
+host_domain = "local"
+net_dhcp = true

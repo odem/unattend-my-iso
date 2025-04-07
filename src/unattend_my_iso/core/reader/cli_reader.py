@@ -143,6 +143,13 @@ class CommandlineReader:
             default=None,
             help="Enable or disable a config to be copied into the target (true or false)",
         )
+        group_target.add_argument(
+            "-pa",
+            "--copy_additional_scripts",
+            type=str,
+            default=None,
+            help="Copies additional scripts (list)",
+        )
 
     def _create_parser_args_addon_ssh(self, p: argparse.ArgumentParser):
         group_target = p.add_argument_group(
@@ -502,14 +509,21 @@ class CommandlineReader:
             "--file_mbr",
             type=str,
             default=None,
-            help="Extension for output file",
+            help="path to mbr file",
         )
         group_target.add_argument(
             "-tt",
             "--template",
             type=str,
             default=None,
-            help="Extension for output file",
+            help="Template name",
+        )
+        group_target.add_argument(
+            "-to",
+            "--template_overlay",
+            type=str,
+            default=None,
+            help="Overlay name",
         )
         group_target.add_argument(
             "-tp",

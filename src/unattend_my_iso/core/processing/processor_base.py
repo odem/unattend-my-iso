@@ -9,6 +9,7 @@ from unattend_my_iso.common.common import TaskResult
 from unattend_my_iso.common.templates import read_templates_isos
 from unattend_my_iso.core.files.file_manager import UmiFileManager
 from unattend_my_iso.core.iso.iso_generator import UmiIsoGenerator
+from unattend_my_iso.core.reader.toml_reader import TomlReader
 from unattend_my_iso.core.vm.hypervisor_base import UmiHypervisorBase
 from unattend_my_iso.core.vm.hypervisor_kvm import UmiHypervisorKvm
 from unattend_my_iso.common.logging import log_debug, log_error, log_info
@@ -36,6 +37,7 @@ class TaskProcessorBase:
         self.sysconfig = get_cfg_sys(work_path=self.work_path)
         self._get_addons()
         self._get_templates()
+        self._get_overlays()
 
     def _create_efidisk_windows(self, args: TaskConfig) -> bool:
         dstinter = self.files._get_path_intermediate(args)
@@ -100,10 +102,41 @@ class TaskProcessorBase:
         searchpath = f"{self.sysconfig.path_templates}/iso"
         self.templates = read_templates_isos(searchpath)
 
+    def _get_overlays(self):
+        self.overlays = {}
+        searchpath = f"{self.sysconfig.path_templates}/iso"
+        for template in self.templates.values():
+            for overlay in template.files_overlay:
+                name = ""
+                if overlay.startswith("desc.") and overlay.endswith(".toml"):
+                    arr = overlay.split(".")
+                    name = arr[1]
+                descfile = f"{searchpath}/{template.name}/desc.{name}.toml"
+                obj_overlay = TemplateConfig(**template.__dict__)
+                reader = TomlReader()
+                overlay_toml = reader.read_toml_file(descfile)
+                if overlay_toml is not None and "description" in overlay_toml:
+                    overlay_desc = overlay_toml["description"]
+                    for fld in overlay_desc.items():
+                        fld_name = fld[0]
+                        fld_val = fld[1]
+                        setattr(obj_overlay, fld_name, fld_val)
+                    setattr(obj_overlay, "name_overlay", name)
+                    overlay_name = f"{template.name}.{name}"
+                    # log_debug(f"Adding Overlay: {obj_overlay.get_config_values()}")
+                    self.overlays[overlay_name] = obj_overlay
+
     def _get_task_template(self, args: TaskConfig) -> Optional[TemplateConfig]:
         name = args.target.template
-        if name in self.templates.keys():
-            return self.templates[name]
+        overlay = args.target.template_overlay
+        combined = f"{name}.{overlay}"
+        if overlay == "":
+            if name in self.templates.keys():
+                return self.templates[name]
+        else:
+            if combined in self.overlays.keys():
+                overlay = self.overlays[combined]
+                return self.overlays[combined]
         return None
 
     def _download_file(self, args: TaskConfig, url: str, name: str) -> bool:

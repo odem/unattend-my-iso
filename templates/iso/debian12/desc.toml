@@ -9,36 +9,6 @@ iso_type = "linux"
 answerfile = "preseed_dhcp.cfg"
 path_postinstall = ""
 file_postinstall = "postinstall.bash"
-# optional_params = { FOO = "abc" }
 
 [run]
 vmname = "debian12-test"
-
-[addon_answerfile]
-host_name = "debian12"
-host_domain = "local"
-net_dhcp = false
-packages_install = [
-  "openssh-server",
-  "build-essential",
-  "vim",
-  "git",
-  "make",
-  "debconf",
-  "sudo",
-  "lsb-release",
-  "net-tools",
-  "psmisc",
-  "dnsutils",
-  "fontconfig",
-  "curl",
-  "gnupg",
-  "bsdmainutils",
-]
-
-[addon_postinstall]
-copy_additional_scripts = [
-  "postinstall_apt.bash",
-  "postinstall_ssh.bash",
-  "postinstall_locale.bash",
-]
