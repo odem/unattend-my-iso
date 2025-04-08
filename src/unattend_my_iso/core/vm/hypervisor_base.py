@@ -12,7 +12,7 @@ class HypervisorArgs:
     uefi: bool
     cdrom: str
     disks: list[str]
-    netdevs: list[str]
+    netdevs: list[list[str]]
     portfwd: list[list[int]]
     sys_cpu: int
     sys_mem: int

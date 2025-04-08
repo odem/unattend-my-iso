@@ -1,6 +1,8 @@
 import os
 import subprocess
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
+from unattend_my_iso.core.net.bridge_manager import BridgeManager
+from unattend_my_iso.core.net.nic_manager import NicManager
 from unattend_my_iso.core.vm.hypervisor_base import HypervisorArgs, UmiHypervisorBase
 from unattend_my_iso.common.logging import log_debug, log_error, log_info
 
@@ -8,26 +10,74 @@ from unattend_my_iso.common.logging import log_debug, log_error, log_info
 class UmiHypervisorKvm(UmiHypervisorBase):
     def __init__(self) -> None:
         UmiHypervisorBase.__init__(self)
+        self.bridge = BridgeManager()
+        self.nics = NicManager()
+
+    def net_start(self, args_hv: HypervisorArgs) -> bool:
+        log_info("Networking   : Prepare networking")
+        prepare_bridges = False
+        self.nics.unassign_nics(args_hv.netdevs)
+        self.nics.del_nics(args_hv.netdevs)
+        if prepare_bridges:
+            self.bridge.del_bridges(args_hv.netdevs)
+            self.bridge.add_bridges(args_hv.netdevs)
+        self.nics.create_nics(args_hv.netdevs)
+        self.nics.assign_nics(args_hv.netdevs)
+        return True
+
+    def net_stop(self, args_hv: HypervisorArgs) -> bool:
+        log_info("Networking   : Prepare networking")
+        prepare_bridges = False
+        self.nics.unassign_nics(args_hv.netdevs)
+        self.nics.del_nics(args_hv.netdevs)
+        if prepare_bridges:
+            self.bridge.del_bridges(args_hv.netdevs)
+        return True
 
     def vm_run(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:
-        log_info(f"Running VM   : {args_hv.name} (Daemonize: {args.run.daemonize})")
         runcmd = self._create_run_command(args, args_hv)
+        log_info(f"Running VM   : {args_hv.name} (Daemonize: {args.run.daemonize})")
+        log_debug(f"Run command  : {' '.join(runcmd)}")
+        if self.net_start(args_hv) is False:
+            log_error("Networking   : Could not setup network")
+            return False
+
         if args.run.daemonize:
-            proc = subprocess.Popen(
-                runcmd,
-                stdin=subprocess.DEVNULL,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                close_fds=True,
-            )
-            log_debug(f"Run command  : {' '.join(runcmd)}")
-            log_info(f"Process PID  : {proc.pid}")
-        else:
-            log_debug(f"Run command  : {' '.join(runcmd)}")
-            proc = subprocess.run(runcmd, capture_output=True, text=True)
-            if proc.returncode != 0:
-                log_error(f"VM Error     : {proc.stdout} {proc.stderr}")
-                return False
+            return self.vm_run_nonblocking(runcmd, args_hv)
+        return self.vm_run_blocking(runcmd, args_hv)
+
+    def vm_run_nonblocking(self, runcmd: list[str], args_hv: HypervisorArgs) -> bool:
+        proc = subprocess.Popen(
+            runcmd,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            close_fds=True,
+        )
+        self.vm_run_postsetup(proc, args_hv, False)
+        return True
+
+    def vm_run_blocking(self, runcmd: list[str], args_hv: HypervisorArgs) -> bool:
+        proc = subprocess.Popen(runcmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.vm_run_postsetup(proc, args_hv, True)
+        log_info("\n\nRunning VM   : Press Ctrl+C to stop")
+        return True
+
+    def vm_run_postsetup(self, proc, args_hv: HypervisorArgs, wait: bool) -> bool:
+        if proc.pid <= 0:
+            log_error(f"VM Error     : {proc.pid} -> {proc.stdin} {proc.stderr}")
+            return False
+        log_info(f"Process PID  : {proc.pid}")
+        self.nics.assign_nics(args_hv.netdevs)
+        if wait:
+            try:
+                stdout, stderr = proc.communicate()
+                log_info(f"VM exit     : {stdout}{stderr}")
+            except KeyboardInterrupt:
+                log_info(f"VM stopped   : {args_hv.name}")
+                proc.terminate()
+                if self.net_stop(args_hv) is False:
+                    return False
         return True
 
     def vm_get_args(self, args: TaskConfig, template: TemplateConfig) -> HypervisorArgs:
@@ -131,7 +181,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         pidfile = f"{vmdir}/vm.pid"
         smpinfo = f"{args_hv.sys_cpu},sockets=1,cores={args_hv.sys_cpu},threads=1"
         machineinfo = "q35,kernel_irqchip=on,accel=kvm,usb=off,vmport=off,smm=on"
-        command = ["qemu-system-x86_64"]
+        command = ["sudo", "qemu-system-x86_64"]
         command += ["--enable-kvm", "-cpu", "host", "-smp", smpinfo]
         command += ["-pidfile", pidfile]
         command += ["-machine", machineinfo]
@@ -193,19 +243,22 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         if len(args_hv.netdevs) == 0:
             return []
         for dev in args_hv.netdevs:
-            if dev != "" and dev.startswith("nat"):
-                arr_fwd = []
-                for portlist in args_hv.portfwd:
-                    arr_fwd += [f"hostfwd=tcp::{portlist[0]}-:{portlist[1]}"]
-                userstr = f'user,{",".join(arr_fwd)}'
-                arr_netdevs += ["-net", "nic,model=virtio", "-net", userstr]
-            elif dev != "" and dev.startswith("tap"):
-                netname = f"net{i}"
-                devopt = f"e1000,netdev={netname}"
-                scriptopts = "script=no,downscript=no"
-                tapopt = f"tap,id={netname},ifname={dev},{scriptopts}"
-                arr_netdevs += ["-netdev", tapopt, "-device", devopt]
-                i += 1
+            name = dev[0]
+            bridge = dev[1]
+            if bridge != "":
+                if name != "" and name.startswith("nat"):
+                    arr_fwd = []
+                    for portlist in args_hv.portfwd:
+                        arr_fwd += [f"hostfwd=tcp::{portlist[0]}-:{portlist[1]}"]
+                    userstr = f'user,{",".join(arr_fwd)}'
+                    arr_netdevs += ["-net", "nic,model=virtio", "-net", userstr]
+                elif name != "" and name.startswith("tap"):
+                    netname = f"net{i}"
+                    devopt = f"e1000,netdev={netname}"
+                    scriptopts = "script=no,downscript=no"
+                    tapopt = f"tap,id={netname},ifname={name},{scriptopts}"
+                    arr_netdevs += ["-netdev", tapopt, "-device", devopt]
+                    i += 1
         return arr_netdevs
 
     def _create_disk_args(self, args: TaskConfig, args_hv: HypervisorArgs) -> list[str]:

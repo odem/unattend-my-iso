@@ -73,7 +73,7 @@ class RunArgs(ArgumentBase):
     uefi_ovmf_vars: str = "/usr/share/OVMF/OVMF_VARS.fd"
     uefi_ovmf_code: str = "/usr/share/OVMF/OVMF_CODE.fd"
     net_ports: list[list[int]] = field(default_factory=lambda: [[2222, 22]])
-    net_devs: list[str] = field(default_factory=lambda: ["nat"])
+    net_devs: list[list[str]] = field(default_factory=lambda: [["nat"]])
     res_cpu: int = 4
     res_mem: int = 4096
     build_homedir: str = HOMEDIR
