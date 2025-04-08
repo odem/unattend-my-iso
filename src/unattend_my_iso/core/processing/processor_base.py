@@ -9,6 +9,7 @@ from unattend_my_iso.common.common import TaskResult
 from unattend_my_iso.common.templates import read_templates_isos
 from unattend_my_iso.core.files.file_manager import UmiFileManager
 from unattend_my_iso.core.iso.iso_generator import UmiIsoGenerator
+from unattend_my_iso.core.net.net_manager import UmiNetworkManager
 from unattend_my_iso.core.reader.toml_reader import TomlReader
 from unattend_my_iso.core.vm.hypervisor_base import UmiHypervisorBase
 from unattend_my_iso.core.vm.hypervisor_kvm import UmiHypervisorKvm
@@ -29,6 +30,7 @@ class TaskProcessorBase:
     files: UmiFileManager = UmiFileManager()
     isogen: UmiIsoGenerator = UmiIsoGenerator()
     hvrunner: UmiHypervisorBase = UmiHypervisorKvm()
+    netman: UmiNetworkManager = UmiNetworkManager()
 
     def __init__(self, work_path: str = ""):
         self.work_path = work_path
@@ -127,17 +129,18 @@ class TaskProcessorBase:
                     self.overlays[overlay_name] = obj_overlay
 
     def _get_task_template(self, args: TaskConfig) -> Optional[TemplateConfig]:
+        ret = None
         name = args.target.template
         overlay = args.target.template_overlay
         combined = f"{name}.{overlay}"
         if overlay == "":
             if name in self.templates.keys():
-                return self.templates[name]
+                ret = self.templates[name]
         else:
             if combined in self.overlays.keys():
                 overlay = self.overlays[combined]
-                return self.overlays[combined]
-        return None
+                ret = self.overlays[combined]
+        return ret
 
     def _download_file(self, args: TaskConfig, url: str, name: str) -> bool:
         fullname = self.files._get_path_isofile(args)

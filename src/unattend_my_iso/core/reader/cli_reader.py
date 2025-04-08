@@ -470,7 +470,7 @@ class CommandlineReader:
             help="Use custom disk size for primary disk",
         )
         group_target.add_argument(
-            "-rnp",
+            "-rnP",
             "--net_ports",
             type=list,
             default=None,
@@ -482,6 +482,20 @@ class CommandlineReader:
             type=list,
             default=None,
             help="Use custom network devices",
+        )
+        group_target.add_argument(
+            "-rnpn",
+            "--net_prepare_nics",
+            type=str,
+            default=None,
+            help="Setup nics before running vm",
+        )
+        group_target.add_argument(
+            "-rnpb",
+            "--net_prepare_bridges",
+            type=str,
+            default=None,
+            help="Setup bridges before running vm",
         )
         return group_target
 

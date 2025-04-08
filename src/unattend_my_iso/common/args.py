@@ -76,8 +76,11 @@ class RunArgs(ArgumentBase):
     net_devs: list[list[str]] = field(default_factory=lambda: [["nat"]])
     res_cpu: int = 4
     res_mem: int = 4096
+    net_prepare_nics: bool = True
+    net_prepare_bridges: bool = True
     build_homedir: str = HOMEDIR
     build_user: str = USER
+    file_pid: str = "vm.pid"
 
 
 @dataclass

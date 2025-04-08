@@ -13,7 +13,7 @@ file_postinstall = "postinstall.bash"
 [run]
 vmname = "mps-test"
 net_ports = [[2220, 22]]
-net_devs = [["tap1-mps1", "vmbr0"], ["tap2-mps1", "vmbr0"]]
+net_devs = [["tap1-mps", "vmbr0"], ["tap2-mps", "vmbr0"]]
 
 [addon_postinstall]
 copy_additional_scripts = [

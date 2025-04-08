@@ -16,6 +16,9 @@ class HypervisorArgs:
     portfwd: list[list[int]]
     sys_cpu: int
     sys_mem: int
+    net_prepare_nics: bool
+    net_prepare_bridges: bool
+    pidfile: str
 
 
 class UmiHypervisorBase(ABC):
@@ -30,6 +33,10 @@ class UmiHypervisorBase(ABC):
 
     @abstractmethod
     def vm_run(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:
+        raise NotImplementedError("Not implemented")
+
+    @abstractmethod
+    def vm_stop(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:
         raise NotImplementedError("Not implemented")
 
     @abstractmethod

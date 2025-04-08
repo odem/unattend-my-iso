@@ -168,3 +168,6 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
 
     def _get_path_vm(self, args: TaskConfig):
         return f"{args.sys.path_vm}/{args.run.vmname}"
+
+    def _get_path_vmpid(self, args: TaskConfig):
+        return f"{args.sys.path_vm}/{args.run.vmname}/{args.run.file_pid}"

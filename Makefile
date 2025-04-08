@@ -17,8 +17,10 @@ DIR_VENV?=.venv
 TARGET?="all"
 TEMPLATE?="mps"
 OVERLAY?="mps1"
-VERBOSITY?=3
-DAEMONIZE?=false
+VERBOSITY?=2
+DAEMONIZE?=true
+BRIDGES?=true
+NICS?=false
 
 # Help
 usage:
@@ -49,13 +51,42 @@ install: build
 	sudo apt install qemu-kvm xorriso ovmf swtpm wimtools isolinux mkisofs
 	source $(DIR_VENV)/bin/activate && \
 		pip install --editable .
-start: 
+net-start: 
+	@source $(DIR_VENV)/bin/activate ; \
+		python3 -m src.$(PROJECT_NAME).main \
+			-tt $(TEMPLATE) -to "$(OVERLAY)" -tp net_start \
+			-rv $(VERBOSITY) -rnpb "$(BRIDGES)" -rnpn "$(NICS)"
+net-stop: 
+	@source $(DIR_VENV)/bin/activate ; \
+		python3 -m src.$(PROJECT_NAME).main \
+			-tt $(TEMPLATE) -to "$(OVERLAY)" -tp net_stop \
+			-rv $(VERBOSITY) -rnpb "$(BRIDGES)" -rnpn "$(NICS)"
+target: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main \
 			-tt $(TEMPLATE) -to "$(OVERLAY)" -tp $(TARGET) \
 			-rD $(DAEMONIZE) -rv $(VERBOSITY)
+start: 
+	@source $(DIR_VENV)/bin/activate ; \
+		python3 -m src.$(PROJECT_NAME).main \
+			-tt $(TEMPLATE) -to "$(OVERLAY)" -tp vm_start \
+			-rD $(DAEMONIZE) -rv $(VERBOSITY)
+start-all: 
+	@source $(DIR_VENV)/bin/activate ; \
+		python3 -m src.$(PROJECT_NAME).main \
+			-tt $(TEMPLATE) -to "*" -tp vm_start \
+			-rD $(DAEMONIZE) -rv $(VERBOSITY)
 stop:
-	echo "Stop"
+	@source $(DIR_VENV)/bin/activate ; \
+		python3 -m src.$(PROJECT_NAME).main \
+			-tt $(TEMPLATE) -to "$(OVERLAY)" -tp vm_stop -rv $(VERBOSITY)
+stop-all:
+	@source $(DIR_VENV)/bin/activate ; \
+		python3 -m src.$(PROJECT_NAME).main \
+			-tt $(TEMPLATE) -to "*" -tp vm_stop -rv $(VERBOSITY)
+restart: | stop start
+restart-all: | stopall startall
+
 help: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main -h

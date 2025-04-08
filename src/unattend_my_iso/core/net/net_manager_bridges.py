@@ -1,5 +1,4 @@
 import subprocess
-
 from unattend_my_iso.common.logging import log_debug, log_error
 
 
@@ -47,19 +46,21 @@ class BridgeManager:
     def del_bridges(self, devlists: list[list[str]]) -> bool:
         log_debug("BridgeManager: Deleting all bridges")
         for devlist in devlists:
-            bridge = devlist[1]
-            if self.has_bridge(bridge):
-                if self.del_bridge(bridge) is False:
-                    return False
+            if len(devlist) == 2:
+                bridge = devlist[1]
+                if self.has_bridge(bridge):
+                    if self.del_bridge(bridge) is False:
+                        return False
         return True
 
     def add_bridges(self, devlists: list[list[str]]) -> bool:
         log_debug("BridgeManager: Adding all bridges")
         for devlist in devlists:
-            bridge = devlist[1]
-            if self.has_bridge(bridge) is False:
-                if self.add_bridge(bridge) is False:
-                    return False
+            if len(devlist) == 2:
+                bridge = devlist[1]
+                if self.has_bridge(bridge) is False:
+                    if self.add_bridge(bridge) is False:
+                        return False
         return True
 
     def has_nic(self, name: str):
@@ -91,8 +92,9 @@ class BridgeManager:
     def create_nics(self, devlists: list[list[str]]):
         log_debug("BridgeManager: Deleting all nics")
         for devlist in devlists:
-            name = devlist[0]
-            self.create_nic(name)
+            if len(devlist) == 2:
+                name = devlist[0]
+                self.create_nic(name)
         return True
 
     def del_nics(self, devlists: list[list[str]]):
@@ -116,19 +118,21 @@ class BridgeManager:
     def assign_nics(self, devlists: list[list[str]]):
         log_debug("BridgeManager: Assigning all nics to bridges")
         for devlist in devlists:
-            name = devlist[0]
-            bridge = devlist[1]
-            if self.assign_nic(name, bridge) is False:
-                return False
+            if len(devlist) == 2:
+                name = devlist[0]
+                bridge = devlist[1]
+                if self.assign_nic(name, bridge) is False:
+                    return False
         return True
 
     def unassign_nics(self, devlists: list[list[str]]):
         log_debug("BridgeManager: Unassigning all nics from bridges")
         for devlist in devlists:
-            name = devlist[0]
-            bridge = devlist[1]
-            if self.has_nic(name):
-                self.unassign_nic(name, bridge)
+            if len(devlist) == 2:
+                name = devlist[0]
+                bridge = devlist[1]
+                if self.has_nic(name):
+                    self.unassign_nic(name, bridge)
         return True
 
     def assign_nic(self, dev: str, bridge: str):

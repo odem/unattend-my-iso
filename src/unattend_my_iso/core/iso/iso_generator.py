@@ -29,7 +29,8 @@ class UmiIsoGenerator:
             )
 
         cmdstr = " ".join(xorriso_command)
-        log_debug(f"xorriso cmd  : {cmdstr}")
+        if args.run.verbosity >= 4:
+            log_debug(f"xorriso cmd  : {cmdstr}")
         out_iso = subprocess.run(
             xorriso_command,
             capture_output=True,
