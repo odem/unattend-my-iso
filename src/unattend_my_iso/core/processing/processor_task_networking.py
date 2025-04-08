@@ -1,5 +1,4 @@
-from unattend_my_iso.common.common import TaskResult
-from unattend_my_iso.common.config import TaskConfig, TemplateConfig
+from unattend_my_iso.common.config import TaskResult, TaskConfig, TemplateConfig
 from unattend_my_iso.core.processing.processor_base import TaskProcessorBase
 
 

@@ -7,31 +7,32 @@ def init_logger(level: int):
     global LOGGER
     logging.basicConfig(
         level=level,
-        format="[%(levelname)6s] %(message)s",
+        format="[%(levelname)6s]%(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
     LOGGER = logging.getLogger()
 
 
-def log_message(msg: str, level: int):
+def log_message(msg: str, topic: str, level: int):
     global LOGGER
     if LOGGER is not None:
-        LOGGER.log(msg=msg, level=level)
+        fullmsg = f"[{topic:18}] {msg}"
+        LOGGER.log(msg=fullmsg, level=level)
     else:
         print(f"No Logger: {msg}")
 
 
-def log_debug(msg: str):
-    log_message(msg=msg, level=logging.DEBUG)
+def log_debug(msg: str, topic: str = ""):
+    log_message(msg=msg, topic=topic, level=logging.DEBUG)
 
 
-def log_info(msg: str):
-    log_message(msg=msg, level=logging.INFO)
+def log_info(msg: str, topic: str = ""):
+    log_message(msg=msg, topic=topic, level=logging.INFO)
 
 
-def log_warn(msg: str):
-    log_message(msg=msg, level=logging.WARN)
+def log_warn(msg: str, topic: str = ""):
+    log_message(msg=msg, topic=topic, level=logging.WARN)
 
 
-def log_error(msg: str):
-    log_message(msg=msg, level=logging.ERROR)
+def log_error(msg: str, topic: str = ""):
+    log_message(msg=msg, topic=topic, level=logging.ERROR)

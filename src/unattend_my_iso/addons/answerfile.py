@@ -30,7 +30,7 @@ class AnswerFileAddon(UmiAddon):
             rules = self._create_replacements(args, interpreseed)
             return self._apply_replacements(rules)
         else:
-            log_error(f"Path does not exist: {srcpreseed}")
+            log_error(f"Path does not exist: {srcpreseed}", "Answerfile")
         return False
 
     def _create_replacements(self, args: TaskConfig, preseed: str) -> list[Replaceable]:

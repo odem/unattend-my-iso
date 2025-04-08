@@ -37,13 +37,19 @@ class SshAddon(UmiAddon):
                     log_error("Generate key failed")
                     return False
             if srckeypriv != "" and os.path.exists(srckeypriv):
-                log_debug(f"File Copy    : {os.path.basename(srckeypriv)}")
+                log_debug(
+                    f"File Copy : {os.path.basename(srckeypriv)}",
+                    self.__class__.__qualname__,
+                )
                 if self.files.cp(srckeypriv, f"{dstssh}/{keyfile}") is False:
-                    log_error("Copy key priv failed")
+                    log_error("Copy key priv failed", self.__class__.__qualname__)
                     return False
-                log_debug(f"File Copy    : {os.path.basename(srckeypub)}")
+                log_debug(
+                    f"File Copy : {os.path.basename(srckeypub)}",
+                    self.__class__.__qualname__,
+                )
                 if self.files.cp(srckeypub, f"{dstssh}/{keyfile}.pub") is False:
-                    log_error("Copy key pub failed")
+                    log_error("Copy key pub failed", self.__class__.__qualname__)
                     return False
             return True
         return False
@@ -56,7 +62,10 @@ class SshAddon(UmiAddon):
         dstssh = f"{dst}/umi/ssh/{filename}"
         if os.path.exists(srcssh):
             if filename != "" and os.path.exists(srcssh):
-                log_debug(f"File Copy    : {os.path.basename(srcssh)}")
+                log_debug(
+                    f"File Copy : {os.path.basename(srcssh)}",
+                    self.__class__.__qualname__,
+                )
                 if self.files.cp(srcssh, dstssh) is False:
                     return False
                 if appendfile != "" and os.path.exists(appendfile):
@@ -73,7 +82,10 @@ class SshAddon(UmiAddon):
         if os.path.exists(srcssh):
             os.makedirs(dstssh, exist_ok=True)
             if filename != "" and os.path.exists(f"{srcssh}"):
-                log_debug(f"File Copy    : {os.path.basename(srcssh)}")
+                log_debug(
+                    f"File Copy : {os.path.basename(srcssh)}",
+                    self.__class__.__qualname__,
+                )
                 if self.files.cp(srcssh, dstssh) is False:
                     return False
             return True
@@ -86,7 +98,10 @@ class SshAddon(UmiAddon):
         dstssh = f"{dst}/umi/ssh/{filename}"
         if os.path.exists(srcssh):
             if filename != "" and os.path.exists(srcssh):
-                log_debug(f"File Copy    : {os.path.basename(srcssh)}")
+                log_debug(
+                    f"File Copy : {os.path.basename(srcssh)}",
+                    self.__class__.__qualname__,
+                )
                 if self.files.cp(srcssh, dstssh) is False:
                     return False
             return True

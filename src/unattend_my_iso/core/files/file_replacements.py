@@ -16,8 +16,16 @@ class UmiFileReplacements:
                 file.write(updated_content)
             basename = os.path.basename(file_path)
 
-            log_debug(f"File Replace : '{find}' with '{replace}' in {basename}")
+            # withpart = f" with '{replace}'"
+            withpart = ""
+            log_debug(
+                f"Replaced '{find}'{withpart} in {basename}",
+                self.__class__.__qualname__,
+            )
             return True
         except Exception as e:
-            log_error(f"An error occurred during file replacemnt: {file_path} -> {e}")
+            log_error(
+                f"An error occurred during file replacemnt: {file_path} -> {e}",
+                self.__class__.__qualname__,
+            )
         return False

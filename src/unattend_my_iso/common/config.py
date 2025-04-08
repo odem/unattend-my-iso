@@ -37,6 +37,15 @@ class TaskConfig:
 
 
 @dataclass
+class TaskResult:
+    success: bool
+    msg: str
+    msg_short: str
+    msg_out: str
+    msg_err: str
+
+
+@dataclass
 class TemplateConfig(ArgumentBase):
     name: str
     name_overlay: str

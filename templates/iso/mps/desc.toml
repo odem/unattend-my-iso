@@ -6,14 +6,14 @@ virtio_url = ""
 iso_name = "debian-12.10.0-amd64-netinst.iso"
 iso_url = "https://chuangtzu.ftp.acc.umu.se/debian-cd/current/amd64/iso-cd/debian-12.10.0-amd64-netinst.iso"
 iso_type = "linux"
-answerfile = "preseed_dhcp.cfg"
+answerfile = "preseed_fixip.cfg"
 path_postinstall = "postinstall"
 file_postinstall = "postinstall.bash"
 
 [run]
 vmname = "mps-test"
 net_ports = [[2220, 22]]
-net_devs = [["tap1-mps", "vmbr0"], ["tap2-mps", "vmbr0"]]
+net_devs = [["tap1-mps", "vmbr0"]]
 
 [addon_postinstall]
 copy_additional_scripts = [
@@ -21,11 +21,19 @@ copy_additional_scripts = [
   "postinstall_ssh.bash",
   "postinstall_locale.bash",
 ]
+enable_grub_theme = true
+
+[addon_grub]
+grub_theme = "anon"
 
 [addon_answerfile]
 host_name = "debian12"
 host_domain = "local"
-net_dhcp = false
+net_dhcp = true
+net_ip = "10.23.42.9"
+net_mask = "255.255.255.0"
+net_gateway = "10.23.42.1"
+net_dns = "10.23.42.1"
 packages_install = [
   "openssh-server",
   "build-essential",

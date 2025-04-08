@@ -1,5 +1,5 @@
 import os
-from unattend_my_iso.common.common import TaskResult
+from unattend_my_iso.common.config import TaskResult
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.core.processing.processor_base import TaskProcessorBase
 from unattend_my_iso.common.logging import log_info
@@ -68,9 +68,9 @@ class TaskProcessorIsogen(TaskProcessorBase):
         if template.virtio_name != "":
             srcvirtio = self.files._get_path_isovirtio(args, template)
             if self.exists(srcvirtio):
-                log_info("Download virt: Already present")
+                log_info("Download virt: Already present", self.__class__.__qualname__)
             else:
-                log_info(f"Download virt: {srcvirtio}")
+                log_info(f"Download virt: {srcvirtio}", self.__class__.__qualname__)
                 self._download_file(args, template.virtio_url, template.virtio_name)
             if self.exists(srcvirtio) is False:
                 return False
@@ -79,10 +79,10 @@ class TaskProcessorIsogen(TaskProcessorBase):
 
         srciso = self.files._get_path_isosource(args, template)
         if self.exists(srciso):
-            log_info("Download ISO : Already present")
+            log_info("OS-ISO Already present", self.__class__.__qualname__)
             return True
         else:
-            log_info(f"Download ISO : {srciso}")
+            log_info(f"OS-ISO {srciso}", self.__class__.__qualname__)
             return self._download_file(args, template.iso_url, template.iso_name)
 
     def _extract_iso_contents(self, args: TaskConfig, template: TemplateConfig) -> bool:
@@ -96,7 +96,7 @@ class TaskProcessorIsogen(TaskProcessorBase):
             copied = self.files.chmod(dir_intermediate, privilege=0o200)
             self.files.unmount_folder(dir_mount)
             if copied:
-                log_info(f"Extracted ISO: {file_mount}")
+                log_info(f"Extracted OS-ISO {file_mount}", self.__class__.__qualname__)
                 return True
         return False
 
@@ -115,22 +115,22 @@ class TaskProcessorIsogen(TaskProcessorBase):
             copied = self.files.chmod(dst, privilege=0o200)
             self.files.unmount_folder(dir_mount)
             if copied:
-                log_info(f"Copied virt  : {file_mount}")
+                log_info(f"Copied virt-ISO {file_mount}", self.__class__.__qualname__)
                 return True
         return False
 
     def _copy_addons(self, args: TaskConfig, template: TemplateConfig) -> bool:
         if args.addons.answerfile.answerfile_enabled:
-            if self._copy_addon("answerfile", args, template) is False:
+            if self._integrate_addon("answerfile", args, template) is False:
                 return False
         if args.addons.grub.grub_enabled:
-            if self._copy_addon("grub", args, template) is False:
+            if self._integrate_addon("grub", args, template) is False:
                 return False
         if args.addons.ssh.ssh_enabled:
-            if self._copy_addon("ssh", args, template) is False:
+            if self._integrate_addon("ssh", args, template) is False:
                 return False
         if args.addons.postinstall.postinstall_enabled:
-            if self._copy_addon("postinstall", args, template) is False:
+            if self._integrate_addon("postinstall", args, template) is False:
                 return False
         return True
 
@@ -145,6 +145,9 @@ class TaskProcessorIsogen(TaskProcessorBase):
         if self.isogen.create_iso(
             args, template, fullinter, template.name, dst, args.target.file_mbr
         ):
-            log_info(f"Created ISO  : {dst}.{args.target.file_extension}")
+            log_info(
+                f"Created ISO {dst}.{args.target.file_extension}",
+                self.__class__.__qualname__,
+            )
             return True
         return False

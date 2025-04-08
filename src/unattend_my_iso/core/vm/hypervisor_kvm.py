@@ -13,11 +13,16 @@ class UmiHypervisorKvm(UmiHypervisorBase):
 
     def vm_run(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:
         runcmd = self._create_run_command(args, args_hv)
-        log_info(f"Running VM   : {args_hv.name} (Daemonize: {args.run.daemonize})")
+        log_info(
+            f"Running VM   : {args_hv.name} (Daemonize: {args.run.daemonize})",
+            self.__class__.__qualname__,
+        )
         if args.run.verbosity >= 4:
-            log_debug(f"Run command  : {' '.join(runcmd)}")
+            log_debug(f"Run command  : {' '.join(runcmd)}", self.__class__.__qualname__)
         if self.net.net_start(args_hv) is False:
-            log_error("Networking   : Could not setup network")
+            log_error(
+                "Networking   : Could not setup network", self.__class__.__qualname__
+            )
             return False
 
         if args.run.daemonize:
@@ -26,15 +31,21 @@ class UmiHypervisorKvm(UmiHypervisorBase):
 
     def vm_stop(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:
         if os.path.exists(args_hv.pidfile):
-            log_info(f"Stopping VM  : {args_hv.name} (Daemonize: {args.run.daemonize})")
+            log_info(
+                f"Stopping VM  : {args_hv.name} (Daemonize: {args.run.daemonize})",
+                self.__class__.__qualname__,
+            )
             stopcmd = ["sudo", "pkill", "-F", args_hv.pidfile]
             try:
                 subprocess.run(stopcmd, capture_output=True, text=True, check=True)
                 if self.net.net_stop(args_hv) is False:
-                    log_error("Networking   : Could not stop network")
+                    log_error(
+                        "Networking   : Could not stop network",
+                        self.__class__.__qualname__,
+                    )
                     return False
             except subprocess.CalledProcessError as exe:
-                log_error(f"Exception    : {exe}")
+                log_error(f"Exception    : {exe}", self.__class__.__qualname__)
                 return False
         return True
 
@@ -54,23 +65,29 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             runcmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
         )
         self.vm_run_postsetup(proc, args_hv, True)
-        log_info("\n\nRunning VM   : Press Ctrl+C to stop")
+        log_info("\n\nRunning VM   : Press Ctrl+C to stop", self.__class__.__qualname__)
         return True
 
     def vm_run_postsetup(
         self, proc: subprocess.Popen, args_hv: HypervisorArgs, wait: bool
     ) -> bool:
         if proc.pid <= 0:
-            log_error(f"VM Error     : {proc.pid} -> {proc.stdin} {proc.stderr}")
+            log_error(
+                f"VM Error     : {proc.pid} -> {proc.stdin} {proc.stderr}",
+                self.__class__.__qualname__,
+            )
             return False
-        log_info(f"Process PID  : {proc.pid}")
+        log_info(f"Process PID  : {proc.pid}", self.__class__.__qualname__)
         self.net.assign_nics(args_hv.netdevs)
         if wait:
             try:
                 stdout, stderr = proc.communicate()
-                log_info(f"VM exit     : stdout={stdout}, stderr={stderr}")
+                log_info(
+                    f"VM exit     : stdout={stdout}, stderr={stderr}",
+                    self.__class__.__qualname__,
+                )
             except KeyboardInterrupt:
-                log_info(f"VM stopped   : {args_hv.name}")
+                log_info(f"VM stopped   : {args_hv.name}", self.__class__.__qualname__)
                 proc.terminate()
                 if self.net.net_stop(args_hv) is False:
                     return False
@@ -120,9 +137,15 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         ]
         ret = subprocess.run(rmcmd, capture_output=True, text=True)
         if ret.returncode == 0:
-            log_debug(f"Disk created with size {size_gb} GB -> {diskpath}")
+            log_debug(
+                f"Disk created with size {size_gb} GB -> {diskpath}",
+                self.__class__.__qualname__,
+            )
             return True
-        log_error(f"Error while creating disk size {size_gb} GB -> {diskpath}")
+        log_error(
+            f"Error while creating disk size {size_gb} GB -> {diskpath}",
+            self.__class__.__qualname__,
+        )
         return False
 
     def vm_prepare_tpm(self, socketdir: str, template: TemplateConfig) -> bool:
@@ -137,7 +160,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
                 stderr=subprocess.DEVNULL,
                 close_fds=True,
             )
-            log_info(f"swtpm inst   : {socketdir}")
+            log_info(f"swtpm inst   : {socketdir}", self.__class__.__qualname__)
         return True
 
     def _prepare_disk_efi(self, args: TaskConfig, efidisk: str) -> bool:
@@ -148,7 +171,8 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             copied = subprocess.run(cpcmd, capture_output=True, text=True)
             if copied.returncode != 0:
                 log_error(
-                    f"Could not copy ovmf efi disk: {args.run.uefi_ovmf_vars} to {efidisk}"
+                    f"Could not copy ovmf efi disk: {args.run.uefi_ovmf_vars} to {efidisk}",
+                    self.__class__.__qualname__,
                 )
                 return False
         return True
@@ -278,5 +302,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
                     arr_disk += ["-device", f"virtio-blk-pci,{driveopts}"]
                     i += 1
                 else:
-                    log_error(f"Invalid disk specified: '{disk}'")
+                    log_error(
+                        f"Invalid disk specified: '{disk}'", self.__class__.__qualname__
+                    )
         return arr_disk

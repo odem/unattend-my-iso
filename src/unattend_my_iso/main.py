@@ -1,11 +1,11 @@
 import logging
 from unattend_my_iso.core.reader.cli_reader import CommandlineReader
 from unattend_my_iso.common.logging import init_logger
-from unattend_my_iso.core.processing.processor import TaskProcessor
+from unattend_my_iso.core.processing.processor import UmiTaskProcessor
 
 
 def do_main(work_path: str = ""):
-    proc = TaskProcessor(work_path)
+    proc = UmiTaskProcessor(work_path)
     proc.do_process()
 
 

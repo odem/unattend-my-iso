@@ -55,7 +55,7 @@ def _match_group_with_template(
     from unattend_my_iso.common.templates import read_template_group
 
     if result is None or is_dataclass(result) is False:
-        log_error(f"result is not a valid dataclass: {result}")
+        log_error(f"result is not a valid dataclass: {result}", "ConfigReader")
         return None
     filename = "desc.toml"
     if overlay_name != "":
@@ -63,30 +63,32 @@ def _match_group_with_template(
     file_template = f"{template_path}/iso/{template_name}/{filename}"
     toml_group = read_template_group(file_template, target)
     if toml_group is None:
-        log_error(f"client config is not a valid dataclass: {toml_group}")
+        log_error(
+            f"client config is not a valid dataclass: {toml_group}", "ConfigReader"
+        )
         return None
     for fld in toml_group.items():
         name = fld[0]
         val = fld[1]
         setattr(result, name, val)
-        log_debug(f"tpl_update   : group={target}, name={name}, value={val}")
+        log_debug(f"tpl_update for {target} name={name}", "ConfigReader")
     return result
 
 
 def _match_group_with_cli(result: Optional[Any], target: str) -> Optional[Any]:
     if result is None or is_dataclass(result) is False:
-        log_error(f"result is not a valid dataclass: {result}")
+        log_error(f"result is not a valid dataclass: {result}", "ConfigReader")
         return None
     cfg_cli = get_cli_group(target)
     if cfg_cli is None:
-        log_error(f"client config is not a valid dataclass: {cfg_cli}")
+        log_error(f"client config is not a valid dataclass: {cfg_cli}", "ConfigReader")
         return None
     for field in fields(cfg_cli):
         name = field.name
         val = _get_normalized_value(result, cfg_cli, name)
         if val is not None:
             setattr(result, name, val)
-            log_debug(f"cli_update   : group={target}, name={name}, value={val}")
+            log_debug(f"cli_update for {target} name={name}", "ConfigReader")
     return result
 
 
@@ -123,11 +125,15 @@ def get_configs(work_path: str) -> list[TaskConfig]:
     if isinstance(cli_target, TargetArgs) and cli_target.template is None:
         template_name = DEFAULT_TEMPLATE
         template_overlay = DEFAULT_TEMPLATE_OVERLAY
-        log_debug(f"Use template : {template_name} ({template_overlay})")
+        log_debug(
+            f"Use template : {template_name} ({template_overlay})", "ConfigReader"
+        )
     else:
         template_name = cli_target.template
         template_overlay = cli_target.template_overlay
-        log_debug(f"Use template : {template_name} ({template_overlay})")
+        log_debug(
+            f"Use template : {template_name} ({template_overlay})", "ConfigReader"
+        )
 
     if template_overlay != "*":
         cfg = get_config(cfg_sys, template_name, template_overlay)
@@ -137,7 +143,6 @@ def get_configs(work_path: str) -> list[TaskConfig]:
         path = f"{syspath}/iso/{template_name}"
         overlays = list_overlays(path)
         for overlay in overlays:
-            log_debug(f"OVERLAY: {overlay}")
             cfg = get_config(cfg_sys, template_name, overlay)
             if cfg is not None:
                 cfg.target.template_overlay = overlay
@@ -152,37 +157,41 @@ def get_config(
         "target", template_name, cfg_sys.path_templates, template_overlay
     )
     if cfg_target is None or isinstance(cfg_target, TargetArgs) is False:
-        log_error(f"Matched target config invalid: {cfg_target}")
+        log_error(f"Matched target config invalid: {cfg_target}", "ConfigReader")
         return None
     cfg_run = _match_group(
         "run", template_name, cfg_sys.path_templates, template_overlay
     )
     if cfg_run is None or isinstance(cfg_run, RunArgs) is False:
-        log_error(f"Matched run config invalid: {cfg_run}")
+        log_error(f"Matched run config invalid: {cfg_run}", "ConfigReader")
         return None
     cfg_ssh = _match_group(
         "addon_ssh", template_name, cfg_sys.path_templates, template_overlay
     )
     if cfg_ssh is None or isinstance(cfg_ssh, AddonArgsSsh) is False:
-        log_error(f"Matched addon_ssh config invalid: {cfg_ssh}")
+        log_error(f"Matched addon_ssh config invalid: {cfg_ssh}", "ConfigReader")
         return None
     cfg_grub = _match_group(
         "addon_grub", template_name, cfg_sys.path_templates, template_overlay
     )
     if cfg_grub is None or isinstance(cfg_grub, AddonArgsGrub) is False:
-        log_error(f"Matched addon_grub config invalid: {cfg_grub}")
+        log_error(f"Matched addon_grub config invalid: {cfg_grub}", "ConfigReader")
         return None
     cfg_post = _match_group(
         "addon_postinstall", template_name, cfg_sys.path_templates, template_overlay
     )
     if cfg_post is None or isinstance(cfg_post, AddonArgsPostinstall) is False:
-        log_error(f"Matched addon_postinstall config invalid: {cfg_post}")
+        log_error(
+            f"Matched addon_postinstall config invalid: {cfg_post}", "ConfigReader"
+        )
         return None
     cfg_answer = _match_group(
         "addon_answerfile", template_name, cfg_sys.path_templates, template_overlay
     )
     if cfg_answer is None or isinstance(cfg_answer, AddonArgsAnswerFile) is False:
-        log_error(f"Matched addon_answerfile config invalid: {cfg_answer}")
+        log_error(
+            f"Matched addon_answerfile config invalid: {cfg_answer}", "ConfigReader"
+        )
         return None
     cfg_addons = AddonArgs(cfg_answer, cfg_ssh, cfg_grub, cfg_post)
     return TaskConfig(sys=cfg_sys, addons=cfg_addons, target=cfg_target, run=cfg_run)

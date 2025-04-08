@@ -30,14 +30,17 @@ class UmiIsoGenerator:
 
         cmdstr = " ".join(xorriso_command)
         if args.run.verbosity >= 4:
-            log_debug(f"xorriso cmd  : {cmdstr}")
+            log_debug(f"xorriso cmd  : {cmdstr}", self.__class__.__qualname__)
         out_iso = subprocess.run(
             xorriso_command,
             capture_output=True,
             text=True,
         )
         if out_iso.returncode != 0:
-            log_error(f"xorriso error: {out_iso.stdout}{out_iso.stderr}")
+            log_error(
+                f"xorriso error: {out_iso.stdout}{out_iso.stderr}",
+                self.__class__.__qualname__,
+            )
         return True
 
     def create_irmod(self, path_src: str, path_mod: str, path_in: str):
@@ -79,9 +82,9 @@ class UmiIsoGenerator:
             shell=True,
             check=True,
         )
-        log_debug(f"Delete irmod : {path_mod}")
+        log_debug(f"Delete irmod : {path_mod}", self.__class__.__qualname__)
         shutil.rmtree(path_mod, ignore_errors=False)
-        log_info(f"Created irmod: {path_src}")
+        log_info(f"Created irmod: {path_src}", self.__class__.__qualname__)
 
     def create_efidisk_windows(self, args: TaskConfig, infolder: str):
         mntpath = args.sys.path_mnt
@@ -201,6 +204,9 @@ class UmiIsoGenerator:
                 md5sum_command, shell=True, check=True, capture_output=True, text=True
             )
             if proc.returncode != 0:
-                log_error(f"Error on md5sum: {proc.stdout}{proc.stderr}")
+                log_error(
+                    f"Error on md5sum: {proc.stdout}{proc.stderr}",
+                    self.__class__.__qualname__,
+                )
         except Exception as exe:
-            log_error(f"Exception on md5sum: {exe}")
+            log_error(f"Exception on md5sum: {exe}", self.__class__.__qualname__)

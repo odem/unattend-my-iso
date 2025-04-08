@@ -5,7 +5,6 @@ from unattend_my_iso.addons.grub import GrubAddon
 from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.addons.postinstall import PostinstallAddon
 from unattend_my_iso.addons.ssh import SshAddon
-from unattend_my_iso.common.common import TaskResult
 from unattend_my_iso.common.templates import read_templates_isos
 from unattend_my_iso.core.files.file_manager import UmiFileManager
 from unattend_my_iso.core.iso.iso_generator import UmiIsoGenerator
@@ -19,6 +18,7 @@ from unattend_my_iso.common.config import (
     TaskConfig,
     TemplateConfig,
     get_cfg_sys,
+    TaskResult,
 )
 
 
@@ -45,10 +45,13 @@ class TaskProcessorBase:
         dstinter = self.files._get_path_intermediate(args)
         try:
             if self.isogen.create_efidisk_windows(args, dstinter) is False:
-                log_error(f"Error creating efidisk for windows: {dstinter}")
+                log_error(
+                    f"Error creating efidisk for windows: {dstinter}",
+                    self.__class__.__qualname__,
+                )
                 return False
         except Exception as exe:
-            log_error(f"Exception on efidisk: {exe}")
+            log_error(f"Exception on efidisk: {exe}", self.__class__.__qualname__)
         return True
 
     def _create_irmod_linux(self, args: TaskConfig) -> bool:
@@ -60,12 +63,15 @@ class TaskProcessorBase:
                 subdir = os.path.dirname(initrd)
                 if subdir in args.addons.grub.initrd_list:
                     if self.isogen.create_irmod(subdir, modpath, dstinter) is False:
-                        log_error(f"Error creating irmod: {subdir}")
+                        log_error(
+                            f"Error creating irmod: {subdir}",
+                            self.__class__.__qualname__,
+                        )
                         return False
                 else:
-                    log_info(f"Skipped irmod: {initrd}")
+                    log_info(f"Skipped irmod: {initrd}", self.__class__.__qualname__)
         except Exception as exe:
-            log_error(f"Exception on irmod: {exe}")
+            log_error(f"Exception on irmod: {exe}", self.__class__.__qualname__)
         return True
 
     def _extract_ramdisks(self, path: str) -> list[str]:
@@ -80,12 +86,15 @@ class TaskProcessorBase:
                     matches.append(filepath)
         return matches
 
-    def _copy_addon(
+    def _integrate_addon(
         self, name: str, args: TaskConfig, template: TemplateConfig
     ) -> bool:
         addon = self.addons[name]
         success = addon.integrate_addon(args, template)
-        log_info(f"Addon update : {addon.addon_name} -> {success}")
+        log_info(
+            f"Integrated addon {addon.addon_name} -> {success}",
+            self.__class__.__qualname__,
+        )
         return success
 
     def _get_addons(self):
@@ -161,12 +170,3 @@ class TaskProcessorBase:
         if os.path.exists(path):
             return True
         return False
-
-    def _print_args(self, args: TaskConfig):
-        log_debug(f"Addons: {args.addons}")
-        log_debug(f"Target: {args.target}")
-        log_debug("System:")
-        log_debug(f"  Templates -> {args.sys.path_templates}")
-        log_debug(f"  Mounts    -> {args.sys.path_mnt }")
-        log_debug(f"  out       -> {args.sys.path_intermediate}")
-        log_debug(f"  Iso       -> {args.sys.path_iso}")

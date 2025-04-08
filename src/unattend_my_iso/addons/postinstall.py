@@ -47,7 +47,7 @@ class PostinstallAddon(UmiAddon):
         if os.path.exists(dst) is False:
             os.makedirs(dst)
         if template.file_postinstall != "" and os.path.exists(postfile) is False:
-            log_error("Postinstall file does not exist")
+            log_error("Postinstall file does not exist", self.__class__.__qualname__)
             return ""
         if self.files.cp(postfile, dstfile) is False:
             return ""
@@ -63,10 +63,10 @@ class PostinstallAddon(UmiAddon):
         if template.path_postinstall != "":
             if os.path.exists(srcpath):
                 if self.files.cp(srcpath, dstdir) is False:
-                    log_error("Postinstall copy failed")
+                    log_error("Postinstall copy failed", self.__class__.__qualname__)
                     return False
             else:
-                log_error(f"Invalid path : {srcpath}")
+                log_error(f"Invalid path : {srcpath}", self.__class__.__qualname__)
                 return False
         return True
 
@@ -77,17 +77,18 @@ class PostinstallAddon(UmiAddon):
         dst = f"{interpath}/umi/postinstall"
 
         for filename in args.addons.postinstall.copy_additional_scripts:
-            log_debug(f"Copy File    : {filename}")
+            log_debug(f"Copy File {filename}", self.__class__.__qualname__)
             srcpath = self.get_template_path_optional("postinstall", filename, args)
             dstfile = f"{interpath}/umi/postinstall/{filename}"
-            # if template.path_postinstall != "":
             if os.path.exists(srcpath):
                 os.makedirs(dst, exist_ok=True)
                 if self.files.cp(srcpath, dstfile) is False:
-                    log_error("Postinstall copy failed")
+                    log_error("Postinstall copy failed", self.__class__.__qualname__)
                     return False
             else:
-                log_error("Postinstall file does not exist")
+                log_error(
+                    "Postinstall file does not exist", self.__class__.__qualname__
+                )
                 return False
         return True
 
@@ -105,7 +106,10 @@ class PostinstallAddon(UmiAddon):
                 "grub", f"themes/{args.addons.grub.grub_theme}", args
             )
             if os.path.exists(srcpath) is False:
-                log_error(f"Themefiles not available: {args.addons.grub.grub_theme}")
+                log_error(
+                    f"Themefiles not available: {args.addons.grub.grub_theme}",
+                    "Postinstall",
+                )
                 return False
             if os.path.exists(srcpath):
                 os.makedirs(dst, exist_ok=True)
@@ -148,10 +152,6 @@ class PostinstallAddon(UmiAddon):
             *cfg_answerfile,
             "\n# Postinstall Addon Args ",
             *cfg_postinst,
-            # f"CFG_TYPE={name}",
-            # f"CFG_HOST={hostname}",
-            # f"CFG_DOMAIN={domain}",
-            # f"CFG_VERSION={version}",
         ]
 
         contents = "\n".join(arr)

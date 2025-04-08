@@ -29,7 +29,7 @@ class UmiAddon(ABC):
             if os.path.exists(srcsub) is False:
                 srcsub = f"{srcaddon}/{subpath}"
                 if os.path.exists(srcsub) is False:
-                    log_error(f"Not in searchpath: {subpath}")
+                    log_error(f"No optional template path : {subpath}", "AddonBase")
                     return ""
         return srcsub
 
@@ -62,7 +62,7 @@ class UmiAddon(ABC):
         if kernel == "X.Y.Z-W":
             kernel = self._extract_kernel_version_image(path)
         if kernel == "X.Y.Z-W":
-            log_debug(f"Kernelversion not extracted: {path}")
+            log_debug(f"Kernelversion not extracted: {path}", "AddonBase")
         return kernel
 
     def _apply_replacements(self, replacements: list[Replaceable]) -> bool:
