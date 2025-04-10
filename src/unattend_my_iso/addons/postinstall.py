@@ -120,6 +120,33 @@ class PostinstallAddon(UmiAddon):
                 return False
         return True
 
+    def _create_params_list(self, elements: list, prefix: str = ""):
+        joblist_arg = []
+        for script in elements:
+            entry = f'"{prefix}{script}"'
+            joblist_arg.append(entry)
+        return joblist_arg
+
+    def _create_params_env(self, elements: list, name: str, prefix: str = ""):
+        joblist_arg = ["("]
+        joblist_arg += self._create_params_list(elements, prefix)
+        joblist_arg += [")"]
+        return f"{name}={' '.join(joblist_arg)}"
+
+    def _create_params_alljobs(self, args: TaskConfig, name: str = ""):
+        joblist_arg = ["("]
+        post = args.addons.postinstall
+        joblist_arg += self._create_params_list(post.joblist_early)
+        joblist_arg += self._create_params_list(
+            post.copy_additional_scripts, "/opt/umi/postinstall/"
+        )
+        joblist_arg += self._create_params_list(post.joblist_late)
+        joblist_arg += [")"]
+        result = " ".join(joblist_arg)
+        if name != "":
+            result = f"{name}={result}"
+        return result
+
     def _create_config(self, args: TaskConfig, template: TemplateConfig) -> bool:
         if args.addons.postinstall.create_config is False:
             return True
@@ -135,6 +162,7 @@ class PostinstallAddon(UmiAddon):
         cfg_ssh = args.addons.ssh.get_env_vars()
         cfg_postinst = args.addons.postinstall.get_env_vars()
         cfg_answerfile = args.addons.answerfile.get_env_vars()
+        cfg_joblist = self._create_params_alljobs(args, "CFG_JOBS_ALL")
 
         arr = [
             "#!/bin/bash",
@@ -152,6 +180,7 @@ class PostinstallAddon(UmiAddon):
             *cfg_answerfile,
             "\n# Postinstall Addon Args ",
             *cfg_postinst,
+            cfg_joblist,
         ]
 
         contents = "\n".join(arr)
@@ -201,7 +230,9 @@ class PostinstallAddon(UmiAddon):
         self, args: TaskConfig, postinst: str
     ) -> list[Replaceable]:
         c = args.addons.answerfile
+        cfg_joblist = self._create_params_alljobs(args, "")
         return [
-            Replaceable(postinst, "CFG_USER_OTHER_NAME", c.user_other_name),
-            Replaceable(postinst, "CFG_USER_OTHER_PASSWORD", c.user_other_password),
+            # Replaceable(postinst, "CFG_USER_OTHER_NAME", c.user_other_name),
+            # Replaceable(postinst, "CFG_USER_OTHER_PASSWORD", c.user_other_password),
+            # Replaceable(postinst, "CFG_JOBS_ALL", cfg_joblist),
         ]

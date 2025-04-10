@@ -144,6 +144,20 @@ class CommandlineReader:
             help="Enable or disable a config to be copied into the target (true or false)",
         )
         group_target.add_argument(
+            "-pje",
+            "--joblist_early",
+            type=str,
+            default=None,
+            help="Jobs to execute before copied scripts",
+        )
+        group_target.add_argument(
+            "-pjl",
+            "--joblist_late",
+            type=str,
+            default=None,
+            help="Jobs to execute after copied scripts",
+        )
+        group_target.add_argument(
             "-pa",
             "--copy_additional_scripts",
             type=str,
@@ -477,11 +491,25 @@ class CommandlineReader:
             help="Use custom port forwardings",
         )
         group_target.add_argument(
-            "-rnd",
+            "-rnD",
             "--net_devs",
             type=list,
             default=None,
             help="Use custom network devices",
+        )
+        group_target.add_argument(
+            "-rnB",
+            "--net_bridges",
+            type=list,
+            default=None,
+            help="Use custom network birdges",
+        )
+        group_target.add_argument(
+            "-rnpf",
+            "--net_prepare_fw",
+            type=str,
+            default=None,
+            help="Setup firewall before running vm",
         )
         group_target.add_argument(
             "-rnpn",

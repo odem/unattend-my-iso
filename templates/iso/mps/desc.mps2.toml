@@ -6,9 +6,10 @@ optional_params = { val1 = "mps2" }
 [run]
 vmname = "mps2"
 net_ports = [[2222, 22]]
+net_prepare_fw = true
 net_prepare_nics = true
 net_prepare_bridges = false
-net_devs = [["tap1-mps2", "vmbr0"], ["tap2-mps2", "vmbr0"]]
+net_devs = [["tap1-mps2", "vmbr1"], ["tap2-mps2", "vmbr1"]]
 
 [addon_answerfile]
 host_name = "mps2"

@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Environment variables
+envfile=../config/env.bash
+if [[ -f "$envfile" ]]; then
+    # shellcheck disable=SC1090
+    source "$envfile"
+fi
+
 export DEBIAN_FRONTEND=noninteractive
 cat<< EOF > /etc/apt/sources.list
 deb http://deb.debian.org/debian/ bookworm main contrib non-free-firmware

@@ -101,6 +101,7 @@ def _get_normalized_value(obj_dest, obj_src, name: str) -> Optional[Any]:
                 val = True if lowername == "true" else False
         if type(getattr(obj_dest, name)) is list:
             if isinstance(getattr(obj_src, name), list):
+                log_debug(f"VAL: {val}")
                 testval = "".join(val)
                 if isinstance(testval, str):
                     if testval.startswith("[") and testval.endswith("]"):

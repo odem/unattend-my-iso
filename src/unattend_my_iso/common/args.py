@@ -74,8 +74,12 @@ class RunArgs(ArgumentBase):
     uefi_ovmf_code: str = "/usr/share/OVMF/OVMF_CODE.fd"
     net_ports: list[list[int]] = field(default_factory=lambda: [[2222, 22]])
     net_devs: list[list[str]] = field(default_factory=lambda: [["nat"]])
+    net_bridges: list[list[str]] = field(
+        default_factory=lambda: [["vmbr0", "10.40.1.1", "24", True]]
+    )
     res_cpu: int = 4
     res_mem: int = 4096
+    net_prepare_fw: bool = True
     net_prepare_nics: bool = True
     net_prepare_bridges: bool = True
     build_homedir: str = HOMEDIR
@@ -128,6 +132,8 @@ class AddonArgsPostinstall(ArgumentBase):
     enable_grub_theme: bool = True
     create_config: bool = True
     bashrc_file: str = ".bashrc"
+    joblist_early: list[str] = field(default_factory=lambda: [])
+    joblist_late: list[str] = field(default_factory=lambda: [])
     copy_additional_scripts: list[str] = field(default_factory=lambda: [])
 
 

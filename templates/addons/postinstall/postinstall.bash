@@ -1,17 +1,13 @@
 #!/bin/bash
 
-user=CFG_USER_OTHER_NAME
-password=CFG_USER_OTHER_PASSWORD
 
-JOBS=("/opt/umi/postinstall/postinstall_apt.bash" "/opt/umi/postinstall/postinstall_locale.bash" "/opt/umi/postinstall/postinstall_ssh.bash" "/opt/umi/postinstall/postinstall_mps.bash")
-append_job() {
-    if [[ -f $1 ]] ; then
-        echo "exists: $1 $2 $3"
-        echo "$1" "$2" "$3" >> /firstboot.bash
-    else
-        echo "Not valid: $1 $2 $3"
-    fi
-}
+# Environment variables
+envfile=../config/env.bash
+if [[ -f "$envfile" ]]; then
+    # shellcheck disable=SC1090
+    source "$envfile"
+fi
+JOBS=$CFG_JOBS_ALL 
 
 # Copy bashrc
 if [[ -f /opt/umi/config/.bashrc ]] ; then
@@ -33,14 +29,18 @@ StandardError=tty
 WantedBy=getty.target
 EOF
 
-# preseed-launcher
+# Create firstboot script
 cat <<EOF > /firstboot.bash
 #!/bin/bash
 EOF
-for str in ${JOBS[@]}; do # Do not quote!
-    append_job "$str" "$user" "$password"
+
+# Add Jobs
+num_jobs=${#JOBS[@]}
+for ((i=0; i<num_jobs; i++)); do
+    echo "${JOBS[$i]}" >> /firstboot.bash
 done
 
+# Add Trailer
 cat <<EOF >> /firstboot.bash
 systemctl disable firstboot.service
 rm -rf /etc/systemd/service/firstboot.service

@@ -78,7 +78,6 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             )
             return False
         log_info(f"Process PID  : {proc.pid}", self.__class__.__qualname__)
-        self.net.assign_nics(args_hv.netdevs)
         if wait:
             try:
                 stdout, stderr = proc.communicate()
@@ -105,9 +104,11 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             cdrom,
             [disk],
             args.run.net_devs,
+            args.run.net_bridges,
             args.run.net_ports,
             args.run.res_cpu,
             args.run.res_mem,
+            args.run.net_prepare_fw,
             args.run.net_prepare_nics,
             args.run.net_prepare_bridges,
             pidfile,

@@ -1,17 +1,17 @@
 
 [description]
-name = "mps"
+name = "offline"
 virtio_name = ""
 virtio_url = ""
 iso_name = "debian-12.10.0-amd64-netinst.iso"
 iso_url = "https://chuangtzu.ftp.acc.umu.se/debian-cd/current/amd64/iso-cd/debian-12.10.0-amd64-netinst.iso"
 iso_type = "linux"
 answerfile = "preseed_fixip.cfg"
-path_postinstall = "postinstall"
+path_postinstall = ""
 file_postinstall = "postinstall.bash"
 
 [run]
-vmname = "mps-test"
+vmname = "offline-test"
 net_prepare_fw = true
 net_prepare_nics = true
 net_prepare_bridges = true
@@ -60,22 +60,10 @@ net_devs = [
     "vmbr4",
   ],
 ]
-
-[addon_postinstall]
-copy_additional_scripts = [
-  "postinstall_apt.bash",
-  "postinstall_ssh.bash",
-  "postinstall_locale.bash",
-]
-enable_grub_theme = true
-
-[addon_grub]
-grub_theme = "anon"
-
 [addon_answerfile]
-host_name = "debian12"
+host_name = "offline"
 host_domain = "local"
-net_dhcp = true
+net_dhcp = false
 net_ip = "10.40.1.100"
 net_mask = "255.255.255.0"
 net_gateway = "10.40.1.1"
@@ -96,4 +84,13 @@ packages_install = [
   "curl",
   "gnupg",
   "bsdmainutils",
+]
+
+[addon_postinstall]
+joblist_early = []
+joblist_late = []
+copy_additional_scripts = [
+  "postinstall_apt.bash",
+  "postinstall_ssh.bash",
+  "postinstall_locale.bash",
 ]

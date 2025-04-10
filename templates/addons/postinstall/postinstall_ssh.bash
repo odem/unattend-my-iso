@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Environment variables
+envfile=../config/env.bash
+if [[ -f "$envfile" ]]; then
+    # shellcheck disable=SC1090
+    source "$envfile"
+fi
+
 if [[ -f /opt/umi/ssh/id_rsa.pub ]] ; then
     mkdir -p /root/.ssh
     cp /opt/umi/ssh/id_rsa* /root/.ssh/

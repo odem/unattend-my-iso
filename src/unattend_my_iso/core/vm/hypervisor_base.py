@@ -13,9 +13,11 @@ class HypervisorArgs:
     cdrom: str
     disks: list[str]
     netdevs: list[list[str]]
+    netbridges: list[list[str]]
     portfwd: list[list[int]]
     sys_cpu: int
     sys_mem: int
+    net_prepare_fw: bool
     net_prepare_nics: bool
     net_prepare_bridges: bool
     pidfile: str

@@ -18,7 +18,9 @@ class NicManager:
             else:
                 return False
         except subprocess.CalledProcessError as e:
-            log_error(f"NicManager   : Error checking interface {name}: {e}")
+            log_error(
+                f"Error checking interface {name}: {e}", self.__class__.__qualname__
+            )
             return False
 
     def create_nic(self, name: str):
@@ -28,19 +30,17 @@ class NicManager:
             )
             subprocess.run(["sudo", "ip", "link", "set", "dev", name, "up"], check=True)
         except subprocess.CalledProcessError as e:
-            log_error(f"NicManager   : Error creating {name}: {e}")
+            log_error(f"Error creating {name}: {e}", self.__class__.__qualname__)
             return False
         return True
 
     def create_nics(self, devlists: list[list[str]]):
-        log_debug("NicManager   : Deleting all nics")
         for devlist in devlists:
             name = devlist[0]
             self.create_nic(name)
         return True
 
     def del_nics(self, devlists: list[list[str]]):
-        log_debug("NicManager   : Deleting all nics")
         for devlist in devlists:
             name = devlist[0]
             if self.has_nic(name):
@@ -53,12 +53,11 @@ class NicManager:
                 ["sudo", "ip", "tuntap", "del", "dev", name, "mode", "tap"], check=True
             )
         except subprocess.CalledProcessError as e:
-            log_error(f"NicManager   : Error removing {name}: {e}")
+            log_error(f"Error removing {name}: {e}", self.__class__.__qualname__)
             return False
         return True
 
     def assign_nics(self, devlists: list[list[str]]):
-        log_debug("NicManager   : Assigning all nics to bridges")
         for devlist in devlists:
             name = devlist[0]
             bridge = devlist[1]
@@ -67,7 +66,6 @@ class NicManager:
         return True
 
     def unassign_nics(self, devlists: list[list[str]]):
-        log_debug("NicManager   : Unassigning all nics from bridges")
         for devlist in devlists:
             name = devlist[0]
             bridge = devlist[1]
@@ -80,17 +78,22 @@ class NicManager:
             subprocess.run(
                 ["sudo", "ip", "link", "set", dev, "master", bridge], check=True
             )
-            log_debug(f"NicManager   : {dev} assigned to {bridge}")
+            log_debug(f"{dev} assigned to {bridge}", self.__class__.__qualname__)
         except subprocess.CalledProcessError as e:
-            log_error(f"NicManager   : Error assigning {dev} to {bridge}: {e}")
+            log_error(
+                f"Error assigning {dev} to {bridge}: {e}", self.__class__.__qualname__
+            )
             return False
         return True
 
     def unassign_nic(self, dev: str, bridge: str) -> bool:
         try:
             subprocess.run(["sudo", "ip", "link", "set", dev, "nomaster"], check=True)
-            log_debug(f"NicManager   : {dev} unassigned from {bridge}")
+            log_debug(f"{dev} unassigned from {bridge}", self.__class__.__qualname__)
         except subprocess.CalledProcessError as e:
-            log_error(f"NicManager   : Error unassigning {dev} from {bridge}: {e}")
+            log_error(
+                f"Error unassigning {dev} from {bridge}: {e}",
+                self.__class__.__qualname__,
+            )
             return False
         return True

@@ -19,8 +19,9 @@ TEMPLATE?="mps"
 OVERLAY?=""
 VERBOSITY?=2
 DAEMONIZE?=true
+FIREWALL?=true
 BRIDGES?=true
-NICS?=false
+NICS?=true
 
 # Help
 usage:
@@ -96,13 +97,13 @@ restart-all: | stopall startall
 net-start: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main \
-			-tt $(TEMPLATE) -to "$(OVERLAY)" -tp net_start \
-			-rv $(VERBOSITY) -rnpb "$(BRIDGES)" -rnpn "$(NICS)"
+			-tt $(TEMPLATE) -to "$(OVERLAY)" -tp net_start -rv $(VERBOSITY) \
+			-rnpf "$(FIREWALL)" -rnpb "$(BRIDGES)" -rnpn "$(NICS)"
 net-stop: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main \
-			-tt $(TEMPLATE) -to "$(OVERLAY)" -tp net_stop \
-			-rv $(VERBOSITY) -rnpb "$(BRIDGES)" -rnpn "$(NICS)"
+			-tt $(TEMPLATE) -to "$(OVERLAY)" -tp net_stop -rv $(VERBOSITY) \
+			-rnpf "$(FIREWALL)" -rnpb "$(BRIDGES)" -rnpn "$(NICS)"
 
 help: 
 	@source $(DIR_VENV)/bin/activate ; \

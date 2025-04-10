@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Environment variables
+envfile=../config/env.bash
+if [[ -f "$envfile" ]]; then
+    # shellcheck disable=SC1090
+    source "$envfile"
+fi
+
 # Globals
 export DEBIAN_FRONTEND=noninteractive
 LOCALESTR=en_US.UTF-8
