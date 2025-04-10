@@ -74,8 +74,6 @@ class TaskProcessorIsogen(TaskProcessorBase):
                 self._download_file(args, template.virtio_url, template.virtio_name)
             if self.exists(srcvirtio) is False:
                 return False
-        else:
-            return True
 
         srciso = self.files._get_path_isosource(args, template)
         if self.exists(srciso):

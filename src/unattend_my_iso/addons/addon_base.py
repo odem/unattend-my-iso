@@ -29,7 +29,7 @@ class UmiAddon(ABC):
             if os.path.exists(srcsub) is False:
                 srcsub = f"{srcaddon}/{subpath}"
                 if os.path.exists(srcsub) is False:
-                    log_error(f"No optional template path : {subpath}", "AddonBase")
+                    # log_error(f"No optional template path : {subpath}", "AddonBase")
                     return ""
         return srcsub
 

@@ -28,14 +28,24 @@ class SshAddon(UmiAddon):
         srckeypriv = self.get_template_path_optional(
             "ssh", args.addons.ssh.config_key, args
         )
-        srckeypub = f"{srckeypriv}.pub"
-        dstssh = f"{dst}/umi/ssh"
-        if os.path.exists(srckeypriv):
-            os.makedirs(dstssh, exist_ok=True)
+        if keyfile != "" and srckeypriv == "":
+            dir = self.files._get_path_template(args)
+            sshdir = f"{dir}/ssh"
+            os.makedirs(sshdir, exist_ok=True)
+            srckeypriv = f"{sshdir}/{keyfile}"
+            log_debug(f"Generating key: {srckeypriv}")
             if args.addons.ssh.keygen:
                 if self._generate_key(srckeypriv) is False:
                     log_error("Generate key failed")
                     return False
+        if args.addons.ssh.config_key != "" and srckeypriv == "":
+            log_error("Source key empty")
+            return False
+
+        srckeypub = f"{srckeypriv}.pub"
+        dstssh = f"{dst}/umi/ssh"
+        if os.path.exists(srckeypriv):
+            os.makedirs(dstssh, exist_ok=True)
             if srckeypriv != "" and os.path.exists(srckeypriv):
                 log_debug(
                     f"File Copy : {os.path.basename(srckeypriv)}",
@@ -109,6 +119,7 @@ class SshAddon(UmiAddon):
 
     def _generate_key(self, keyfile: str):
         msg = "y\n"
+        log_debug(f"KEYFILE: {keyfile}")
         subprocess.run(
             ["ssh-keygen", "-q", "-N", "''", "-f", keyfile],
             input=msg.encode(),
