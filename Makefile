@@ -50,8 +50,7 @@ build-pip: $(DIR_VENV)
 		python -m build
 install: build
 	sudo apt install qemu-kvm xorriso ovmf swtpm wimtools isolinux mkisofs
-	source $(DIR_VENV)/bin/activate && \
-		pip install --editable .
+	source $(DIR_VENV)/bin/activate ; pip install --editable .
 build: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main \
