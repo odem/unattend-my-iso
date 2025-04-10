@@ -298,7 +298,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
                     ioname = f"io{i}"
                     diskid = f"disk{i}"
                     diskcache = "cache-size=16M,cache=none"
-                    driveopts = f"drive={diskid},scsi=off,iothread={ioname}"
+                    driveopts = f"drive={diskid},iothread={ioname}"
                     diskopts = f"file={disk},format=qcow2,{diskcache}"
                     arr_disk += ["-object", f"iothread,id={ioname}"]
                     arr_disk += ["-drive", f"if=none,id={diskid},{diskopts}"]
