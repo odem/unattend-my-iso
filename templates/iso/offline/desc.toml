@@ -69,6 +69,7 @@ net_ip = "10.40.121.100"
 net_mask = "255.255.255.0"
 net_gateway = "10.40.121.1"
 net_dns = "8.8.8.8"
+include_offline_packages = ["ifenslave"]
 packages_install = [
   "openssh-server",
   "build-essential",
@@ -91,6 +92,7 @@ packages_install = [
 joblist_early = []
 joblist_late = []
 copy_additional_scripts = [
+  "postinstall_offline_packages.bash",
   "postinstall_apt.bash",
   "postinstall_ssh.bash",
   "postinstall_locale.bash",

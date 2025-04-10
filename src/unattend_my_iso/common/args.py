@@ -83,6 +83,7 @@ class RunArgs(ArgumentBase):
     net_prepare_fw: bool = True
     net_prepare_nics: bool = True
     net_prepare_bridges: bool = True
+    net_clean_old_vm: bool = True
     build_homedir: str = HOMEDIR
     build_user: str = USER
     file_pid: str = "vm.pid"
@@ -114,6 +115,7 @@ class AddonArgsAnswerFile(ArgumentBase):
     user_other_password: str = "umipass"
     packages_install: list[str] = field(default_factory=lambda: [])
     grub_install_device: str = "default"
+    include_offline_packages: list[str] = field(default_factory=lambda: [])
 
 
 @dataclass

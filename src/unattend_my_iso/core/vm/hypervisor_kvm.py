@@ -113,6 +113,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             args.run.net_prepare_nics,
             args.run.net_prepare_bridges,
             pidfile,
+            args.run.net_clean_old_vm,
         )
 
     def vm_prepare_disks(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:

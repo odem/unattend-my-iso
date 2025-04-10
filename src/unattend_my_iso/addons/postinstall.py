@@ -229,10 +229,10 @@ class PostinstallAddon(UmiAddon):
     def _create_replacements_postinst(
         self, args: TaskConfig, postinst: str
     ) -> list[Replaceable]:
-        c = args.addons.answerfile
+        # c = args.addons.answerfile
         cfg_joblist = self._create_params_alljobs(args, "")
         return [
+            Replaceable(postinst, "CFG_JOBS_ALL", cfg_joblist),
             # Replaceable(postinst, "CFG_USER_OTHER_NAME", c.user_other_name),
             # Replaceable(postinst, "CFG_USER_OTHER_PASSWORD", c.user_other_password),
-            # Replaceable(postinst, "CFG_JOBS_ALL", cfg_joblist),
         ]

@@ -1,4 +1,5 @@
 from unattend_my_iso.common.config import TaskResult, TaskConfig, TemplateConfig
+from unattend_my_iso.common.logging import log_error
 from unattend_my_iso.core.processing.processor_base import TaskProcessorBase
 
 
@@ -10,6 +11,12 @@ class TaskProcessorVmRun(TaskProcessorBase):
     def task_vm_start(self, args: TaskConfig, template: TemplateConfig) -> TaskResult:
         hyperargs = self.hvrunner.vm_get_args(args, template)
         vmdir = self.files._get_path_vm(args)
+        recreate = True
+        if recreate:
+            if self.files.rm(vmdir) is False:
+                log_error(f"Could not delete vm dir: {vmdir}")
+                return self._get_error_result(f"Error on deleting vmdir: {vmdir}")
+
         socketdir = f"{vmdir}/swtpm"
         if hyperargs is not None:
             if template.iso_type == "windows":

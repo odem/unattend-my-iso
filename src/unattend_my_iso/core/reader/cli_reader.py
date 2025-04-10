@@ -393,6 +393,13 @@ class CommandlineReader:
             default=None,
             help="The device to install grub to",
         )
+        group_target.add_argument(
+            "-aiop",
+            "--include_offline_packages",
+            type=str,
+            default=None,
+            help="The packages to include",
+        )
 
     def _create_parser_args_run(self, p: argparse.ArgumentParser):
         group_target = p.add_argument_group(
@@ -524,6 +531,13 @@ class CommandlineReader:
             type=str,
             default=None,
             help="Setup bridges before running vm",
+        )
+        group_target.add_argument(
+            "-rncov",
+            "--net_clean_old_vm",
+            type=str,
+            default=None,
+            help="Clean old vm before running a new one",
         )
         return group_target
 

@@ -7,7 +7,7 @@ if [[ -f "$envfile" ]]; then
     # shellcheck disable=SC1090
     source "$envfile"
 fi
-JOBS=$CFG_JOBS_ALL 
+JOBS=CFG_JOBS_ALL 
 
 # Copy bashrc
 if [[ -f /opt/umi/config/.bashrc ]] ; then
@@ -36,6 +36,8 @@ EOF
 
 # Add Jobs
 num_jobs=${#JOBS[@]}
+echo "JOBS: ${JOBS[*]}"
+echo "Num Jobs: $num_jobs"
 for ((i=0; i<num_jobs; i++)); do
     echo "${JOBS[$i]}" >> /firstboot.bash
 done

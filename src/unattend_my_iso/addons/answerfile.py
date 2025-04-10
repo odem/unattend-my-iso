@@ -1,4 +1,5 @@
 import os
+import subprocess
 from typing_extensions import override
 from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
@@ -13,6 +14,8 @@ class AnswerFileAddon(UmiAddon):
     @override
     def integrate_addon(self, args: TaskConfig, template: TemplateConfig) -> bool:
         if self.copy_answerfile(args, template) is False:
+            return False
+        if self.copy_offline_packages(args, template) is False:
             return False
         return True
 
@@ -32,6 +35,26 @@ class AnswerFileAddon(UmiAddon):
         else:
             log_error(f"Path does not exist: {srcpreseed}", "Answerfile")
         return False
+
+    def copy_offline_packages(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        interpath = self.files._get_path_intermediate(args)
+        dst = f"{interpath}/umi/packages"
+        if os.path.exists(dst) is False:
+            os.makedirs(dst, exist_ok=True)
+        original_dir = os.getcwd()
+        os.chdir(dst)
+        packages = args.addons.answerfile.include_offline_packages
+        if len(packages) > 0:
+            for filename in packages:
+                log_debug(f"Copy File {filename}", self.__class__.__qualname__)
+                subprocess.run(
+                    ["apt", "download", filename],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    check=True,
+                )
+            os.chdir(original_dir)
+        return True
 
     def _create_replacements(self, args: TaskConfig, preseed: str) -> list[Replaceable]:
         c = args.addons.answerfile

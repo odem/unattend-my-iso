@@ -22,6 +22,7 @@ class HypervisorArgs:
     net_prepare_nics: bool
     net_prepare_bridges: bool
     pidfile: str
+    clean_old_vm: bool
 
 
 class UmiHypervisorBase(ABC):

@@ -36,6 +36,7 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
 
     def mv(self, src: str, dst: str) -> bool:
         try:
+            log_debug(f"Moving {src} to {dst}")
             if os.path.exists(src):
                 shutil.move(src, dst)
         except Exception as exe:
