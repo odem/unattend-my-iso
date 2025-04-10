@@ -15,6 +15,7 @@ class HypervisorArgs:
     netdevs: list[list[str]]
     netbridges: list[list[str]]
     portfwd: list[list[int]]
+    uplink_device: str
     sys_cpu: int
     sys_mem: int
     net_prepare_fw: bool

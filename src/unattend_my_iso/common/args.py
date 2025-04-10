@@ -72,6 +72,7 @@ class RunArgs(ArgumentBase):
     daemonize: bool = True
     uefi_ovmf_vars: str = "/usr/share/OVMF/OVMF_VARS.fd"
     uefi_ovmf_code: str = "/usr/share/OVMF/OVMF_CODE.fd"
+    uplink_dev: str = ""
     net_ports: list[list[int]] = field(default_factory=lambda: [[2222, 22]])
     net_devs: list[list[str]] = field(default_factory=lambda: [["nat"]])
     net_bridges: list[list[str]] = field(

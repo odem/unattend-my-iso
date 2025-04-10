@@ -38,15 +38,15 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             stopcmd = ["sudo", "pkill", "-F", args_hv.pidfile]
             try:
                 subprocess.run(stopcmd, capture_output=True, text=True, check=True)
-                if self.net.net_stop(args_hv) is False:
-                    log_error(
-                        "Networking   : Could not stop network",
-                        self.__class__.__qualname__,
-                    )
-                    return False
             except subprocess.CalledProcessError as exe:
                 log_error(f"Exception    : {exe}", self.__class__.__qualname__)
                 return False
+        if self.net.net_stop(args_hv) is False:
+            log_error(
+                "Networking   : Could not stop network",
+                self.__class__.__qualname__,
+            )
+            return False
         return True
 
     def vm_run_nonblocking(self, runcmd: list[str], args_hv: HypervisorArgs) -> bool:
@@ -106,6 +106,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             args.run.net_devs,
             args.run.net_bridges,
             args.run.net_ports,
+            args.run.uplink_dev,
             args.run.res_cpu,
             args.run.res_mem,
             args.run.net_prepare_fw,

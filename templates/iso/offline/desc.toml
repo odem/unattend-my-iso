@@ -16,28 +16,29 @@ net_prepare_fw = true
 net_prepare_nics = true
 net_prepare_bridges = true
 net_ports = [[2220, 22]]
+uplink_device = "enx04b9e3c01ac6"
 net_bridges = [
   [
     "vmbr1",
-    "10.40.1.1",
+    "10.40.121.1",
     "24",
     true,
   ],
   [
     "vmbr2",
-    "10.40.2.1",
+    "10.40.122.1",
     "24",
     true,
   ],
   [
     "vmbr3",
-    "10.40.3.1",
+    "10.40.123.1",
     "24",
     true,
   ],
   [
     "vmbr4",
-    "10.40.4.1",
+    "10.40.124.1",
     "24",
     true,
   ],
@@ -64,10 +65,10 @@ net_devs = [
 host_name = "offline"
 host_domain = "local"
 net_dhcp = false
-net_ip = "10.40.1.100"
+net_ip = "10.40.121.100"
 net_mask = "255.255.255.0"
-net_gateway = "10.40.1.1"
-net_dns = "10.40.1.1"
+net_gateway = "10.40.121.1"
+net_dns = "8.8.8.8"
 packages_install = [
   "openssh-server",
   "build-essential",

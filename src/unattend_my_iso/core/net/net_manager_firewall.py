@@ -52,6 +52,11 @@ class FirewallManager:
     def del_masquerading(self, name: str) -> bool:
         if self.has_masquerading(name) is False:
             return True
+        if name == "":
+            log_error(
+                f"The uplink device name was empty: {name}", self.__class__.__qualname__
+            )
+            return False
         try:
             subprocess.run(
                 [
@@ -96,3 +101,37 @@ class FirewallManager:
                     if self.del_masquerading(name) is False:
                         return False
         return True
+
+    def get_default_route_interfaces(self) -> list[str]:
+        try:
+            output = subprocess.check_output(
+                ["ip", "route", "show", "default"], text=True
+            )
+            interfaces = []
+            for line in output.strip().splitlines():
+                parts = line.split()
+                if "dev" in parts:
+                    dev_index = parts.index("dev") + 1
+                    if dev_index < len(parts):
+                        interfaces.append(parts[dev_index])
+            return interfaces
+
+        except subprocess.CalledProcessError as e:
+            print(f"Error running ip route: {e}")
+            return []
+
+    def set_ip_forwarding(self, enable: bool):
+        value = "1" if enable else "0"
+        try:
+            subprocess.run(
+                ["sudo", "sysctl", "-w", f"net.ipv4.ip_forward={value}"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+            )
+            log_debug(f"Set ip forwarding to {value}", self.__class__.__qualname__)
+        except subprocess.CalledProcessError as e:
+            log_debug(
+                f"Exception while setting ip forwarding: {e}",
+                self.__class__.__qualname__,
+            )
