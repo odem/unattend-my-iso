@@ -46,7 +46,7 @@ $(DIR_VENV):
 build-pip: $(DIR_VENV)
 	source $(DIR_VENV)/bin/activate && \
 		pip install --upgrade build && \
-		pip install -r requirements.txt && \
+		pip install -r requirements.txt ; \
 		python -m build
 install: build
 	sudo apt install qemu-kvm xorriso ovmf swtpm wimtools isolinux mkisofs

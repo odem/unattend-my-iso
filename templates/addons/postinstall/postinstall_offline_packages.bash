@@ -8,7 +8,7 @@ if [[ -f "$envfile" ]]; then
 fi
 
 export DEBIAN_FRONTEND=noninteractive
-for file in /opt/umi/postinstall/* ; do 
+for file in /opt/umi/packages/* ; do 
     if [[ -f "$file" ]] ; then
         dpkg -i "$file"
     fi

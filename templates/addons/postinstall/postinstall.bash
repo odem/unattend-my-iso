@@ -11,7 +11,10 @@ JOBS=CFG_JOBS_ALL
 
 # Copy bashrc
 if [[ -f /opt/umi/config/.bashrc ]] ; then
-    cp /opt/umi/config/.bashrc ~
+    chmod 644 ~/.bashrc
+    cat /opt/umi/config/.bashrc > ~/.bashrc
+else
+    echo ".bashrc not present!"
 fi
 
 # systemd unit
