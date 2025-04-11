@@ -1,7 +1,7 @@
 import os
+from unattend_my_iso.core.subprocess.caller import run
 from os.path import isdir, isfile
 import shutil
-import subprocess
 import requests
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.core.files.file_contents import UmiFileContents
@@ -61,7 +61,7 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
     def copy_folder_iso(self, src: str, dst: str) -> bool:
         try:
             self.rm(dst)
-            subprocess.run(["cp", "-r", src, dst])
+            run(["cp", "-r", src, dst])
         except Exception as exe:
             log_error(f"Error on copy_folder_iso: {exe}")
             return False

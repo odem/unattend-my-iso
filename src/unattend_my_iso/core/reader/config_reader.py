@@ -136,7 +136,10 @@ def get_configs(work_path: str) -> list[TaskConfig]:
             f"Use template : {template_name} ({template_overlay})", "ConfigReader"
         )
 
-    if template_overlay != "*":
+    if template_overlay == "":
+        cfg = get_config(cfg_sys, template_name, template_overlay)
+        result.append(cfg)
+    elif template_overlay != "*":
         cfg = get_config(cfg_sys, template_name, template_overlay)
         result.append(cfg)
     else:

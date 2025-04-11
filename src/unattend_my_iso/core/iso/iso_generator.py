@@ -1,4 +1,9 @@
-import subprocess
+from unattend_my_iso.core.subprocess.caller import (
+    run,
+    Popen,
+    PIPE,
+    DEVNULL,
+)
 import os
 import shutil
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
@@ -31,7 +36,7 @@ class UmiIsoGenerator:
         cmdstr = " ".join(xorriso_command)
         if args.run.verbosity >= 4:
             log_debug(f"xorriso cmd  : {cmdstr}", self.__class__.__qualname__)
-        out_iso = subprocess.run(
+        out_iso = run(
             xorriso_command,
             capture_output=True,
             text=True,
@@ -51,10 +56,8 @@ class UmiIsoGenerator:
         initrd_location = f"{path_in}/{path_src}"
         initrd_filepath = os.path.join(initrd_location, "initrd.gz")
         with open(initrd_filepath, "rb") as initrd_file:
-            gzip_process = subprocess.Popen(
-                ["gzip", "-d", "-c"], stdin=initrd_file, stdout=subprocess.PIPE
-            )
-            subprocess.run(
+            gzip_process = Popen(["gzip", "-d", "-c"], stdin=initrd_file, stdout=PIPE)
+            run(
                 [
                     "fakeroot",
                     "cpio",
@@ -65,8 +68,8 @@ class UmiIsoGenerator:
                     "--no-absolute-filenames",
                 ],
                 stdin=gzip_process.stdout,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
+                stdout=DEVNULL,
+                stderr=DEVNULL,
                 check=True,
             )
             if gzip_process.stdout is not None:
@@ -75,7 +78,7 @@ class UmiIsoGenerator:
         preseed_dst = os.path.join(path_mod, "preseed.cfg")
         shutil.copy(preseed_src, preseed_dst)
         os.chdir(path_mod)
-        subprocess.run(
+        run(
             f"find . | cpio -o -H newc 2>/dev/null | gzip -9 > {{}}/{path_src}/initrd-umi.gz".format(
                 base_dir
             ),
@@ -91,12 +94,12 @@ class UmiIsoGenerator:
         dstmount = f"{mntpath}/efiboot"
         dstmgr = f"{dstmount}/efi/boot"
         srcefi = f"{infolder}/efiboot.img"
-        subprocess.run(
+        run(
             ["dd", "if=/dev/zero", f"of={srcefi}", "bs=1M", "count=64"],
             capture_output=True,
             text=True,
         )
-        subprocess.run(
+        run(
             ["/usr/sbin/mkfs.fat", "-F32", f"{infolder}/efiboot.img"],
             capture_output=True,
             text=True,
@@ -104,8 +107,8 @@ class UmiIsoGenerator:
         log_debug(f"Create efi   : {infolder}/efiboot.img")
         os.makedirs(dstmount, exist_ok=True)
         self.files.mount_folder(srcefi, dstmount, "loop")
-        subprocess.run(["sudo", "mkdir", "-p", f"{dstmount}/efi/boot"])
-        subprocess.run(
+        run(["sudo", "mkdir", "-p", f"{dstmount}/efi/boot"])
+        run(
             [
                 "sudo",
                 "wimlib-imagex",
@@ -118,7 +121,7 @@ class UmiIsoGenerator:
             capture_output=True,
             text=True,
         )
-        subprocess.run(
+        run(
             [
                 "sudo",
                 "mv",
@@ -200,7 +203,7 @@ class UmiIsoGenerator:
             f"md5sum $( {find_command} ) > {infolder}/md5sum.txt 2>/dev/null"
         )
         try:
-            proc = subprocess.run(
+            proc = run(
                 md5sum_command, shell=True, check=True, capture_output=True, text=True
             )
             if proc.returncode != 0:

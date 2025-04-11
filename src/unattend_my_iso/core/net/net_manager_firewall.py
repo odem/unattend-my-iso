@@ -1,4 +1,4 @@
-import subprocess
+from unattend_my_iso.core.subprocess.caller import run, CalledProcessError, PIPE
 from unattend_my_iso.common.logging import log_debug, log_error
 
 
@@ -8,16 +8,16 @@ class FirewallManager:
 
     def has_masquerading(self, name: str) -> bool:
         try:
-            ret = subprocess.run(
+            ret = run(
                 ["sudo", "iptables", "-t", "nat", "-L", "POSTROUTING", "-n", "-v"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stdout=PIPE,
+                stderr=PIPE,
                 text=True,
             )
             for line in ret.stdout.splitlines():
                 if "MASQUERADE" in line and name in line:
                     return True
-        except subprocess.CalledProcessError as e:
+        except CalledProcessError as e:
             log_error(f"Error checking {name}: {e}", self.__class__.__qualname__)
         return False
 
@@ -25,7 +25,7 @@ class FirewallManager:
         if self.has_masquerading(name):
             return True
         try:
-            subprocess.run(
+            run(
                 [
                     "sudo",
                     "iptables",
@@ -44,7 +44,7 @@ class FirewallManager:
                 f"Added masquerading on {name}",
                 self.__class__.__qualname__,
             )
-        except subprocess.CalledProcessError as e:
+        except CalledProcessError as e:
             log_error(f"Error creating {name}: {e}", self.__class__.__qualname__)
             return False
         return True
@@ -58,7 +58,7 @@ class FirewallManager:
             )
             return False
         try:
-            subprocess.run(
+            run(
                 [
                     "sudo",
                     "iptables",
@@ -77,7 +77,7 @@ class FirewallManager:
                 f"Deleted masquerading on {name}",
                 self.__class__.__qualname__,
             )
-        except subprocess.CalledProcessError as e:
+        except CalledProcessError as e:
             log_error(f"Error creating {name}: {e}", self.__class__.__qualname__)
             return False
         return True
@@ -104,33 +104,33 @@ class FirewallManager:
 
     def get_default_route_interfaces(self) -> list[str]:
         try:
-            output = subprocess.check_output(
-                ["ip", "route", "show", "default"], text=True
-            )
+            proc = run(["ip", "route", "show", "default"], text=True)
             interfaces = []
-            for line in output.strip().splitlines():
-                parts = line.split()
-                if "dev" in parts:
-                    dev_index = parts.index("dev") + 1
-                    if dev_index < len(parts):
-                        interfaces.append(parts[dev_index])
+
+            if proc.stdout != None and proc.stdout != "":
+                for line in proc.stdout.strip().splitlines():
+                    parts = line.split()
+                    if "dev" in parts:
+                        dev_index = parts.index("dev") + 1
+                        if dev_index < len(parts):
+                            interfaces.append(parts[dev_index])
             return interfaces
 
-        except subprocess.CalledProcessError as e:
+        except CalledProcessError as e:
             print(f"Error running ip route: {e}")
             return []
 
     def set_ip_forwarding(self, enable: bool):
         value = "1" if enable else "0"
         try:
-            subprocess.run(
+            run(
                 ["sudo", "sysctl", "-w", f"net.ipv4.ip_forward={value}"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stdout=PIPE,
+                stderr=PIPE,
                 check=True,
             )
             log_debug(f"Set ip forwarding to {value}", self.__class__.__qualname__)
-        except subprocess.CalledProcessError as e:
+        except CalledProcessError as e:
             log_debug(
                 f"Exception while setting ip forwarding: {e}",
                 self.__class__.__qualname__,

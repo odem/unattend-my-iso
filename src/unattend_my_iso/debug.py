@@ -12,7 +12,7 @@ def run():
     if spec is not None and spec.loader is not None:
         loaded_module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(loaded_module)
-        loaded_module.main(work_path=cwd_path)
+        loaded_module.main(work_path=cwd_path, debug=True)
 
 
 run()

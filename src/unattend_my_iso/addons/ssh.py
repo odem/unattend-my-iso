@@ -1,5 +1,5 @@
 import os
-import subprocess
+from unattend_my_iso.core.subprocess.caller import run, PIPE
 from typing_extensions import override
 from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
@@ -120,11 +120,11 @@ class SshAddon(UmiAddon):
     def _generate_key(self, keyfile: str):
         msg = "y\n"
         log_debug(f"KEYFILE: {keyfile}")
-        subprocess.run(
+        run(
             ["ssh-keygen", "-q", "-N", "''", "-f", keyfile],
             input=msg.encode(),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stdout=PIPE,
+            stderr=PIPE,
             capture_output=False,
             text=False,
         )

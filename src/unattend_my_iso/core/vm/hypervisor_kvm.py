@@ -1,5 +1,12 @@
 import os
-import subprocess
+from unattend_my_iso.core.subprocess.caller import (
+    run,
+    run_background,
+    CalledProcessError,
+    Popen,
+    PIPE,
+    DEVNULL,
+)
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.core.net.net_manager import UmiNetworkManager
 from unattend_my_iso.core.vm.hypervisor_base import HypervisorArgs, UmiHypervisorBase
@@ -37,8 +44,8 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             )
             stopcmd = ["sudo", "pkill", "-F", args_hv.pidfile]
             try:
-                subprocess.run(stopcmd, capture_output=True, text=True, check=True)
-            except subprocess.CalledProcessError as exe:
+                run(stopcmd, capture_output=True, text=True, check=True)
+            except CalledProcessError as exe:
                 log_error(f"Exception    : {exe}", self.__class__.__qualname__)
                 return False
         if self.net.net_stop(args_hv) is False:
@@ -50,26 +57,24 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         return True
 
     def vm_run_nonblocking(self, runcmd: list[str], args_hv: HypervisorArgs) -> bool:
-        proc = subprocess.Popen(
+        proc = run_background(
             runcmd,
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            stdin=DEVNULL,
+            stdout=DEVNULL,
+            stderr=DEVNULL,
             close_fds=True,
         )
         self.vm_run_postsetup(proc, args_hv, False)
         return True
 
     def vm_run_blocking(self, runcmd: list[str], args_hv: HypervisorArgs) -> bool:
-        proc = subprocess.Popen(
-            runcmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
-        )
+        proc = run_background(runcmd, stdout=PIPE, stderr=PIPE, text=True)
         self.vm_run_postsetup(proc, args_hv, True)
         log_info("\n\nRunning VM   : Press Ctrl+C to stop", self.__class__.__qualname__)
         return True
 
     def vm_run_postsetup(
-        self, proc: subprocess.Popen, args_hv: HypervisorArgs, wait: bool
+        self, proc: Popen, args_hv: HypervisorArgs, wait: bool
     ) -> bool:
         if proc.pid <= 0:
             log_error(
@@ -138,7 +143,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             diskpath,
             f"{size_gb}G",
         ]
-        ret = subprocess.run(rmcmd, capture_output=True, text=True)
+        ret = run(rmcmd, capture_output=True, text=True)
         if ret.returncode == 0:
             log_debug(
                 f"Disk created with size {size_gb} GB -> {diskpath}",
@@ -154,13 +159,13 @@ class UmiHypervisorKvm(UmiHypervisorBase):
     def vm_prepare_tpm(self, socketdir: str, template: TemplateConfig) -> bool:
         if template.iso_type == "windows":
             if os.path.exists(f"{socketdir}-socket"):
-                subprocess.run(["pkill", "-f", "swtpm"])
+                run(["pkill", "-f", "swtpm"])
             os.makedirs(socketdir, exist_ok=True)
             runcmd = self._create_tpm_command(socketdir)
-            subprocess.Popen(
+            Popen(
                 runcmd,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
+                stdout=DEVNULL,
+                stderr=DEVNULL,
                 close_fds=True,
             )
             log_info(f"swtpm inst   : {socketdir}", self.__class__.__qualname__)
@@ -170,8 +175,8 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         if os.path.exists(efidisk) is False:
             rmcmd = ["rm", efidisk]
             cpcmd = ["cp", args.run.uefi_ovmf_vars, efidisk]
-            subprocess.run(rmcmd, capture_output=True, text=True)
-            copied = subprocess.run(cpcmd, capture_output=True, text=True)
+            run(rmcmd, capture_output=True, text=True)
+            copied = run(cpcmd, capture_output=True, text=True)
             if copied.returncode != 0:
                 log_error(
                     f"Could not copy ovmf efi disk: {args.run.uefi_ovmf_vars} to {efidisk}",

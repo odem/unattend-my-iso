@@ -1,10 +1,10 @@
 import os
-import subprocess
 from typing_extensions import override
 from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.common.logging import log_debug, log_error
 from unattend_my_iso.common.model import Replaceable
+from unattend_my_iso.core.subprocess import caller
 
 
 class AnswerFileAddon(UmiAddon):
@@ -41,19 +41,18 @@ class AnswerFileAddon(UmiAddon):
         dst = f"{interpath}/umi/packages"
         if os.path.exists(dst) is False:
             os.makedirs(dst, exist_ok=True)
-        original_dir = os.getcwd()
         os.chdir(dst)
         packages = args.addons.answerfile.include_offline_packages
         if len(packages) > 0:
             for filename in packages:
                 log_debug(f"Copy File {filename}", self.__class__.__qualname__)
-                subprocess.run(
+                caller.run(
                     ["apt", "download", filename],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
+                    stdout=caller.PIPE,
+                    stderr=caller.PIPE,
                     check=True,
                 )
-            os.chdir(original_dir)
+        os.chdir(args.sys.path_cwd)
         return True
 
     def _create_replacements(self, args: TaskConfig, preseed: str) -> list[Replaceable]:

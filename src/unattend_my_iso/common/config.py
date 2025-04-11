@@ -25,6 +25,7 @@ class SysConfig:
     path_intermediate: str
     path_iso: str
     path_vm: str
+    path_cwd: str
     tool_version: str
 
 
@@ -68,6 +69,7 @@ def get_cfg_sys(work_path: str) -> SysConfig:
         path_intermediate=f"{work_path}/data/out",
         path_iso=f"{work_path}/data/iso",
         path_vm=f"{work_path}/data/vm",
+        path_cwd=work_path,
         tool_version=APP_VERSION,
     )
 

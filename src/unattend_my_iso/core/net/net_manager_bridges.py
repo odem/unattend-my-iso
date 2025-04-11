@@ -1,4 +1,8 @@
-import subprocess
+from unattend_my_iso.core.subprocess.caller import (
+    run,
+    CalledProcessError,
+    PIPE,
+)
 from unattend_my_iso.common.logging import log_debug, log_error
 
 
@@ -17,22 +21,18 @@ class BridgeManager:
     def has_bridge(self, name: str) -> bool:
         rmcmd = ["sudo", "ip", "link", "show", name]
         try:
-            subprocess.run(rmcmd, capture_output=True, text=True, check=True)
-        except subprocess.CalledProcessError:
+            run(rmcmd, capture_output=True, text=True, check=True)
+        except CalledProcessError:
             return False
         return True
 
     def add_bridge(self, name: str, ip: str, mask: str) -> bool:
         try:
-            subprocess.run(
-                ["sudo", "ip", "link", "add", name, "type", "bridge"], check=True
-            )
-            subprocess.run(["sudo", "ip", "link", "set", name, "up"], check=True)
-            subprocess.run(
-                ["sudo", "ip", "addr", "add", f"{ip}/{mask}", "dev", name], check=True
-            )
+            run(["sudo", "ip", "link", "add", name, "type", "bridge"], check=True)
+            run(["sudo", "ip", "link", "set", name, "up"], check=True)
+            run(["sudo", "ip", "addr", "add", f"{ip}/{mask}", "dev", name], check=True)
             log_debug(f"Bridge {name} created", self.__class__.__qualname__)
-        except subprocess.CalledProcessError as e:
+        except CalledProcessError as e:
             log_error(
                 f"Error creating bridge {name}: {e}",
                 self.__class__.__qualname__,
@@ -42,9 +42,9 @@ class BridgeManager:
 
     def del_bridge(self, name: str) -> bool:
         try:
-            subprocess.run(["sudo", "ip", "link", "delete", name], check=True)
+            run(["sudo", "ip", "link", "delete", name], check=True)
             log_debug(f"Bridge {name} deleted", self.__class__.__qualname__)
-        except subprocess.CalledProcessError as e:
+        except CalledProcessError as e:
             log_error(
                 f"Error deleting bridge {name}: {e}",
                 self.__class__.__qualname__,
@@ -74,16 +74,16 @@ class BridgeManager:
 
     def has_nic(self, name: str):
         try:
-            result = subprocess.run(
+            result = run(
                 ["ip", "link", "show", name],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stdout=PIPE,
+                stderr=PIPE,
             )
             if result.returncode == 0:
                 return True
             else:
                 return False
-        except subprocess.CalledProcessError as e:
+        except CalledProcessError as e:
             log_error(
                 f"Error checking interface {name}: {e}",
                 self.__class__.__qualname__,
@@ -92,23 +92,19 @@ class BridgeManager:
 
     def add_nic(self, name: str):
         try:
-            subprocess.run(
-                ["sudo", "ip", "tuntap", "add", "dev", name, "mode", "tap"], check=True
-            )
-            subprocess.run(["sudo", "ip", "link", "set", "dev", name, "up"], check=True)
+            run(["sudo", "ip", "tuntap", "add", "dev", name, "mode", "tap"], check=True)
+            run(["sudo", "ip", "link", "set", "dev", name, "up"], check=True)
             log_debug(f"Nic {name} created", self.__class__.__qualname__)
-        except subprocess.CalledProcessError as e:
+        except CalledProcessError as e:
             log_error(f"Error creating {name}: {e}")
             return False
         return True
 
     def del_nic(self, name: str):
         try:
-            subprocess.run(
-                ["sudo", "ip", "tuntap", "del", "dev", name, "mode", "tap"], check=True
-            )
+            run(["sudo", "ip", "tuntap", "del", "dev", name, "mode", "tap"], check=True)
             log_debug(f"Nic {name} deleted", self.__class__.__qualname__)
-        except subprocess.CalledProcessError as e:
+        except CalledProcessError as e:
             log_error(
                 f"Error removing {name}: {e}",
                 self.__class__.__qualname__,
@@ -150,14 +146,12 @@ class BridgeManager:
 
     def assign_nic(self, dev: str, bridge: str):
         try:
-            subprocess.run(
-                ["sudo", "ip", "link", "set", dev, "master", bridge], check=True
-            )
+            run(["sudo", "ip", "link", "set", dev, "master", bridge], check=True)
             log_debug(
                 f"{dev} assigned to {bridge}",
                 self.__class__.__qualname__,
             )
-        except subprocess.CalledProcessError as e:
+        except CalledProcessError as e:
             log_error(
                 f"Error assigning {dev} to {bridge}: {e}",
                 self.__class__.__qualname__,
@@ -167,12 +161,12 @@ class BridgeManager:
 
     def unassign_nic(self, dev: str, bridge: str) -> bool:
         try:
-            subprocess.run(["sudo", "ip", "link", "set", dev, "nomaster"], check=True)
+            run(["sudo", "ip", "link", "set", dev, "nomaster"], check=True)
             log_debug(
                 f"{dev} unassigned from {bridge}",
                 self.__class__.__qualname__,
             )
-        except subprocess.CalledProcessError as e:
+        except CalledProcessError as e:
             log_error(
                 f"Error unassigning {dev} from {bridge}: {e}",
                 self.__class__.__qualname__,

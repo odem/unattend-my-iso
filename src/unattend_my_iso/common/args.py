@@ -181,7 +181,7 @@ class TargetArgs(ArgumentBase):
     file_mbr: str = "/usr/lib/ISOLINUX/isohdpfx.bin"
     template: str = "win11"
     template_overlay: str = ""
-    proctype: str = "vmbuild_all"
+    proctype: str = "build_all"
 
 
 def get_group_arguments(name: str) -> Optional[Any]:

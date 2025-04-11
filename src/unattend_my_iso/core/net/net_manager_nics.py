@@ -1,4 +1,8 @@
-import subprocess
+from unattend_my_iso.core.subprocess.caller import (
+    run,
+    CalledProcessError,
+    PIPE,
+)
 from unattend_my_iso.common.logging import log_debug, log_error
 
 
@@ -8,16 +12,16 @@ class NicManager:
 
     def has_nic(self, name: str):
         try:
-            result = subprocess.run(
+            result = run(
                 ["ip", "link", "show", name],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stdout=PIPE,
+                stderr=PIPE,
             )
             if result.returncode == 0:
                 return True
             else:
                 return False
-        except subprocess.CalledProcessError as e:
+        except CalledProcessError as e:
             log_error(
                 f"Error checking interface {name}: {e}", self.__class__.__qualname__
             )
@@ -25,11 +29,9 @@ class NicManager:
 
     def create_nic(self, name: str):
         try:
-            subprocess.run(
-                ["sudo", "ip", "tuntap", "add", "dev", name, "mode", "tap"], check=True
-            )
-            subprocess.run(["sudo", "ip", "link", "set", "dev", name, "up"], check=True)
-        except subprocess.CalledProcessError as e:
+            run(["sudo", "ip", "tuntap", "add", "dev", name, "mode", "tap"], check=True)
+            run(["sudo", "ip", "link", "set", "dev", name, "up"], check=True)
+        except CalledProcessError as e:
             log_error(f"Error creating {name}: {e}", self.__class__.__qualname__)
             return False
         return True
@@ -49,10 +51,8 @@ class NicManager:
 
     def del_nic(self, name: str):
         try:
-            subprocess.run(
-                ["sudo", "ip", "tuntap", "del", "dev", name, "mode", "tap"], check=True
-            )
-        except subprocess.CalledProcessError as e:
+            run(["sudo", "ip", "tuntap", "del", "dev", name, "mode", "tap"], check=True)
+        except CalledProcessError as e:
             log_error(f"Error removing {name}: {e}", self.__class__.__qualname__)
             return False
         return True
@@ -75,11 +75,9 @@ class NicManager:
 
     def assign_nic(self, dev: str, bridge: str):
         try:
-            subprocess.run(
-                ["sudo", "ip", "link", "set", dev, "master", bridge], check=True
-            )
+            run(["sudo", "ip", "link", "set", dev, "master", bridge], check=True)
             log_debug(f"{dev} assigned to {bridge}", self.__class__.__qualname__)
-        except subprocess.CalledProcessError as e:
+        except CalledProcessError as e:
             log_error(
                 f"Error assigning {dev} to {bridge}: {e}", self.__class__.__qualname__
             )
@@ -88,9 +86,9 @@ class NicManager:
 
     def unassign_nic(self, dev: str, bridge: str) -> bool:
         try:
-            subprocess.run(["sudo", "ip", "link", "set", dev, "nomaster"], check=True)
+            run(["sudo", "ip", "link", "set", dev, "nomaster"], check=True)
             log_debug(f"{dev} unassigned from {bridge}", self.__class__.__qualname__)
-        except subprocess.CalledProcessError as e:
+        except CalledProcessError as e:
             log_error(
                 f"Error unassigning {dev} from {bridge}: {e}",
                 self.__class__.__qualname__,
