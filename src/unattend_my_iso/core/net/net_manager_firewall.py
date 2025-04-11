@@ -104,7 +104,9 @@ class FirewallManager:
 
     def get_default_route_interfaces(self) -> list[str]:
         try:
-            proc = run(["ip", "route", "show", "default"], text=True)
+            proc = run(
+                ["ip", "route", "show", "default"], capture_output=True, text=True
+            )
             interfaces = []
 
             if proc.stdout != None and proc.stdout != "":
