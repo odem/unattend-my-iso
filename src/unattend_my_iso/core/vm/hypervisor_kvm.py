@@ -98,16 +98,21 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         return True
 
     def vm_get_args(self, args: TaskConfig, template: TemplateConfig) -> HypervisorArgs:
-        cdrom = self.files._get_path_isofile(args)
         vmdir = self.files._get_path_vm(args)
         pidfile = self.files._get_path_vmpid(args)
-        disk = f"{vmdir}/{args.run.diskname}"
+        disks = []
+        for disk in args.run.disks:
+            disks.append(f"{vmdir}/{disk}")
+
+        cdrom = ""
+        if args.run.cdrom_boot is True:
+            cdrom = self.files._get_path_isofile(args)
         return HypervisorArgs(
             args.target.template,
             template.iso_type,
             args.run.uefi_boot,
             cdrom,
-            [disk],
+            disks,
             args.run.net_devs,
             args.run.net_bridges,
             args.run.net_ports,
@@ -118,7 +123,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             args.run.net_prepare_nics,
             args.run.net_prepare_bridges,
             pidfile,
-            args.run.net_clean_old_vm,
+            args.run.clean_old_vm,
         )
 
     def vm_prepare_disks(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:
@@ -267,12 +272,23 @@ class UmiHypervisorKvm(UmiHypervisorBase):
                 return arr_uefi
         return []
 
+    def _generate_random_mac(self) -> str:
+        proc = run(["randmac"], capture_output=True, text=True, check=True)
+        if proc is not None and proc.returncode == 0:
+            mac = str(proc.stdout)
+            mac = mac.replace("\n", "")
+            log_debug(f"Random MAC generated: {mac}", self.__class__.__qualname__)
+            return mac
+        log_error("Got no random MAC")
+        return ""
+
     def _create_net_args(self, args_hv: HypervisorArgs) -> list[str]:
         i = 0
         arr_netdevs = []
         if len(args_hv.netdevs) == 0:
             return []
         for devargs in args_hv.netdevs:
+            mac = self._generate_random_mac()
             if len(devargs) == 2:
                 name = devargs[0]
                 bridge = devargs[1]
@@ -282,10 +298,15 @@ class UmiHypervisorKvm(UmiHypervisorBase):
                         for portlist in args_hv.portfwd:
                             arr_fwd += [f"hostfwd=tcp::{portlist[0]}-:{portlist[1]}"]
                         userstr = f'user,{",".join(arr_fwd)}'
-                        arr_netdevs += ["-net", "nic,model=virtio", "-net", userstr]
+                        arr_netdevs += [
+                            "-net",
+                            f"nic,model=virtio,mac={mac}",
+                            "-net",
+                            userstr,
+                        ]
                     elif name != "" and name.startswith("tap"):
                         netname = f"net{i}"
-                        devopt = f"e1000,netdev={netname}"
+                        devopt = f"e1000,netdev={netname},mac={mac}"
                         scriptopts = "script=no,downscript=no"
                         tapopt = f"tap,id={netname},ifname={name},{scriptopts}"
                         arr_netdevs += ["-netdev", tapopt, "-device", devopt]

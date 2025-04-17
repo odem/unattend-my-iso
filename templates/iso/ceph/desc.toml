@@ -1,6 +1,6 @@
 
 [description]
-name = "proxmox"
+name = "ceph"
 virtio_name = ""
 virtio_url = ""
 iso_name = "debian-12.10.0-amd64-netinst.iso"
@@ -11,12 +11,12 @@ path_postinstall = "postinstall"
 file_postinstall = "postinstall.bash"
 
 [run]
-vmname = "proxmoxbase"
+vmname = "cephbase"
+disks = ["disk1.qcow2", "disk2.qcow2", "disk3.qcow2"]
 net_ports = [[2220, 22]]
 net_prepare_fw = false
 net_prepare_nics = true
 net_prepare_bridges = false
-disks = ["disk1.qcow2", "disk2.qcow2", "disk3.qcow2"]
 net_bridges = [
   [
     "vmbr1",
@@ -45,19 +45,19 @@ net_bridges = [
 ]
 net_devs = [
   [
-    "tap1-proxmox",
+    "tap1-ceph",
     "vmbr1",
   ],
   [
-    "tap2-proxmox",
+    "tap2-ceph",
     "vmbr2",
   ],
   [
-    "tap3-proxmox",
+    "tap3-ceph",
     "vmbr3",
   ],
   [
-    "tap4-proxmox",
+    "tap4-ceph",
     "vmbr4",
   ],
 ]
@@ -65,10 +65,8 @@ net_devs = [
 [addon_postinstall]
 joblist_early = []
 joblist_late = [
-  "/opt/umi/postinstall/installer/postinstall_proxmox_install.bash",
-  "/opt/umi/postinstall/installer/postinstall_proxmox_ceph_install.bash",
-  "/opt/umi/postinstall/manage/manage_proxmox_localpools.bash",
-  "/opt/umi/postinstall/manage/manage_proxmox_sdn.bash",
+  "/opt/umi/postinstall/installer/postinstall_ceph_install.bash",
+  "/opt/umi/postinstall/manage/manage_ceph_pools.bash",
 ]
 copy_additional_scripts = [
   "installer/postinstall_offline_packages.bash",
@@ -79,7 +77,7 @@ copy_additional_scripts = [
 ]
 
 [addon_answerfile]
-host_name = "proxmox"
+host_name = "ceph"
 host_domain = "local"
 net_dhcp = true
 net_ip = "10.40.123.100"
@@ -92,8 +90,8 @@ packages_install = ["openssh-server"]
 [[env]]
 "ISO_TARGET_TYPE" = "vm"
 "MANAGE_NET" = "10.40.123"
-"MANAGE_IP" = "10.40.123.93"
-"MANAGE_HOST" = "proxmox-p1"
+"MANAGE_IP" = "10.40.123.85"
+"MANAGE_HOST" = "ceph-p4"
 "MANAGE_DOMAIN" = "local"
 "MANAGE_GW" = "10.40.123.1"
 "MANAGE_NS1" = "8.8.8.8"
@@ -101,35 +99,27 @@ packages_install = ["openssh-server"]
 "PROXY_IP" = "10.40.123.1:3128"
 "TIME_IP" = "10.40.123.1"
 "STORAGE_NET" = "172.19.1"
-"STORAGE_IP" = "172.19.1.93"
+"STORAGE_IP" = "172.19.1.91"
 "HB_NET" = "172.18.1"
-"HB_IP" = "172.18.1.93"
+"HB_IP" = "172.18.1.85"
 "BOND0_NAME" = "bond0"
 "BOND1_NAME" = "bond1"
 "BRIDGE0_NAME" = "vmbr0"
 "BRIDGE1_NAME" = "vmbr1"
-"INTERFACE_BOND0_0" = "enp0s6"
-"INTERFACE_BOND0_1" = "enp0s7"
-"INTERFACE_BOND1_0" = "enp0s8"
-"INTERFACE_BOND1_1" = "enp0s9"
+"INTERFACE_BACK" = "enp0s6"
+"INTERFACE_BOND0" = "enp0s7"
+"INTERFACE_BOND1" = "enp0s8"
+"INTERFACE_CEPH" = "enp0s9"
 "VLAN_STORAGE" = "210"
 "VLAN_HEARTBEAT" = "209"
 "INTERFACE_VLAN_STORAGE" = "vlan210"
 "INTERFACE_VLAN_HEARTBEAT" = "vlan209"
 "DISKNAME_PRIMARY" = "/dev/vda"
-"PROXMOX_HOST_1" = "proxmox-p1"
-"PROXMOX_HOST_2" = "proxmox-p2"
-"PROXMOX_HOST_3" = "proxmox-p3"
-"PROXMOX_HOST_4" = "proxmox-p4"
-"PROXMOX_IP_1" = "10.40.123.93"
-"PROXMOX_IP_2" = "10.40.123.95"
-"PROXMOX_IP_3" = "10.40.123.97"
-"PROXMOX_IP_4" = "10.40.123.99"
-"HB_IP_1" = "10.40.124.93"
-"HB_IP_2" = "10.40.124.95"
-"HB_IP_3" = "10.40.124.97"
-"HB_IP_4" = "10.40.124.99"
-"STORAGE_IP_1" = "10.40.125.93"
-"STORAGE_IP_2" = "10.40.125.95"
-"STORAGE_IP_3" = "10.40.125.97"
-"STORAGE_IP_4" = "10.40.125.99"
+"CEPH_HOST_1" = "ceph-p1"
+"CEPH_HOST_2" = "ceph-p2"
+"CEPH_HOST_3" = "ceph-p3"
+"CEPH_HOST_4" = "ceph-p4"
+"CEPH_IP_1" = "172.19.1.93"
+"CEPH_IP_2" = "172.19.1.95"
+"CEPH_IP_3" = "172.19.1.97"
+"CEPH_IP_4" = "172.19.1.99"

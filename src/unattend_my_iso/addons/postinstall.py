@@ -160,6 +160,7 @@ class PostinstallAddon(UmiAddon):
         cfg_template = template.get_env_vars()
         cfg_grub = args.addons.grub.get_env_vars()
         cfg_ssh = args.addons.ssh.get_env_vars()
+        cfg_env = args.env.get_env_vars()
         cfg_postinst = args.addons.postinstall.get_env_vars()
         cfg_answerfile = args.addons.answerfile.get_env_vars()
         cfg_joblist = self._create_params_alljobs(args, "CFG_JOBS_ALL")
@@ -181,6 +182,8 @@ class PostinstallAddon(UmiAddon):
             "\n# Postinstall Addon Args ",
             *cfg_postinst,
             cfg_joblist,
+            "\n# Environment Args ",
+            *cfg_env,
         ]
 
         contents = "\n".join(arr)
@@ -230,7 +233,7 @@ class PostinstallAddon(UmiAddon):
         self, args: TaskConfig, postinst: str
     ) -> list[Replaceable]:
         # c = args.addons.answerfile
-        cfg_joblist = self._create_params_alljobs(args, "")
+        cfg_joblist = self._create_params_alljobs(args)
         return [
             Replaceable(postinst, "CFG_JOBS_ALL", cfg_joblist),
             # Replaceable(postinst, "CFG_USER_OTHER_NAME", c.user_other_name),

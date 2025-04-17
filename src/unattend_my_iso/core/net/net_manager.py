@@ -28,6 +28,7 @@ class UmiNetworkManager(BridgeManager, NicManager, FirewallManager):
 
     def fw_start(self, args_hv: HypervisorArgs) -> bool:
         if args_hv.net_prepare_fw:
+            log_debug(f"START VW: {args_hv.net_prepare_fw}")
             if self.add_masqueradings(args_hv.netbridges) is False:
                 return False
 
@@ -40,6 +41,7 @@ class UmiNetworkManager(BridgeManager, NicManager, FirewallManager):
 
     def fw_stop(self, args_hv: HypervisorArgs) -> bool:
         if args_hv.net_prepare_fw:
+            log_debug(f"STOP VW: {args_hv.net_prepare_fw}")
             if self.del_masqueradings(args_hv.netbridges) is False:
                 return False
             for dev in self.get_default_route_interfaces():

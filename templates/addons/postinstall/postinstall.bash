@@ -2,6 +2,8 @@
 
 
 # Environment variables
+POSTINST_PATH=/opt/umi/postinstall
+cd "$POSTINST_PATH" || exit 1
 envfile=../config/env.bash
 if [[ -f "$envfile" ]]; then
     # shellcheck disable=SC1090
@@ -12,7 +14,7 @@ JOBS=CFG_JOBS_ALL
 # Copy bashrc
 if [[ -f /opt/umi/config/.bashrc ]] ; then
     chmod 644 ~/.bashrc
-    cat /opt/umi/config/.bashrc > ~/.bashrc
+    cat /opt/umi/config/.bashrc > /root/.bashrc
 else
     echo ".bashrc not present!"
 fi

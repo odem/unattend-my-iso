@@ -4,10 +4,16 @@ from unattend_my_iso.core.reader.cli_reader import CommandlineReader
 from unattend_my_iso.common.logging import init_logger, log_debug, log_error, log_info
 from unattend_my_iso.core.processing.processor import UmiTaskProcessor
 
+DEBUG_TEMPLATE = "proxmox"
+DEBUG_OVERLAY = "*"
+DEBUG_VERBOSITY = "3"
+DEBUG_PROCTYPE = "net_start"
+
 
 def do_main(work_path: str = ""):
     proc = UmiTaskProcessor(work_path)
     proc.do_process()
+    return None
 
 
 def do_init(debug: bool):
@@ -17,7 +23,7 @@ def do_init(debug: bool):
     p = reader._create_cli_parser_all()
     args = p.parse_args()
     kwargs = args._get_kwargs()
-    level = 0
+    level = 3
     for item in kwargs:
         if item[0] == "verbosity":
             level = item[1] if item[1] is not None else 0
@@ -30,19 +36,21 @@ def do_init(debug: bool):
         init_logger(logging.INFO)
     elif level == 3:
         init_logger(logging.DEBUG)
+    elif level > 3:
+        init_logger(logging.DEBUG)
 
 
 def do_debug_init():
-    sys.argv += ["-tt", "mps"]
-    sys.argv += ["-to", "*"]
-    sys.argv += ["-rv", "3"]
-    print(f"ARGV: {sys.argv}")
-    reader = CommandlineReader()
-    p = reader._create_cli_parser_all()
-    args = p.parse_args()
-    kwargs = args._get_kwargs()
-    for item in kwargs:
-        log_error(f"ITEM: {item}", "INIT")
+    sys.argv += ["-tt", DEBUG_TEMPLATE]
+    sys.argv += ["-to", DEBUG_OVERLAY]
+    sys.argv += ["-tp", DEBUG_PROCTYPE]
+    sys.argv += ["-rv", DEBUG_VERBOSITY]
+    # reader = CommandlineReader()
+    # p = reader._create_cli_parser_all()
+    # args = p.parse_args()
+    # kwargs = args._get_kwargs()
+    # for item in kwargs:
+    #     log_error(f"ITEM: {item}", "INIT")
 
 
 def main(work_path: str = "", debug: bool = False):

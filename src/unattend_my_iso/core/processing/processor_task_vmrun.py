@@ -11,7 +11,7 @@ class TaskProcessorVmRun(TaskProcessorBase):
     def task_vm_start(self, args: TaskConfig, template: TemplateConfig) -> TaskResult:
         hyperargs = self.hvrunner.vm_get_args(args, template)
         vmdir = self.files._get_path_vm(args)
-        recreate = True
+        recreate = True if args.run.clean_old_vm else False
         if recreate:
             if self.files.rm(vmdir) is False:
                 log_error(f"Could not delete vm dir: {vmdir}")

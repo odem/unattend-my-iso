@@ -1,13 +1,15 @@
+import sys
 from typing import Any, Optional
 from unattend_my_iso.common.args import (
     AddonArgsAnswerFile,
     AddonArgsGrub,
     AddonArgsPostinstall,
     AddonArgsSsh,
+    EnvironmentArgs,
     RunArgs,
     TargetArgs,
 )
-from unattend_my_iso.common.logging import log_debug
+from unattend_my_iso.common.logging import log_debug, log_info
 
 import argparse
 import textwrap
@@ -57,6 +59,8 @@ class CommandlineReader:
         p = self._create_cli_parser()
         if name == "run":
             self._create_parser_args_run(p)
+        elif name == "env":
+            self._create_parser_args_env(p)
         elif name == "target":
             self._create_parser_args_target(p)
         elif name == "addon_grub":
@@ -115,6 +119,20 @@ class CommandlineReader:
             type=int,
             default=None,
             help="List of inird to modify",
+        )
+        group_target.add_argument(
+            "-gkla1",
+            "--grub_kernel_lvm_alt1",
+            type=int,
+            default=None,
+            help="Custom LVM Kernel 1",
+        )
+        group_target.add_argument(
+            "-gkla2",
+            "--grub_kernel_lvm_alt2",
+            type=int,
+            default=None,
+            help="Custom LVM Kernel 2",
         )
 
     def _create_parser_args_addon_postinst(self, p: argparse.ArgumentParser):
@@ -442,11 +460,18 @@ class CommandlineReader:
             help="Non-blocking call to qemu-kvm via Popen (true or false)",
         )
         group_target.add_argument(
-            "-rU",
+            "-rbU",
             "--uefi_boot",
             type=str,
             default=None,
             help="Use uefi boot to run the iso (true or false)",
+        )
+        group_target.add_argument(
+            "-rbC",
+            "--cdrom_boot",
+            type=str,
+            default=None,
+            help="Use cdrom to boot vm (true or false)",
         )
         group_target.add_argument(
             "-rV",
@@ -478,10 +503,10 @@ class CommandlineReader:
         )
         group_target.add_argument(
             "-rdn",
-            "--diskname",
+            "--disks",
             type=str,
             default=None,
-            help="Use custom disk name for primary disk",
+            help="List of disks",
         )
         group_target.add_argument(
             "-rds",
@@ -509,7 +534,7 @@ class CommandlineReader:
             "--net_bridges",
             type=list,
             default=None,
-            help="Use custom network birdges",
+            help="Use custom network bridges",
         )
         group_target.add_argument(
             "-rnpf",
@@ -533,11 +558,25 @@ class CommandlineReader:
             help="Setup bridges before running vm",
         )
         group_target.add_argument(
-            "-rncov",
-            "--net_clean_old_vm",
+            "-rov",
+            "--clean_old_vm",
             type=str,
             default=None,
             help="Clean old vm before running a new one",
+        )
+        return group_target
+
+    def _create_parser_args_env(self, p: argparse.ArgumentParser):
+        group_target = p.add_argument_group(
+            "TargetArgs",
+            description="Defines the target to build or run",
+        )
+        group_target.add_argument(
+            "-ea",
+            "--env_args",
+            type=str,
+            default=None,
+            help="Environment variables",
         )
         return group_target
 
@@ -599,6 +638,8 @@ class CommandlineReader:
             all[item[0]] = item[1]
         if name == "run":
             return RunArgs(**all)
+        elif name == "env":
+            return EnvironmentArgs(**all)
         elif name == "target":
             return TargetArgs(**all)
         elif name == "addon_grub":

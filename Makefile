@@ -19,9 +19,10 @@ TEMPLATE?="mps"
 OVERLAY?=""
 VERBOSITY?=2
 DAEMONIZE?=true
-FIREWALL?=true
+NICS?=false
 BRIDGES?=true
-NICS?=true
+FIREWALL?=false
+CLEANDISK?=false
 
 # Help
 usage:
@@ -43,13 +44,13 @@ $(DIR_VENV):
 	if [[ ! -d $(DIR_VENV) ]]; then \
 		python3 -m venv $(DIR_VENV) ; \
 	fi
-build-pip: $(DIR_VENV)
+install-pip: $(DIR_VENV)
 	source $(DIR_VENV)/bin/activate && \
 		pip install --upgrade build && \
 		pip install -r requirements.txt ; \
 		python -m build
-install: build
-	sudo apt install qemu-kvm xorriso ovmf swtpm wimtools isolinux mkisofs
+install-tools: build
+	sudo apt install qemu-kvm xorriso ovmf swtpm wimtools isolinux mkisofs randmac
 	source $(DIR_VENV)/bin/activate ; pip install --editable .
 build: 
 	@source $(DIR_VENV)/bin/activate ; \
@@ -60,16 +61,21 @@ build-all:
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main \
 			-tt $(TEMPLATE) -to "*" -tp build_all -rv $(VERBOSITY)
-start: 
+boot: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main \
 			-tt $(TEMPLATE) -to "$(OVERLAY)" -tp vm_start \
-			-rD $(DAEMONIZE) -rv $(VERBOSITY)
+			-rD $(DAEMONIZE) -rv $(VERBOSITY) -rov false -rbC false
+install: 
+	@source $(DIR_VENV)/bin/activate ; \
+		python3 -m src.$(PROJECT_NAME).main \
+			-tt $(TEMPLATE) -to "$(OVERLAY)" -tp vm_start \
+			-rD $(DAEMONIZE) -rv $(VERBOSITY) -rov $(CLEANDISK) -rbC true
 stop:
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main \
 			-tt $(TEMPLATE) -to "$(OVERLAY)" -tp vm_stop -rv $(VERBOSITY)
-start-all: 
+install-all: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main \
 			-tt $(TEMPLATE) -to "*" -tp vm_start \

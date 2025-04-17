@@ -1,41 +1,51 @@
 #!/bin/bash
+# shellcheck disable=SC1090,2005,2029,2048
 
 ACTION=""
 CLUSTER_NAME=""
 NODE_NAME=""
 USERPASS=""
+PRIO_0=""
 PRIO_1=""
 PRIO_2=""
-PRIO_3=""
 DEFAULT_VOTES_EXPECTED=2
 TEMP_VOTES_EXPECTED=1
-PROXMOX_NET=10.40.1
-script_path="$(dirname "$(realpath "$0")")"
-source "$script_path"/../hostconfig.env
+
+# Environment variables
+POSTINST_PATH=/opt/umi/postinstall
+cd "$POSTINST_PATH" || exit 1
+envfile=../config/env.bash
+if [[ -f "$envfile" ]]; then
+    # shellcheck disable=SC1090
+    source "$envfile"
+fi
 LEADER_NAME=$PROXMOX_HOST_1
-THIRDLINK_IP=$STORAGE_IP
 SSHOPTS="-o StrictHostKeyChecking=no"
+CANDIDATES=("proxmox-p1" "proxmox-p2" "proxmox-p3" "proxmox-p4") 
+SCRIPTNAME=/opt/umi/postinstall/manage/manage_proxmox_cluster.bash
 VERBOSE=0
 usage() {
-    echo "      " 1>&2
-    echo "Usage: $0 ACTION [ PARAM1 PARAM2 ... ]" 1>&2
-    echo "      " 1>&2
-    echo "    Actions:" 1>&2
-    echo "      -a create-cluster     : Initialize new cluster" >&2
-    echo "      -a remove-cluster     : Removes cluster (Must not contain nodes)" >&2
-    echo "      -a add-node           : Joins node into cluster" >&2
-    echo "      -a remove-node        : Removes node from cluster" >&2
-    echo "      -a clean-cluster-info : Forcefully removes corosync config" >&2
-    echo "      " 1>&2
-    echo "    Parameters:" 1>&2
-    echo "      -n Cluster_Name       : MY_CLUSTER_NAME" 1>&2
-    echo "      -N Node_Name          : NODE_NAME (No IP! MUST be hostname!)" 1>&2
-    echo "      -L Leader_Name        : LEADER_NAME (No IP! MUST be hostname!)" 1>&2
-    echo "      -P Password           : Needed only for add-node action" 1>&2
-    echo "      -0 Link0 Prio         : SOME_PRIO (INTEGER)" 1>&2
-    echo "      -1 Link1 Prio         : SOME_PRIO (INTEGER)" 1>&2
-    echo "      -2 Link2 Prio         : SOME_PRIO (INTEGER)" 1>&2
-    echo "      " 1>&2
+    echo "      "
+    echo "Usage: $0 ACTION [ PARAM1 PARAM2 ... ]"
+    echo "      "
+    echo "    Actions:"
+    echo "      -a bootstrap-cluster  : Creates cluster and adds all nodes"
+    echo "      -a wipe-cluster       : Remove all nodes and deletes cluster"
+    echo "      -a create-cluster     : Initialize new cluster"
+    echo "      -a remove-cluster     : Removes cluster (Must not contain nodes)"
+    echo "      -a add-node           : Joins node into cluster"
+    echo "      -a remove-node        : Removes node from cluster"
+    echo "      -a clean-cluster-info : Forcefully removes corosync config"
+    echo "      "
+    echo "    Parameters:"
+    echo "      -n Cluster_Name       : MY_CLUSTER_NAME"
+    echo "      -N Node_Name          : NODE_NAME (No IP! MUST be hostname!)"
+    echo "      -L Leader_Name        : LEADER_NAME (No IP! MUST be hostname!)"
+    echo "      -P Password           : Needed only for add-node action"
+    echo "      -0 Link0 Prio         : SOME_PRIO (INTEGER)"
+    echo "      -1 Link1 Prio         : SOME_PRIO (INTEGER)"
+    echo "      -2 Link2 Prio         : SOME_PRIO (INTEGER)"
+    echo "      "
 }
 while getopts "a:n:N:L:P:0:1:2:h v " o; do
     [[ $VERBOSE -eq 1 ]] && echo "Processing option: -$o with value: ${OPTARG}"
@@ -81,24 +91,24 @@ done
 shift $((OPTIND-1))
 
 compare_host2leader() {
-    if [[ "$PROXMOX_HOST" != "$LEADER_NAME" ]] ; then
+    if [[ "$MANAGE_HOST" != "$LEADER_NAME" ]] ; then
         return 1
     else
         return 0
     fi
 }
 compare_host2node() {
-    if [[ "$PROXMOX_HOST" != "$NODE_NAME" ]] ; then
+    if [[ "$MANAGE_HOST" != "$NODE_NAME" ]] ; then
         return 1
     else
         return 0
     fi
 }
 get_host_count() {
-    echo "$(pvecm status 2>/dev/null | grep -c "$PROXMOX_NET" 2>/dev/null)"
+    echo "$(pvecm status 2>/dev/null | grep -c "^0x00" 2>/dev/null)"
 }
 is_host_clustered() {
-    echo "$(pvecm status 2>/dev/null | grep -c "$PROXMOX_IP" 2>/dev/null)"
+    echo "$(pvecm nodes 2>/dev/null | grep -c "$MANAGE_HOST" 2>/dev/null)"
 }
 update_expected_votes() {
     HOST_COUNT=$(get_host_count)
@@ -121,17 +131,17 @@ create_link_string() {
             FULL_STR="$FULL_STR --link1 $STORAGE_IP,priority=$PRIO_1"
         fi
         if [[ "$PRIO_2" != "" ]] ; then
-            FULL_STR="$FULL_STR --link2 $PROXMOX_IP,priority=$PRIO_2"
+            FULL_STR="$FULL_STR --link2 $MANAGE_IP,priority=$PRIO_2"
         fi
         echo "$FULL_STR"
     else
-        echo "--link0 $HB_IP  --link1 $STORAGE_IP --link2 $PROXMOX_IP" 
+        echo "--link0 $HB_IP  --link1 $STORAGE_IP --link2 $MANAGE_IP" 
     fi
 }
 
-create_cluster() {
+add_cluster() {
     echo "--- Create Cluster ------------------------------------------"
-    echo "=> Trying to create cluster '$CLUSTER_NAME' via $PROXMOX_HOST"
+    echo "=> Trying to create cluster '$CLUSTER_NAME' via $MANAGE_HOST"
     [[ $VERBOSE -eq 1 ]] && pvecm status
     HOST_COUNT=$(get_host_count)
     compare_host2leader
@@ -142,15 +152,16 @@ create_cluster() {
         systemctl restart corosync
         LINKS=$(create_link_string)
         [[ $VERBOSE -eq 1 ]] && echo "Added Links: $LINKS"
-        pvecm create $CLUSTER_NAME $LINKS
+        # shellcheck disable=SC2086
+        pvecm create "$CLUSTER_NAME" $LINKS
         echo "Sucess! Cluster created!"
     else
         echo "Error! Hostname unequal to leader name."
     fi
 }
-remove_cluster() {
+del_cluster() {
     echo "--- Remove Cluster ------------------------------------------"
-    echo "=> Trying to remove current cluster via $PROXMOX_HOST"
+    echo "=> Trying to remove current cluster via $MANAGE_HOST"
     [[ $VERBOSE -eq 1 ]] && pvecm status
     HOST_COUNT=$(get_host_count)
     compare_host2leader
@@ -170,7 +181,7 @@ remove_cluster() {
 
 add_node() {
     echo "--- Joining Cluster -----------------------------------------"
-    echo "=> Trying to join $PROXMOX_HOST via $LEADER_NAME"
+    echo "=> Trying to join $MANAGE_HOST via $LEADER_NAME"
     [[ $VERBOSE -eq 1 ]] && pvecm nodes
     HOST_COUNT=$(get_host_count)
     IS_MEMBER=$(is_host_clustered)
@@ -178,23 +189,24 @@ add_node() {
     HOST_CHECK=$?
     if [[ $HOST_CHECK -eq 1 ]] ; then
         if [[ $IS_MEMBER -eq 1 ]] ; then
-            ssh "$SSHOPTS" root@"$LEADER_NAME" "pvecm delnode $PROXMOX_HOST"
+            ssh "$SSHOPTS" root@"$LEADER_NAME" "pvecm delnode $MANAGE_HOST"
             echo "Sleeping after delete"
         fi
         clean_cluster_info
         update_expected_votes
         LINKS=$(create_link_string)
         [[ $VERBOSE -eq 1 ]] && echo "Added Links: $LINKS"
-        printf "$USERPASS\nyes" | pvecm add $LEADER_NAME $LINKS
+        # shellcheck disable=SC2086
+        printf "%s\nyes" "$USERPASS" | pvecm add "$LEADER_NAME" $LINKS
         update_expected_votes
         echo "Sucess! Node joined!"
     else
         echo "Skipped! Leader does not need to be joined!"
     fi
 }
-remove_node() {
+del_node() {
     echo "--- Remove Node ---------------------------------------------"
-    echo "=> Trying to remove node $NODE_NAME via $PROXMOX_HOST"
+    echo "=> Trying to remove node $NODE_NAME via $MANAGE_HOST"
     [[ $VERBOSE -eq 1 ]] && pvecm nodes
     HOST_COUNT=$(get_host_count)
     IS_MEMBER=$(is_host_clustered)
@@ -204,12 +216,11 @@ remove_node() {
         if [[ $HOST_COUNT -gt 1 ]] ; then
             if [[ $IS_MEMBER -eq 1 ]] ; then
                 ssh "$SSHOPTS" root@"$NODE_NAME" \
-                    "/opt/postinstall/manage_cluster.bash -a clean-cluster-info"
+                    "$SCRIPTNAME -a clean-cluster-info"
                 update_expected_votes
-                pvecm delnode $NODE_NAME
+                pvecm delnode "$NODE_NAME"
                 update_expected_votes
                 echo "Sucess! Node removed!"
-                exit 0
             else
                 echo "Skipped! Node is not a member of the current cluster"
             fi
@@ -221,12 +232,57 @@ remove_node() {
     fi
 }
 
+bootstrap_cluster() {
+    echo "--- Bootstrap Cluster ---------------------------------------"
+    echo "=> Trying to bootstrap via $MANAGE_HOST"
+    [[ $VERBOSE -eq 1 ]] && pvecm nodes
+    HOST_COUNT=$(get_host_count)
+    IS_MEMBER=$(is_host_clustered)
+    compare_host2leader
+    HOST_CHECK=$?
+    if [[ $HOST_CHECK -eq 0 ]] ; then
+        if [[ $HOST_COUNT -eq 0 ]] ; then
+            if [[ $IS_MEMBER -eq 0 ]] ; then
+                add_cluster
+                for node in ${CANDIDATES[*]}; do
+                    echo "$node"
+                    ssh "$SSHOPTS" "root@$node" "$SCRIPTNAME -a add-node -L $MANAGE_HOST -N $node" -P "$USERPASS"
+                done;
+            else
+                echo "Skipped! Node is not a member of the current cluster"
+            fi
+        else
+            echo "Skipped! Cluster still exists: $HOST_COUNT"
+        fi
+    else
+        echo "Skipped! Host name not equal to leader name: $MANAGE_HOST $LEADER_NAME"
+    fi
+}
+wipe_cluster() {
+    echo "--- Wipe Cluster --------------------------------------------"
+    echo "=> Trying to wipe cluster via $MANAGE_HOST"
+    [[ $VERBOSE -eq 1 ]] && pvecm nodes
+    HOST_COUNT=$(get_host_count)
+    IS_MEMBER=$(is_host_clustered)
+    compare_host2leader
+    HOST_CHECK=$?
+    if [[ $HOST_CHECK -eq 0 ]] ; then
+        for node in ${CANDIDATES[*]}; do
+            NODE_NAME=$node
+            del_node
+        done;
+        del_cluster
+    else
+        echo "Skipped! Host name not equal to leader name."
+    fi
+}
+
 clean_cluster_info() {
     # To delete in-use corosync configs, 
     # we need to run proxmox via the cluster filesystem utility
     # Link: https://pve.proxmox.com/wiki/Cluster_Manager#_remove_a_cluster_node
     echo "--- Wiping cluster info -------------------------------------"
-    echo "=> Removing corosync configs via $PROXMOX_HOST"
+    echo "=> Removing corosync configs via $MANAGE_HOST"
     systemctl stop pve-cluster corosync
     pmxcfs -l
     rm /etc/corosync/* >/dev/null 2>&1
@@ -238,20 +294,27 @@ clean_cluster_info() {
 }
 
 case "$ACTION" in
-    "create-cluster")
+    "add-cluster")
         [[ -z "$CLUSTER_NAME" ]] && echo "No cluster name" && usage && exit 1
-        create_cluster
+        add_cluster
         ;;
-    "remove-cluster")
-        remove_cluster
+    "del-cluster")
+        del_cluster
         ;;
     "add-node")
         [[ -z "$USERPASS" ]] && echo "No password" && usage && exit 1
         add_node
         ;;
-    "remove-node")
+    "del-node")
         [[ -z "$NODE_NAME" ]] && echo "No node name " && usage && exit 1
-        remove_node
+        del_node
+        ;;
+    "bootstrap-cluster")
+        [[ -z "$CLUSTER_NAME" ]] && echo "No cluster name" && usage && exit 1
+        bootstrap_cluster
+        ;;
+    "wipe-cluster")
+        wipe_cluster
         ;;
     "clean-cluster-info")
         clean_cluster_info

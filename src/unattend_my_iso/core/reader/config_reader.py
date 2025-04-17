@@ -7,6 +7,7 @@ from unattend_my_iso.common.args import (
     AddonArgsGrub,
     AddonArgsPostinstall,
     AddonArgsSsh,
+    EnvironmentArgs,
     RunArgs,
     TargetArgs,
     get_group_arguments,
@@ -40,7 +41,6 @@ def _match_group(
         cfg_template = _match_group_with_template(
             cfg_default, name, template_name, template_path, overlay_name
         )
-
     cfg_cli = _match_group_with_cli(cfg_template, name)
     return cfg_cli
 
@@ -67,12 +67,18 @@ def _match_group_with_template(
             f"client config is not a valid dataclass: {toml_group}", "ConfigReader"
         )
         return None
-    for fld in toml_group.items():
-        name = fld[0]
-        val = fld[1]
-        setattr(result, name, val)
-        log_debug(f"tpl_update for {target} name={name}", "ConfigReader")
-    return result
+    if isinstance(toml_group, list) and len(toml_group) == 1:
+        cfg_dict = toml_group[0]
+        if isinstance(cfg_dict, dict):
+            setattr(result, "env_args", cfg_dict)
+            return result
+    else:
+        for fld in toml_group.items():
+            name = fld[0]
+            val = fld[1]
+            setattr(result, name, val)
+            log_debug(f"tpl_update for {target} name={name}", "ConfigReader")
+        return result
 
 
 def _match_group_with_cli(result: Optional[Any], target: str) -> Optional[Any]:
@@ -88,7 +94,7 @@ def _match_group_with_cli(result: Optional[Any], target: str) -> Optional[Any]:
         val = _get_normalized_value(result, cfg_cli, name)
         if val is not None:
             setattr(result, name, val)
-            log_debug(f"cli_update for {target} name={name}", "ConfigReader")
+            log_debug(f"cli_update for {target} name={name}, val={val}", "ConfigReader")
     return result
 
 
@@ -101,7 +107,7 @@ def _get_normalized_value(obj_dest, obj_src, name: str) -> Optional[Any]:
                 val = True if lowername == "true" else False
         if type(getattr(obj_dest, name)) is list:
             if isinstance(getattr(obj_src, name), list):
-                log_debug(f"VAL: {val}")
+                # log_debug(f"VAL: {val}")
                 testval = "".join(val)
                 if isinstance(testval, str):
                     if testval.startswith("[") and testval.endswith("]"):
@@ -163,6 +169,12 @@ def get_config(
     if cfg_target is None or isinstance(cfg_target, TargetArgs) is False:
         log_error(f"Matched target config invalid: {cfg_target}", "ConfigReader")
         return None
+    cfg_env = _match_group(
+        "env", template_name, cfg_sys.path_templates, template_overlay
+    )
+    if cfg_env is None or isinstance(cfg_env, EnvironmentArgs) is False:
+        log_error(f"Matched env config invalid: {cfg_env}", "ConfigReader")
+        return None
     cfg_run = _match_group(
         "run", template_name, cfg_sys.path_templates, template_overlay
     )
@@ -198,4 +210,6 @@ def get_config(
         )
         return None
     cfg_addons = AddonArgs(cfg_answer, cfg_ssh, cfg_grub, cfg_post)
-    return TaskConfig(sys=cfg_sys, addons=cfg_addons, target=cfg_target, run=cfg_run)
+    return TaskConfig(
+        sys=cfg_sys, addons=cfg_addons, target=cfg_target, run=cfg_run, env=cfg_env
+    )

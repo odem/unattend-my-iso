@@ -34,3 +34,6 @@ alias srn='sudo route -n'
 alias silv='sudo iptables -L -v -n'
 alias silv='sudo iptables -L -v -n -t nat'
 
+# Alias config: umi
+alias umipost='cd /opt/umi/postinstall'
+alias umienv='source /opt/umi/config/env.bash'

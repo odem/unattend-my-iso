@@ -1,5 +1,5 @@
 import os
-from unattend_my_iso.core.subprocess.caller import run, PIPE
+from unattend_my_iso.core.subprocess.caller import run, PIPE, run_background
 from typing_extensions import override
 from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
@@ -35,7 +35,7 @@ class SshAddon(UmiAddon):
             srckeypriv = f"{sshdir}/{keyfile}"
             log_debug(f"Generating key: {srckeypriv}")
             if args.addons.ssh.keygen:
-                if self._generate_key(srckeypriv) is False:
+                if self._generate_key(args, srckeypriv) is False:
                     log_error("Generate key failed")
                     return False
         if args.addons.ssh.config_key != "" and srckeypriv == "":
@@ -117,14 +117,11 @@ class SshAddon(UmiAddon):
             return True
         return False
 
-    def _generate_key(self, keyfile: str):
-        msg = "y\n"
-        log_debug(f"KEYFILE: {keyfile}")
-        run(
-            ["ssh-keygen", "-q", "-N", "''", "-f", keyfile],
-            input=msg.encode(),
-            stdout=PIPE,
-            stderr=PIPE,
-            capture_output=False,
-            text=False,
+    def _generate_key(self, args: TaskConfig, keyfile: str):
+        proc = run(
+            ["ssh-keygen", "-f", keyfile, "-N", ""],
+            input=b"\n",
+            capture_output=True,
         )
+        if args.run.verbosity >= 4:
+            log_debug(f"Keygen output: {proc.stdout}{proc.stderr}")

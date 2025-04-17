@@ -80,9 +80,11 @@ class GrubAddon(UmiAddon):
     def _create_replacements_grub(
         self, args: TaskConfig, inter: str, grub: str
     ) -> list[Replaceable]:
-        kernel = self._extract_kernel_version_headers(inter)
-        if kernel == "X.Y.Z-W":
-            kernel = self._extract_kernel_version_image(inter)
+        kernel1 = self._extract_kernel_version_headers(inter)
+        if kernel1 == "X.Y.Z-W":
+            kernel1 = self._extract_kernel_version_image(inter)
+        kernel2 = args.addons.grub.grub_kernel_lvm_alt1
+        kernel3 = args.addons.grub.grub_kernel_lvm_alt2
         name = args.target.template
         hostname = args.addons.answerfile.host_name
         ip = args.addons.answerfile.net_ip
@@ -95,7 +97,9 @@ class GrubAddon(UmiAddon):
         if os.path.exists(grub):
             rules += [
                 Replaceable(grub, "CFG_THEME", theme),
-                Replaceable(grub, "CFG_KERNEL", kernel),
+                Replaceable(grub, "CFG_KERNEL", kernel1),
+                Replaceable(grub, "CFG_LVM_KERNEL_ALT1", kernel2),
+                Replaceable(grub, "CFG_LVM_KERNEL_ALT2", kernel3),
                 Replaceable(grub, "CFG_TYPE", name),
                 Replaceable(grub, "CFG_HOST", hostname),
                 Replaceable(grub, "CFG_IP", ip),

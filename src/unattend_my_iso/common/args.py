@@ -63,12 +63,18 @@ class ArgumentBase:
 
 
 @dataclass
+class EnvironmentArgs(ArgumentBase):
+    env_args: dict[str, Any] = field(default_factory=lambda: {})
+
+
+@dataclass
 class RunArgs(ArgumentBase):
     vmname: str = "testvm"
     verbosity: int = 1
-    diskname: str = "disk1.qcow2"
+    disks: list[str] = field(default_factory=lambda: ["disk1.qcow2"])
     disksize: int = 64
     uefi_boot: bool = True
+    cdrom_boot: bool = True
     daemonize: bool = True
     uefi_ovmf_vars: str = "/usr/share/OVMF/OVMF_VARS.fd"
     uefi_ovmf_code: str = "/usr/share/OVMF/OVMF_CODE.fd"
@@ -83,7 +89,7 @@ class RunArgs(ArgumentBase):
     net_prepare_fw: bool = True
     net_prepare_nics: bool = True
     net_prepare_bridges: bool = True
-    net_clean_old_vm: bool = True
+    clean_old_vm: bool = False
     build_homedir: str = HOMEDIR
     build_user: str = USER
     file_pid: str = "vm.pid"
@@ -153,6 +159,8 @@ class AddonArgsGrub(ArgumentBase):
             # "install/gtk",
         ]
     )
+    grub_kernel_lvm_alt1: str = "6.2.16-20-pve"
+    grub_kernel_lvm_alt2: str = "6.8.12-9-pve"
     sleeptime: int = 0
     timeout: int = -1
 
@@ -187,6 +195,8 @@ class TargetArgs(ArgumentBase):
 def get_group_arguments(name: str) -> Optional[Any]:
     if name == "target":
         return TargetArgs()
+    elif name == "env":
+        return EnvironmentArgs()
     elif name == "run":
         return RunArgs()
     elif name == "addon_ssh":
