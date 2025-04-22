@@ -80,8 +80,9 @@ class EnvironmentArgs(ArgumentBase):
 class RunArgs(ArgumentBase):
     vmname: str = "testvm"
     verbosity: int = 1
-    disks: list[str] = field(default_factory=lambda: ["disk1.qcow2"])
-    disksize: int = 64
+    disks: list[list[str]] = field(
+        default_factory=lambda: [["disk1.qcow2", "64G", "hdd"]]
+    )
     uefi_boot: bool = True
     cdrom_boot: bool = True
     daemonize: bool = True

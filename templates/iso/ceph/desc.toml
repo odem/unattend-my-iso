@@ -12,7 +12,38 @@ file_postinstall = "postinstall.bash"
 
 [run]
 vmname = "cephbase"
-disks = ["disk1.qcow2", "disk2.qcow2", "disk3.qcow2"]
+disks = [
+  [
+    "os-hdd0.qcow2",
+    "64G",
+    "hdd",
+    "none",
+  ],
+  [
+    "ceph-hdd1.qcow2",
+    "64G",
+    "hdd",
+    "none",
+  ],
+  [
+    "ceph-hdd2.qcow2",
+    "64G",
+    "hdd",
+    "none",
+  ],
+  [
+    "ceph-nvme1.raw",
+    "32G",
+    "nvme",
+    "none",
+  ],
+  [
+    "ceph-nvme2.raw",
+    "32G",
+    "nvme",
+    "none",
+  ],
+]
 net_ports = [[2220, 22]]
 net_prepare_fw = false
 net_prepare_nics = true

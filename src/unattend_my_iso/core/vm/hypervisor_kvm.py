@@ -102,7 +102,9 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         pidfile = self.files._get_path_vmpid(args)
         disks = []
         for disk in args.run.disks:
-            disks.append(f"{vmdir}/{disk}")
+            innerlist = disk
+            innerlist[0] = f"{vmdir}/{innerlist[0]}"
+            disks.append(innerlist)
 
         cdrom = ""
         if args.run.cdrom_boot is True:
@@ -128,37 +130,59 @@ class UmiHypervisorKvm(UmiHypervisorBase):
 
     def vm_prepare_disks(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:
         for disk in args_hv.disks:
-            if os.path.exists(disk) is False:
-                if self.vm_prepare_disk(args, disk) is False:
-                    return False
+            if isinstance(disk, list) and len(disk) >= 2:
+                filename = disk[0]
+                size = disk[1]
+                if os.path.exists(filename) is False:
+                    if self.vm_prepare_disk(args, filename, size) is False:
+                        return False
+            else:
+                return False
         return True
 
-    def vm_prepare_disk(self, args: TaskConfig, diskpath: str) -> bool:
+    def vm_prepare_disk(self, args: TaskConfig, diskpath: str, size: str) -> bool:
         vmdir = self.files._get_path_vm(args)
-        size_gb = args.run.disksize
         os.makedirs(vmdir, exist_ok=True)
-        rmcmd = [
-            "qemu-img",
-            "create",
-            "-q",
-            "-f",
-            "qcow2",
-            "-o",
-            "cluster_size=2M",
-            diskpath,
-            f"{size_gb}G",
-        ]
-        ret = run(rmcmd, capture_output=True, text=True)
-        if ret.returncode == 0:
-            log_debug(
-                f"Disk created with size {size_gb} GB -> {diskpath}",
+        rmcmd = []
+        if diskpath.endswith(".qcow2"):
+            rmcmd = [
+                "qemu-img",
+                "create",
+                "-q",
+                "-f",
+                "qcow2",
+                "-o",
+                "cluster_size=2M",
+                diskpath,
+                size,
+            ]
+        elif diskpath.endswith(".raw"):
+            rmcmd = [
+                "qemu-img",
+                "create",
+                "-q",
+                "-f",
+                "raw",
+                diskpath,
+                size,
+            ]
+        if len(rmcmd) > 0:
+            ret = run(rmcmd, capture_output=True, text=True)
+            if ret.returncode == 0:
+                log_debug(
+                    f"Disk created with size {size} -> {diskpath}",
+                    self.__class__.__qualname__,
+                )
+                return True
+            log_error(
+                f"Error while creating disk size {size} -> {diskpath}",
                 self.__class__.__qualname__,
             )
-            return True
-        log_error(
-            f"Error while creating disk size {size_gb} GB -> {diskpath}",
-            self.__class__.__qualname__,
-        )
+        else:
+            log_error(
+                f"Invalid extension in diskpath: {diskpath}",
+                self.__class__.__qualname__,
+            )
         return False
 
     def vm_prepare_tpm(self, socketdir: str, template: TemplateConfig) -> bool:
@@ -317,21 +341,43 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         arr_disk = []
         if len(args_hv.disks) > 0:
             i = 0
-            for disk in args_hv.disks:
-                if disk != "":
-                    if os.path.exists(disk) is False:
-                        self.vm_prepare_disk(args, disk)
-                    ioname = f"io{i}"
-                    diskid = f"disk{i}"
-                    diskcache = "cache-size=16M,cache=none"
-                    driveopts = f"drive={diskid},iothread={ioname}"
-                    diskopts = f"file={disk},format=qcow2,{diskcache}"
-                    arr_disk += ["-object", f"iothread,id={ioname}"]
-                    arr_disk += ["-drive", f"if=none,id={diskid},{diskopts}"]
-                    arr_disk += ["-device", f"virtio-blk-pci,{driveopts}"]
-                    i += 1
+            for disklist in args_hv.disks:
+                if isinstance(disklist, list) and len(disklist) >= 2:
+                    filename = disklist[0]
+                    disksize = disklist[1]
+                    disktype = "hdd"
+                    diskcache = "none"
+                    if len(disklist) >= 3:
+                        disktype = disklist[2]
+                    if len(disklist) >= 4:
+                        diskcache = disklist[3]
+                    if filename != "" and disktype == "hdd":
+                        if os.path.exists(filename) is False:
+                            self.vm_prepare_disk(args, filename, disksize)
+                        ioname = f"io{i}"
+                        diskid = f"disk{i}"
+                        diskcache = f"cache-size=16M,cache={diskcache}"
+                        driveopts = f"drive={diskid},iothread={ioname}"
+                        diskopts = f"file={filename},format=qcow2,{diskcache}"
+                        arr_disk += ["-object", f"iothread,id={ioname}"]
+                        arr_disk += ["-drive", f"if=none,id={diskid},{diskopts}"]
+                        arr_disk += ["-device", f"virtio-blk-pci,{driveopts}"]
+                        i += 1
+                    elif filename != "" and disktype == "nvme":
+                        if os.path.exists(filename) is False:
+                            self.vm_prepare_disk(args, filename, disksize)
+                        diskid = f"disk{i}"
+                        diskcache = f"cache={diskcache}"
+                        driveopts = f"drive={diskid},serial=nvme{i}"
+                        diskopts = f"file={filename},format=raw,{diskcache}"
+                        arr_disk += ["-drive", f"if=none,id={diskid},{diskopts}"]
+                        arr_disk += ["-device", f"nvme,{driveopts}"]
+                        i += 1
+                    else:
+                        log_error(
+                            f"Invalid disk specified: '{disklist}'",
+                            self.__class__.__qualname__,
+                        )
                 else:
-                    log_error(
-                        f"Invalid disk specified: '{disk}'", self.__class__.__qualname__
-                    )
+                    log_error(f"Unknown disk specification: {disklist}")
         return arr_disk

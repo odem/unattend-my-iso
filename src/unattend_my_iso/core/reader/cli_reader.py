@@ -509,13 +509,6 @@ class CommandlineReader:
             help="List of disks",
         )
         group_target.add_argument(
-            "-rds",
-            "--disksize",
-            type=int,
-            default=None,
-            help="Use custom disk size for primary disk",
-        )
-        group_target.add_argument(
             "-rnP",
             "--net_ports",
             type=list,

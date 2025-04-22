@@ -48,7 +48,7 @@ class UmiHypervisorBase(ABC):
         raise NotImplementedError("Not implemented")
 
     @abstractmethod
-    def vm_prepare_disk(self, args: TaskConfig, diskpath: str) -> bool:
+    def vm_prepare_disk(self, args: TaskConfig, diskpath: str, size: str) -> bool:
         raise NotImplementedError("Not implemented")
 
     @abstractmethod

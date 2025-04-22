@@ -15,7 +15,38 @@ vmname = "proxmoxbase"
 net_prepare_fw = true
 net_prepare_nics = true
 net_prepare_bridges = false
-disks = ["disk1.qcow2", "disk2.qcow2", "disk3.qcow2"]
+disks = [
+  [
+    "os-hdd0.qcow2",
+    "64G",
+    "hdd",
+    "none",
+  ],
+  [
+    "ceph-hdd1.qcow2",
+    "64G",
+    "hdd",
+    "none",
+  ],
+  [
+    "ceph-hdd2.qcow2",
+    "64G",
+    "hdd",
+    "none",
+  ],
+  [
+    "ceph-nvme1.raw",
+    "32G",
+    "nvme",
+    "none",
+  ],
+  [
+    "ceph-nvme2.raw",
+    "32G",
+    "nvme",
+    "none",
+  ],
+]
 net_bridges = [
   [
     "vmbr1",
@@ -120,7 +151,7 @@ packages_install = ["openssh-server"]
 "DEFAULT_LEADER_PROXMOX" = "proxmox-p1"
 "DEFAULT_LEADER_CEPH" = "ceph-p1"
 "NODES_PROX_MANAGE_FQDN" = "proxmox-p1.local,proxmox-p2.local,proxmox-p3.local,proxmox-p4.local,proxmox-p5.local,proxmox-p6.local"
-"NODES_PROX_MANAGE_NAME" = "proxmox-p1,proxmox-p2,proxmox-p3,proxmox-p4,proxmox-p5.local,proxmox-p6.local"
+"NODES_PROX_MANAGE_NAME" = "proxmox-p1,proxmox-p2,proxmox-p3,proxmox-p4,proxmox-p5,proxmox-p6"
 "NODES_PROX_MANAGE_IP" = "10.10.123.93,10.10.123.95,10.10.123.97,10.10.123.99,10.10.123.101,10.10.123.103"
 "NODES_PROX_HB_FQDN" = "proxmox-p1.local,proxmox-p2.local,proxmox-p3.local,proxmox-p4.local,proxmox-p5.local,proxmox-p6.local"
 "NODES_PROX_HB_NAME" = "proxmox-p1,proxmox-p2,proxmox-p3,proxmox-p4,proxmox-p5,proxmox-p6"
