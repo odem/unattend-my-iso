@@ -1,0 +1,34 @@
+[description]
+name = "ceph-p6"
+
+[addon_answerfile]
+host_name = "ceph-p6"
+host_domain = "local"
+net_ip = "10.10.123.91"
+
+[[env]]
+"MANAGE_HOST" = "ceph-p6"
+"MANAGE_IP" = "10.10.123.91"
+"HB_IP" = "10.20.124.91"
+"STORAGE_IP" = "10.20.125.91"
+
+[run]
+vmname = "ceph-p6"
+net_devs = [
+  [
+    "tap1-cp6",
+    "vmbr1",
+  ],
+  [
+    "tap2-cp6",
+    "vmbr2",
+  ],
+  [
+    "tap3-cp6",
+    "vmbr3",
+  ],
+  [
+    "tap4-cp6",
+    "vmbr4",
+  ],
+]

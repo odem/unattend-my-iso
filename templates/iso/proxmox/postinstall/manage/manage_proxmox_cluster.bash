@@ -141,7 +141,7 @@ create_link_string() {
 read_nodes_from_config() {
     echo "Reading nodes from config..."
     if [[ "$NODES_PROX_MANAGE_NAME" != "" ]]; then
-        IFS=',' read -ra CLUSTER_MEMBERS_MANAGE_NAME <<< "$NODES_PROX_MANAGE_NAME"
+        IFS=',' read -ra MEMBERS_PROX_MANAGE_NAME <<< "$NODES_PROX_MANAGE_NAME"
         echo "${#MEMBERS_PROX_MANAGE_NAME[*]} configured cluster Members: ${MEMBERS_PROX_MANAGE_NAME[*]}"
     fi
 }

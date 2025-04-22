@@ -12,6 +12,11 @@ file_postinstall = "postinstall.bash"
 
 [run]
 vmname = "cephbase"
+net_prepare_fw = true
+net_prepare_nics = true
+net_prepare_bridges = false
+res_cpu = 2
+res_mem = 2048
 disks = [
   [
     "os-hdd0.qcow2",
@@ -44,32 +49,28 @@ disks = [
     "none",
   ],
 ]
-net_ports = [[2220, 22]]
-net_prepare_fw = false
-net_prepare_nics = true
-net_prepare_bridges = false
 net_bridges = [
   [
     "vmbr1",
-    "10.40.123.1",
+    "10.10.123.1",
     "24",
     true,
   ],
   [
     "vmbr2",
-    "10.40.124.1",
+    "10.10.124.1",
     "24",
     true,
   ],
   [
     "vmbr3",
-    "10.40.125.1",
+    "10.10.125.1",
     "24",
     true,
   ],
   [
     "vmbr4",
-    "10.40.126.1",
+    "10.10.126.1",
     "24",
     true,
   ],
@@ -92,7 +93,6 @@ net_devs = [
     "vmbr4",
   ],
 ]
-
 [addon_postinstall]
 joblist_early = []
 joblist_late = [
@@ -111,46 +111,58 @@ copy_additional_scripts = [
 host_name = "ceph"
 host_domain = "local"
 net_dhcp = true
-net_ip = "10.40.123.100"
+net_ip = "10.10.123.80"
 net_mask = "255.255.255.0"
-net_gateway = "10.40.123.1"
+net_gateway = "10.10.123.1"
 net_dns = "8.8.8.8"
 include_offline_packages = ["ifenslave", "vlan"]
 packages_install = ["openssh-server"]
 
 [[env]]
 "ISO_TARGET_TYPE" = "vm"
-"MANAGE_NET" = "10.40.123"
-"MANAGE_IP" = "10.40.123.85"
-"MANAGE_HOST" = "ceph-p4"
+"MANAGE_NET" = "10.10.123"
+"MANAGE_IP" = "10.10.123.80"
+"MANAGE_HOST" = "ceph-p0"
 "MANAGE_DOMAIN" = "local"
-"MANAGE_GW" = "10.40.123.1"
+"MANAGE_GW" = "10.10.123.1"
 "MANAGE_NS1" = "8.8.8.8"
 "MANAGE_NS2" = "8.8.4.4"
-"PROXY_IP" = "10.40.123.1:3128"
-"TIME_IP" = "10.40.123.1"
-"STORAGE_NET" = "172.19.1"
-"STORAGE_IP" = "172.19.1.91"
-"HB_NET" = "172.18.1"
-"HB_IP" = "172.18.1.85"
+"PROXY_IP" = "10.10.123.1:3128"
+"TIME_IP" = "10.10.123.1"
+"STORAGE_NET" = "10.20.125"
+"STORAGE_IP" = "10.20.125.80"
+"HB_NET" = "10.20.124"
+"HB_IP" = "10.20.124.80"
 "BOND0_NAME" = "bond0"
 "BOND1_NAME" = "bond1"
 "BRIDGE0_NAME" = "vmbr0"
 "BRIDGE1_NAME" = "vmbr1"
-"INTERFACE_BACK" = "enp0s6"
-"INTERFACE_BOND0" = "enp0s7"
-"INTERFACE_BOND1" = "enp0s8"
-"INTERFACE_CEPH" = "enp0s9"
-"VLAN_STORAGE" = "210"
-"VLAN_HEARTBEAT" = "209"
-"INTERFACE_VLAN_STORAGE" = "vlan210"
-"INTERFACE_VLAN_HEARTBEAT" = "vlan209"
+"INTERFACE_BOND0_0" = "enp0s10"
+"INTERFACE_BOND0_1" = "enp0s11"
+"INTERFACE_BOND1_0" = "enp0s12"
+"INTERFACE_BOND1_1" = "enp0s13"
+"VLAN_HEARTBEAT" = "124"
+"VLAN_STORAGE" = "125"
+"INTERFACE_VLAN_HEARTBEAT" = "vlan124"
+"INTERFACE_VLAN_STORAGE" = "vlan125"
 "DISKNAME_PRIMARY" = "/dev/vda"
-"CEPH_HOST_1" = "ceph-p1"
-"CEPH_HOST_2" = "ceph-p2"
-"CEPH_HOST_3" = "ceph-p3"
-"CEPH_HOST_4" = "ceph-p4"
-"CEPH_IP_1" = "172.19.1.93"
-"CEPH_IP_2" = "172.19.1.95"
-"CEPH_IP_3" = "172.19.1.97"
-"CEPH_IP_4" = "172.19.1.99"
+"DEFAULT_LEADER_PROXMOX" = "proxmox-p1"
+"DEFAULT_LEADER_CEPH" = "ceph-p1"
+"NODES_PROX_MANAGE_FQDN" = "proxmox-p1.local,proxmox-p2.local,proxmox-p3.local,proxmox-p4.local,proxmox-p5.local,proxmox-p6.local"
+"NODES_PROX_MANAGE_NAME" = "proxmox-p1,proxmox-p2,proxmox-p3,proxmox-p4,proxmox-p5,proxmox-p6"
+"NODES_PROX_MANAGE_IP" = "10.10.123.93,10.10.123.95,10.10.123.97,10.10.123.99,10.10.123.101,10.10.123.103"
+"NODES_PROX_HB_FQDN" = "proxmox-p1.local,proxmox-p2.local,proxmox-p3.local,proxmox-p4.local,proxmox-p5.local,proxmox-p6.local"
+"NODES_PROX_HB_NAME" = "proxmox-p1,proxmox-p2,proxmox-p3,proxmox-p4,proxmox-p5,proxmox-p6"
+"NODES_PROX_HB_IP" = "10.20.124.93,10.20.124.95,10.20.124.97,10.20.124.99,10.20.124.101,10.20.124.103"
+"NODES_PROX_STORAGE_FQDN" = "proxmox-p1.local,proxmox-p2.local,proxmox-p3.local,proxmox-p4.local,proxmox-p5.local,proxmox-p6.local"
+"NODES_PROX_STORAGE_NAME" = "proxmox-p1,proxmox-p2,proxmox-p3,proxmox-p4,proxmox-p5,proxmox-p6"
+"NODES_PROX_STORAGE_IP" = "10.20.125.93,10.20.125.95,10.20.125.97,10.20.125.99,10.20.125.101,10.20.125.103"
+"NODES_CEPH_MANAGE_FQDN" = "ceph-p1.local,ceph-p2.local,ceph-p3.local,ceph-p4.local,ceph-p5.local,ceph-p6.local"
+"NODES_CEPH_MANAGE_NAME" = "ceph-p1,ceph-p2,ceph-p3,ceph-p4,ceph-p5,ceph-p6"
+"NODES_CEPH_MANAGE_IP" = "10.10.123.81,10.10.123.83,10.10.123.85,10.10.123.87,10.10.123.89,10.10.123.91"
+"NODES_CEPH_HB_FQDN" = "ceph-p1.local,ceph-p2.local,ceph-p3.local,ceph-p4.local,ceph-p5.local,ceph-p6.local"
+"NODES_CEPH_HB_NAME" = "ceph-p1,ceph-p2,ceph-p3,ceph-p4,ceph-p5,ceph-p6"
+"NODES_CEPH_HB_IP" = "10.20.124.81,10.20.124.83,10.20.124.85,10.20.124.87,10.20.124.89,10.20.124.91"
+"NODES_CEPH_STORAGE_FQDN" = "ceph-p1.local,ceph-p2.local,ceph-p3.local,ceph-p4.local,ceph-p5.local,ceph-p6.local"
+"NODES_CEPH_STORAGE_NAME" = "ceph-p1,ceph-p2,ceph-p3,ceph-p4,ceph-p5,ceph-p6"
+"NODES_CEPH_STORAGE_IP" = "10.20.125.81,10.20.125.83,10.20.125.85,10.20.125.87,10.20.125.89,10.20.125.91"
