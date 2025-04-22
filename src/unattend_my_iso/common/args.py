@@ -94,8 +94,8 @@ class RunArgs(ArgumentBase):
     net_bridges: list[list[str]] = field(
         default_factory=lambda: [["vmbr0", "10.10.123.1", "24", True]]
     )
-    res_cpu: int = 4
-    res_mem: int = 4096
+    res_cpu: int = 2
+    res_mem: int = 2048
     net_prepare_fw: bool = True
     net_prepare_nics: bool = True
     net_prepare_bridges: bool = True
