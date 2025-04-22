@@ -16,7 +16,7 @@ net_prepare_fw = true
 net_prepare_nics = true
 net_prepare_bridges = false
 res_cpu = 2
-res_mem = 4096
+res_mem = 2048
 disks = [
   [
     "os-hdd0.qcow2",
