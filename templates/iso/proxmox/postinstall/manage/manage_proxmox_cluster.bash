@@ -19,9 +19,9 @@ if [[ -f "$envfile" ]]; then
     # shellcheck disable=SC1090
     source "$envfile"
 fi
-LEADER_NAME=$PROXMOX_HOST_1
+LEADER_NAME=$DEFAULT_LEADER_PROXMOX
 SSHOPTS="-o StrictHostKeyChecking=no"
-CANDIDATES=("proxmox-p1" "proxmox-p2" "proxmox-p3" "proxmox-p4") 
+MEMBERS_PROX_MANAGE_NAME=()
 SCRIPTNAME=/opt/umi/postinstall/manage/manage_proxmox_cluster.bash
 VERBOSE=0
 usage() {
@@ -138,6 +138,13 @@ create_link_string() {
         echo "--link0 $HB_IP  --link1 $STORAGE_IP --link2 $MANAGE_IP" 
     fi
 }
+read_nodes_from_config() {
+    echo "Reading nodes from config..."
+    if [[ "$NODES_PROX_MANAGE_NAME" != "" ]]; then
+        IFS=',' read -ra CLUSTER_MEMBERS_MANAGE_NAME <<< "$NODES_PROX_MANAGE_NAME"
+        echo "${#MEMBERS_PROX_MANAGE_NAME[*]} configured cluster Members: ${MEMBERS_PROX_MANAGE_NAME[*]}"
+    fi
+}
 
 add_cluster() {
     echo "--- Create Cluster ------------------------------------------"
@@ -244,9 +251,8 @@ bootstrap_cluster() {
         if [[ $HOST_COUNT -eq 0 ]] ; then
             if [[ $IS_MEMBER -eq 0 ]] ; then
                 add_cluster
-                for node in ${CANDIDATES[*]}; do
-                    echo "$node"
-                    ssh "$SSHOPTS" "root@$node" "$SCRIPTNAME -a add-node -L $MANAGE_HOST -N $node" -P "$USERPASS"
+                for node in ${MEMBERS_PROX_MANAGE_NAME[*]}; do
+                    ssh "$SSHOPTS" "root@$node" "$SCRIPTNAME -a add-node -L $MANAGE_HOST -N $node"
                 done;
             else
                 echo "Skipped! Node is not a member of the current cluster"
@@ -267,7 +273,7 @@ wipe_cluster() {
     compare_host2leader
     HOST_CHECK=$?
     if [[ $HOST_CHECK -eq 0 ]] ; then
-        for node in ${CANDIDATES[*]}; do
+        for node in ${MEMBERS_PROX_MANAGE_NAME[*]}; do
             NODE_NAME=$node
             del_node
         done;
@@ -292,7 +298,11 @@ clean_cluster_info() {
     systemctl start pve-cluster corosync
     echo "Sucess! Cluster info wiped!"
 }
+status_cluster() {
+    pvecm status
+}
 
+read_nodes_from_config
 case "$ACTION" in
     "add-cluster")
         [[ -z "$CLUSTER_NAME" ]] && echo "No cluster name" && usage && exit 1
@@ -302,6 +312,7 @@ case "$ACTION" in
         del_cluster
         ;;
     "add-node")
+        [[ -z "$USERPASS" ]] && USERPASS="$CFG_USER_ROOT_PASSWORD"
         [[ -z "$USERPASS" ]] && echo "No password" && usage && exit 1
         add_node
         ;;
@@ -315,6 +326,9 @@ case "$ACTION" in
         ;;
     "wipe-cluster")
         wipe_cluster
+        ;;
+    "status")
+        status_cluster
         ;;
     "clean-cluster-info")
         clean_cluster_info

@@ -19,6 +19,7 @@ if [[ -f "$envfile" ]]; then
     # shellcheck disable=SC1090
     source "$envfile"
 fi
+LEADER_NAME=$DEFAULT_LEADER_PROXMOX
 
 # Read options
 while getopts "n:d:i:" o; do
@@ -42,7 +43,7 @@ if  [ "$STORAGE_NET" = "" ] ; then
 fi
 
 if [ "$INIT_CEPH" == "0" ] ; then
-    if [ "$MANAGE_HOST" == "$PROXMOX_HOST_1" ] ; then
+    if [ "$MANAGE_HOST" == "$LEADER_NAME" ] ; then
         pveceph init --network "${STORAGE_NET}.0/24"
         pveceph mon create
         pveceph mgr create
@@ -51,7 +52,7 @@ if [ "$INIT_CEPH" == "0" ] ; then
         pveceph mgr create
     fi
 else
-    if [ "$MANAGE_HOST" == "$PROXMOX_HOST_1" ] ; then
+    if [ "$MANAGE_HOST" == "$LEADER_NAME" ] ; then
         pveceph pool create "$RBD_POOL_NAME" -pg_num "$PG_NUM_DEFAULT" --add_storages
         pveceph mds create
         pveceph fs create -name "$CFS_POOL_NAME" -add-storage 0  -pg_num "$PG_NUM_DEFAULT"

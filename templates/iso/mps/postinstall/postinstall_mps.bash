@@ -18,7 +18,7 @@ sudo -u "$user" ./installer/terminal-nvim.bash
 # sudo -u "$user" ./installer/desktop-rofi.bash
 # sudo -u "$user" ./installer/desktop-guitools.bash
 # sudo -u "$user" ./installer/desktop-extras.bash
-# sudo -u "$user" ./installer/desktop-spotify.bash
+# sudo -u "$user" ./installer/extras-spotify.bash
 # sudo -u "$user" ./installer/desktop-qtile.bash
 #
 # # root

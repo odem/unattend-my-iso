@@ -74,14 +74,14 @@ class PostinstallAddon(UmiAddon):
         self, args: TaskConfig, template: TemplateConfig
     ) -> bool:
         interpath = self.files._get_path_intermediate(args)
-        dst = f"{interpath}/umi/postinstall"
 
         for filename in args.addons.postinstall.copy_additional_scripts:
             log_debug(f"Copy File {filename}", self.__class__.__qualname__)
             srcpath = self.get_template_path_optional("postinstall", filename, args)
             dstfile = f"{interpath}/umi/postinstall/{filename}"
+            dstpath = os.path.dirname(dstfile)
             if os.path.exists(srcpath):
-                os.makedirs(dst, exist_ok=True)
+                os.makedirs(dstpath, exist_ok=True)
                 if self.files.cp(srcpath, dstfile) is False:
                     log_error("Postinstall copy failed", self.__class__.__qualname__)
                     return False

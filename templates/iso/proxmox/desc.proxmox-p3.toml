@@ -5,14 +5,16 @@ name = "proxmox-p3"
 [addon_answerfile]
 host_name = "proxmox-p3"
 host_domain = "local"
-net_ip = "10.40.123.97"
+net_ip = "10.10.123.97"
+
+[[env]]
+"MANAGE_HOST" = "proxmox-p3"
+"MANAGE_IP" = "10.10.123.97"
+"HB_IP" = "10.20.124.97"
+"STORAGE_IP" = "10.20.125.97"
 
 [run]
 vmname = "proxmox-p3"
-net_prepare_fw = false
-net_prepare_nics = true
-net_prepare_bridges = false
-net_ports = [[2223, 22]]
 net_devs = [
   [
     "tap1-pp3",
@@ -31,48 +33,3 @@ net_devs = [
     "vmbr4",
   ],
 ]
-
-[[env]]
-"ISO_TARGET_TYPE" = "vm"
-"MANAGE_NET" = "10.40.123"
-"MANAGE_IP" = "10.40.123.97"
-"MANAGE_HOST" = "proxmox-p3"
-"MANAGE_DOMAIN" = "local"
-"MANAGE_GW" = "10.40.123.1"
-"MANAGE_NS1" = "8.8.8.8"
-"MANAGE_NS2" = "8.8.4.4"
-"PROXY_IP" = "10.40.123.1:3128"
-"TIME_IP" = "10.40.123.1"
-"STORAGE_NET" = "10.40.125"
-"STORAGE_IP" = "10.40.125.97"
-"HB_NET" = "10.40.124"
-"HB_IP" = "10.40.124.97"
-"BOND0_NAME" = "bond0"
-"BOND1_NAME" = "bond1"
-"BRIDGE0_NAME" = "vmbr0"
-"BRIDGE1_NAME" = "vmbr1"
-"INTERFACE_BOND0_0" = "enp0s8"
-"INTERFACE_BOND0_1" = "enp0s9"
-"INTERFACE_BOND1_0" = "enp0s10"
-"INTERFACE_BOND1_1" = "enp0s11"
-"VLAN_STORAGE" = "210"
-"VLAN_HEARTBEAT" = "209"
-"INTERFACE_VLAN_STORAGE" = "vlan210"
-"INTERFACE_VLAN_HEARTBEAT" = "vlan209"
-"DISKNAME_PRIMARY" = "/dev/vda"
-"PROXMOX_HOST_1" = "proxmox-p1"
-"PROXMOX_HOST_2" = "proxmox-p2"
-"PROXMOX_HOST_3" = "proxmox-p3"
-"PROXMOX_HOST_4" = "proxmox-p4"
-"PROXMOX_IP_1" = "10.40.123.93"
-"PROXMOX_IP_2" = "10.40.123.95"
-"PROXMOX_IP_3" = "10.40.123.97"
-"PROXMOX_IP_4" = "10.40.123.99"
-"HB_IP_1" = "10.40.124.93"
-"HB_IP_2" = "10.40.124.95"
-"HB_IP_3" = "10.40.124.97"
-"HB_IP_4" = "10.40.124.99"
-"STORAGE_IP_1" = "10.40.125.93"
-"STORAGE_IP_2" = "10.40.125.95"
-"STORAGE_IP_3" = "10.40.125.97"
-"STORAGE_IP_4" = "10.40.125.99"

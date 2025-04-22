@@ -19,25 +19,25 @@ net_ports = [[2220, 22]]
 net_bridges = [
   [
     "vmbr1",
-    "10.40.1.1",
+    "10.40.123.1",
     "24",
     true,
   ],
   [
     "vmbr2",
-    "10.40.2.1",
+    "10.40.124.1",
     "24",
     true,
   ],
   [
     "vmbr3",
-    "10.40.3.1",
+    "10.40.125.1",
     "24",
     true,
   ],
   [
     "vmbr4",
-    "10.40.4.1",
+    "10.40.126.1",
     "24",
     true,
   ],
@@ -63,9 +63,11 @@ net_devs = [
 
 [addon_postinstall]
 copy_additional_scripts = [
-  "postinstall_apt.bash",
-  "postinstall_ssh.bash",
-  "postinstall_locale.bash",
+  "installer/postinstall_offline_packages.bash",
+  "installer/postinstall_hostnetwork.bash",
+  "installer/postinstall_apt.bash",
+  "installer/postinstall_ssh.bash",
+  "installer/postinstall_locale.bash",
 ]
 enable_grub_theme = true
 
@@ -76,10 +78,10 @@ grub_theme = "anon"
 host_name = "debian12"
 host_domain = "local"
 net_dhcp = true
-net_ip = "10.40.1.100"
+net_ip = "10.40.123.100"
 net_mask = "255.255.255.0"
-net_gateway = "10.40.1.1"
-net_dns = "10.40.1.1"
+net_gateway = "10.40.123.1"
+net_dns = "10.40.123.1"
 packages_install = [
   "openssh-server",
   "build-essential",

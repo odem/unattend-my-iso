@@ -9,7 +9,7 @@ net_ip = "10.40.123.85"
 
 [run]
 vmname = "ceph-p1"
-net_prepare_fw = false
+net_prepare_fw = true
 net_prepare_nics = true
 net_prepare_bridges = false
 net_ports = [[2221, 22]]

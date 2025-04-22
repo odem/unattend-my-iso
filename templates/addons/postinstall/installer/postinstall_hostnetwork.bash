@@ -35,19 +35,19 @@ source /etc/network/interfaces.d/sdn
 
 auto $INTERFACE_BOND0_0
 iface $INTERFACE_BOND0_0 inet manual
-#Ceph und Corosync
+#Ceph + Corosync
 
 auto $INTERFACE_BOND0_1
 iface $INTERFACE_BOND0_1 inet manual
-#Ceph und Corosync
+#Ceph + Corosync
 
 auto $INTERFACE_BOND1_0
 iface $INTERFACE_BOND1_0 inet manual
-#Kundennetz und Management
+#Clients + Management
 
 auto $INTERFACE_BOND1_1
 iface $INTERFACE_BOND1_1 inet manual
-#Kundennetz und Management
+#Clients + Management
 EOF
 
 # Fix Bonding for live targets
@@ -58,28 +58,28 @@ iface $BOND0_NAME inet manual
     bond-slaves $INTERFACE_BOND0_0 $INTERFACE_BOND0_1
     bond-mode 802.3ad
     bond-miimon 100
-#Ceph und Corosync
+#Ceph + Corosync
 
 auto $BRIDGE0_NAME
 iface $BRIDGE0_NAME inet manual
     bridge_ports $BOND0_NAME
     bridge_stp off
     bridge_fd 0
-#Ceph und Corosync
+#Ceph + Corosync
 
 auto $BOND1_NAME
 iface $BOND1_NAME inet manual
     bond-slaves $INTERFACE_BOND1_0 $INTERFACE_BOND1_1
     bond-mode 802.3ad
     bond-miimon 100
-#Ceph und Corosync
+#Ceph + Corosync
 
 auto $BRIDGE1_NAME
 iface $BRIDGE1_NAME inet manual
     bridge_ports $BOND1_NAME
     bridge_stp off
     bridge_fd 0
-#Ceph und Corosync
+#Ceph + Corosync
 EOF
 
 # Simple bridge setup for vm targets (no bonds!)
@@ -94,14 +94,14 @@ iface $BRIDGE0_NAME inet static
     bridge_ports $INTERFACE_BOND0_0
     bridge_stp off
     bridge_fd 0
-#Kundennetz und Management
+#Clients + Management
 
 auto $BRIDGE1_NAME
 iface $BRIDGE1_NAME inet manual
     bridge_ports $INTERFACE_BOND1_0
     bridge_stp off
     bridge_fd 0
-#Kundennetz und Management
+#Clients + Management
 EOF
 fi
 
@@ -124,41 +124,11 @@ EOF
 echo "$MANAGE_HOST" > /etc/hostname
 hostname -b "$MANAGE_HOST"
 
-# Known hosts
+# Common hosts
 cat <<EOF > /etc/hosts
 # local
 127.0.0.1 localhost
 127.0.1.1 $MANAGE_HOST $MANAGE_HOST.$MANAGE_DOMAIN 
-
-# Management ips
-$MANAGE_NET.85 ceph-p1 ceph-p1.local
-$MANAGE_NET.87 ceph-p2 ceph-p2.local
-$MANAGE_NET.89 ceph-p3 ceph-p3.local
-$MANAGE_NET.91 ceph-p4 ceph-p4.local
-$MANAGE_NET.93 proxmox-p1 proxmox-p1.local
-$MANAGE_NET.95 proxmox-p2 proxmox-p2.local
-$MANAGE_NET.97 proxmox-p3 proxmox-p3.local
-$MANAGE_NET.99 proxmox-p4 proxmox-p4.local
-
-# Heartbeat ips
-$HB_NET.85 ceph-p1 ceph-p1.local
-$HB_NET.87 ceph-p2 ceph-p2.local
-$HB_NET.89 ceph-p3 ceph-p3.local
-$HB_NET.91 ceph-p4 ceph-p4.local
-$HB_NET.93 proxmox-p1 proxmox-p1.local
-$HB_NET.95 proxmox-p2 proxmox-p2.local
-$HB_NET.97 proxmox-p3 proxmox-p3.local
-$HB_NET.99 proxmox-p4 proxmox-p4.local
-
-# Storage ips
-$STORAGE_NET.85 ceph-p1 ceph-p1.local
-$STORAGE_NET.87 ceph-p2 ceph-p2.local
-$STORAGE_NET.89 ceph-p3 ceph-p3.local
-$STORAGE_NET.91 ceph-p4 ceph-p4.local
-$STORAGE_NET.93 proxmox-p1 proxmox-p1.local
-$STORAGE_NET.95 proxmox-p2 proxmox-p2.local
-$STORAGE_NET.97 proxmox-p3 proxmox-p3.local
-$STORAGE_NET.99 proxmox-p4 proxmox-p4.local
 
 # ipv6
 # The following lines are desirable for IPv6 capable hosts

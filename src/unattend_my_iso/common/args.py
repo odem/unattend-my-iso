@@ -5,6 +5,15 @@ from typing import Any, Optional
 # user
 HOMEDIR = os.path.expanduser("~")
 USER = os.getlogin()
+DEFAULT_SUBNET = "10.10.123"
+DEFAULT_TIMEZONE = "EU/Berlin"
+DEFAULT_LOCALE = "en_US"
+DEFAULT_KEYBOARD = "de"
+DEFAULT_PASSWORD_ROOT = "rootpass"
+DEFAULT_PASSWORD_USER = "umipass"
+DEFAULT_PASSWORD_CRYPTO = "diskpass"
+DEFAULT_HOSTNAME = "foo"
+DEFAULT_DOMAIN = "local"
 
 
 class ArgumentBase:
@@ -79,10 +88,10 @@ class RunArgs(ArgumentBase):
     uefi_ovmf_vars: str = "/usr/share/OVMF/OVMF_VARS.fd"
     uefi_ovmf_code: str = "/usr/share/OVMF/OVMF_CODE.fd"
     uplink_dev: str = ""
-    net_ports: list[list[int]] = field(default_factory=lambda: [[2222, 22]])
-    net_devs: list[list[str]] = field(default_factory=lambda: [["nat"]])
+    net_ports: list[list[int]] = field(default_factory=lambda: [[]])
+    net_devs: list[list[str]] = field(default_factory=lambda: [[]])
     net_bridges: list[list[str]] = field(
-        default_factory=lambda: [["vmbr0", "10.40.1.1", "24", True]]
+        default_factory=lambda: [["vmbr0", "10.10.123.1", "24", True]]
     )
     res_cpu: int = 4
     res_mem: int = 4096
@@ -98,27 +107,27 @@ class RunArgs(ArgumentBase):
 @dataclass
 class AddonArgsAnswerFile(ArgumentBase):
     answerfile_enabled: bool = True
-    locale_string: str = "en_US"
-    locale_multi: str = "en_US.UTF-8"
-    locale_keyboard: str = "de"
-    host_name: str = "foo"
-    host_domain: str = "cluster.local"
+    locale_string: str = DEFAULT_LOCALE
+    locale_multi: str = f"{DEFAULT_LOCALE}.UTF-8"
+    locale_keyboard: str = DEFAULT_KEYBOARD
+    host_name: str = DEFAULT_HOSTNAME
+    host_domain: str = DEFAULT_DOMAIN
     net_dhcp: bool = False
-    net_ip: str = "10.23.42.9"
+    net_ip: str = f"{DEFAULT_SUBNET}.111"
     net_mask: str = "255.255.255.0"
-    net_gateway: str = "10.23.42.1"
-    net_dns: str = "10.23.42.1"
-    disk_password: str = "diskpass"
+    net_gateway: str = f"{DEFAULT_SUBNET}.1"
+    net_dns: str = f"{DEFAULT_SUBNET}.1"
+    disk_password: str = DEFAULT_PASSWORD_CRYPTO
     disk_cryptname: str = "vg_crypto"
     time_utc: bool = True
-    time_zone: str = "EU/Berlin"
+    time_zone: str = DEFAULT_TIMEZONE
     time_ntp: bool = True
     user_root_enabled: bool = True
-    user_root_password: str = "rootpass"
+    user_root_password: str = DEFAULT_PASSWORD_ROOT
     user_other_enabled: bool = True
     user_other_name: str = "umi"
     user_other_fullname: str = "umi"
-    user_other_password: str = "umipass"
+    user_other_password: str = DEFAULT_PASSWORD_USER
     packages_install: list[str] = field(default_factory=lambda: [])
     grub_install_device: str = "default"
     include_offline_packages: list[str] = field(default_factory=lambda: [])

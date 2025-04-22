@@ -69,9 +69,11 @@ def _match_group_with_template(
         return None
     if isinstance(toml_group, list) and len(toml_group) == 1:
         cfg_dict = toml_group[0]
-        if isinstance(cfg_dict, dict):
-            setattr(result, "env_args", cfg_dict)
-            return result
+        if isinstance(cfg_dict, dict) and isinstance(result, EnvironmentArgs):
+            for dkey, dval in cfg_dict.items():
+                result.env_args[dkey] = dval
+                log_debug(f"env_update for {target} name={dkey}", "ConfigReader")
+        return result
     else:
         for fld in toml_group.items():
             name = fld[0]
