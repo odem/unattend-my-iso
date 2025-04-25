@@ -235,26 +235,58 @@ del_node() {
     fi
 }
 
+get_osd_id() {
+    DEVICENAME=$1
+    FOUND=$(ceph-volume lvm list "$DEVICENAME" | grep -c "osd id")
+    if [[ "$FOUND" -gt 0 ]] ; then
+        ID=$(ceph-volume lvm list "$DEVICENAME" | grep "osd id" | awk '{print $3}')
+        echo "$ID"
+        return 0
+    fi
+    echo -1
+    return 1
+}
+clean_osd() {
+    device=$1
+    OSD_ID=$(get_osd_id "$device")
+    if [[ "$CLEANUP_STORAGE" -eq 1  ]]; then
+        vgroup=$(pvs --no-headings | grep "$device" | awk '{print $2}')
+        if [[ "$OSD_ID" != "-1" ]]; then
+            echo "Device is still in use by ceph: $OSD_ID"
+        fi
+        if [[ "$vgroup" != "" ]]; then
+            echo "Device is still in use by lvm: $device"
+            # ceph-volume lvm zap "$ENTITY_NAME"
+            vgremove -y "$vgroup"
+            wipefs -a "$device"
+        fi
+    fi
+}
 add_osd() {
     echo "--- Add OSD -------------------------------------------------"
     echo "=> Trying to add osd via $MANAGE_HOST"
     if [[ ${#PARSED_ENTITIES[*]} -gt 0 ]] ; then
         echo "-> Add OSD list (${ENTITY_LIST[*]}): "
         for device in ${PARSED_ENTITIES[*]}; do
-            if [[ "$CLEANUP_STORAGE" -eq 1 ]]; then
-                echo "-> Cleanup OSD ($device): "
-                wipefs -a "$device"
+            OSD_ID=$(get_osd_id "$device")
+            clean_osd "$device"
+            if [[ "$OSD_ID" == "-1" ]]; then
+                echo "-> Create OSD ($device): "
+                pveceph osd create "$device"
+            else
+                echo "OSD is already in use"
             fi
-            echo "-> Create OSD ($device): "
-            pveceph osd create "$device"
         done;
     else
         echo "-> Cleanup OSD ($ENTITY_NAME): "
-        if [[ "$CLEANUP_STORAGE" -eq 1 ]]; then
-            wipefs -a "$ENTITY_NAME"
+        clean_osd "$ENTITY_NAME"
+        OSD_ID=$(get_osd_id "$device")
+        if [[ "$OSD_ID" == "-1" ]]; then
+            echo "-> Create OSD ($ENTITY_NAME): "
+            pveceph osd create "$ENTITY_NAME"
+        else
+            echo "OSD is already in use"
         fi
-        echo "-> Create OSD ($ENTITY_NAME): "
-        pveceph osd create "$ENTITY_NAME"
     fi
     [[ $VERBOSE -eq 1 ]] && status_disks
 }
@@ -264,22 +296,28 @@ del_osd() {
     if [[ ${#PARSED_ENTITIES[*]} -gt 0 ]] ; then
         echo "-> Delete OSD list (${ENTITY_LIST[*]}): "
         for device in ${PARSED_ENTITIES[*]}; do
-            echo "-> Stop OSD: "
-            ceph osd down osd."${device}"
-            ceph osd out osd."${device}"
-            ceph osd stop osd."${device}"
-            umount "${device}"
-            echo "-> Delete OSD: "
-            pveceph osd destroy "$device" --cleanup "$CLEANUP_STORAGE"
+            OSD_ID=$(get_osd_id "$device")
+            if [[ "$OSD_ID" -ge 0 ]]; then
+                echo "-> Stop OSD: osd id '$OSD_ID'"
+                ceph osd down osd."${OSD_ID}"
+                ceph osd out osd."${OSD_ID}"
+                ceph osd stop osd."${OSD_ID}"
+                umount "${device}"
+                echo "-> Delete OSD: "
+                pveceph osd destroy "$OSD_ID" --cleanup "$CLEANUP_STORAGE"
+            fi
         done;
     else
-        echo "-> Stop OSD: "
-        ceph osd down osd."${ENTITY_NAME}"
-        ceph osd out osd."${ENTITY_NAME}"
-        ceph osd stop osd."${ENTITY_NAME}"
-        umount "${device}"
-        echo "-> Delete OSD: "
-        pveceph osd destroy "$ENTITY_NAME" --cleanup "$CLEANUP_STORAGE"
+        OSD_ID=$(get_osd_id "$ENTITY_NAME")
+        if [[ "$OSD_ID" -ge 0 ]]; then
+            echo "-> Stop OSD: osd id '$OSD_ID'"
+            ceph osd down osd."${OSD_ID}"
+            ceph osd out osd."${OSD_ID}"
+            ceph osd stop osd."${OSD_ID}"
+            umount "${device}"
+            echo "-> Delete OSD: "
+            pveceph osd destroy "$OSD_ID" --cleanup "$CLEANUP_STORAGE"
+        fi
     fi
     [[ $VERBOSE -eq 1 ]] && status_disks
 }
@@ -393,9 +431,9 @@ bootstrap_cluster() {
             if [[ "$node" != "$LEADER_NAME" ]] ; then
                 echo "### SSH: Calling to $node (add-node) ###"
                 ssh "$SSHOPTS" "root@$node" "$SCRIPTNAME -a add-node"
-                echo "### SSH: Calling to $node (add-osd) ###"
-                ssh "$SSHOPTS" "root@$node" "$SCRIPTNAME -a add-osd -N $ENTITY_LIST"
             fi
+            echo "### SSH: Calling to $node (add-osd) ###"
+            ssh "$SSHOPTS" "root@$node" "$SCRIPTNAME -a add-osd -N $ENTITY_LIST"
         done;
     else
         echo "Action must be executed on leader host! '$MANAGE_HOST' vs '$LEADER_NAME'"
