@@ -94,12 +94,16 @@ net_devs = [
   ],
 ]
 
+[addon_grub]
+grub_kernel_lvm_alt1 = "6.2.16-20-pve"
+grub_kernel_lvm_alt2 = "6.8.12-10-pve"
+
 [addon_postinstall]
 joblist_early = []
 joblist_late = [
   "/opt/umi/postinstall/installer/postinstall_proxmox_hostnames.bash",
   "/opt/umi/postinstall/installer/postinstall_proxmox_install.bash",
-  "/opt/umi/postinstall/installer/postinstall_proxmox_ceph_install.bash",
+  "/opt/umi/postinstall/manage/manage_ceph_cluster_hyper.bash",
   "/opt/umi/postinstall/manage/manage_proxmox_localpools.bash",
   "/opt/umi/postinstall/manage/manage_proxmox_sdn.bash",
 ]

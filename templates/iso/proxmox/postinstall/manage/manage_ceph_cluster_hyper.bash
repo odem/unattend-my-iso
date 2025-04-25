@@ -20,11 +20,13 @@ SLEEP_SHORT=1
 SLEEP_LONG=10
 SCRIPTNAME=/opt/umi/postinstall/manage/manage_ceph_cluster_hyper.bash
 SSHOPTS="-o StrictHostKeyChecking=no"
+SSHOPTS_CALL=
 ENTITY_NAME=
 ENTITY_SIZE=
 PG_NUM_DEFAULT=16
 PG_AUTOSCALE=warn
 ENTITY_LIST=""
+ACTION="ceph-install"
 usage() {
     echo "      "
     echo "Usage: $0 ACTION [ FLAG1 FLAG2 ... ] [ PARAM1 PARAM2 ... ]"
@@ -43,13 +45,15 @@ usage() {
     echo "      -a del-fs             : Removes fileystem from cluster"
     echo "      -a add-osd            : Adds new osd to cluster"
     echo "      -a del-osd            : Removes osd from cluster"
+    echo "      -a clean-osd          : Wipes filesystem andemoves lvm (wipefs+vgremove)"
     echo "      -a add-all-osd        : Adds specified osd on each node in cluster"
     echo "      -a del-all-osd        : Removes specified osd on each node in cluster"
+    echo "      -a clean-all-osd      : Cleans specified osd on each node in cluster"
     echo "      -a status-cluster     : Print ceph status"
     echo "      -a status-pools       : Print pool status"
     echo "      -a status-disks       : Print disk status"
     echo "      "
-    echo "    Flags:"
+    echo "    Flags (Delegated to subscripts invoked via ssh):"
     echo "      -C                    : Wipes disk"
     echo "      -S                    : Include proxmox storages"
     echo "      -f                    : Force action if needed"
@@ -113,7 +117,18 @@ while getopts "a:n:L:p:P:N:s:S :h v f C " o; do
     esac
 done
 shift $((OPTIND-1))
-
+if [[ "$CLEANUP_STORAGE" -eq 1 ]];then
+    SSHOPTS_CALL="$SSHOPTS_CALL -C"
+fi
+if [[ "$VERBOSE" -eq 1 ]];then
+    SSHOPTS_CALL="$SSHOPTS_CALL -v"
+fi
+if [[ "$FORCE" -eq 1 ]];then
+    SSHOPTS_CALL="$SSHOPTS_CALL -f"
+fi
+if [[ "$ADD_STORAGE" -eq 1 ]];then
+    SSHOPTS_CALL="$SSHOPTS_CALL -S"
+fi
 wait_for_ceph() {
     SLEEPTEXT=$1
     SLEEPTIME=$2
@@ -128,7 +143,7 @@ compare_host2leader() {
         return 0
     fi
 }
-read_osdlist() {
+read_entitylist() {
     if [[ "$ENTITY_LIST" != "" ]]; then
         IFS=',' read -ra PARSED_ENTITIES <<< "$ENTITY_LIST"
         LINE="${#PARSED_ENTITIES[*]} parsed entities: ${PARSED_ENTITIES[*]}"
@@ -141,6 +156,64 @@ read_nodes_from_config() {
         LINE="${#MEMBERS_PROX_MANAGE_NAME[*]} configured cluster Members: ${MEMBERS_PROX_MANAGE_NAME[*]}"
         [[ $VERBOSE -eq 1 ]] && echo "$LINE"
     fi
+}
+local_osd_add() {
+    device="$1"
+    OSD_ID=$(get_osd_id "$device")
+    if [[ "$OSD_ID" == "-1" ]]; then
+        if [[ "$CLEANUP_STORAGE" -eq 1 ]]; then
+            local_osd_clean "$device"
+        fi
+        echo "-> Create OSD ($device): "
+        pveceph osd create "$device"
+    else
+        echo "OSD is already in use"
+    fi
+}
+local_osd_del() {
+    device="$1"
+    OSD_ID=$(get_osd_id "$device")
+    if [[ "$OSD_ID" -ge 0 ]]; then
+        echo "-> Stop OSD: osd id '$OSD_ID'"
+        ceph osd down osd."${OSD_ID}"
+        ceph osd out osd."${OSD_ID}"
+        ceph osd stop osd."${OSD_ID}"
+        # wait_for_ceph "Waiting %ss for osd stop\n" "$SLEEP_MEDIUM"
+        umount "${device}"
+        echo "-> Delete OSD: "
+        pveceph osd destroy "$OSD_ID" --cleanup "$CLEANUP_STORAGE"
+        if [[ "$CLEANUP_STORAGE" -eq 1 ]]; then
+            local_osd_clean "$device"
+        fi
+    fi
+}
+local_osd_clean() {
+    device=$1
+    local_osd_lvmstate "$device"
+    HAS_LVM=$?
+    if [[ $HAS_LVM -eq 1  || "$FORCE" -eq 1 ]] ; then
+        OSD_ID=$(get_osd_id "$device")
+        if [[ "$OSD_ID" == "-1"  || "$FORCE" -eq 1 ]]; then
+            # ceph-volume lvm zap "$ENTITY_NAME"
+            systemctl stop ceph-osd.target
+            vgroup=$(pvs --no-headings | grep "$device" | awk '{print $2}')
+            [[ -z "$vgroup" ]] || vgremove -y "$vgroup"
+            wipefs -a "$device"
+            systemctl restart ceph-osd.target
+        fi
+    else
+        echo "No pv on device $device $HAS_LVM"
+    fi
+}
+set_pool_options() {
+    POOL_NAME="$1"
+    pveceph pool set "$POOL_NAME" \
+        --pg_num "$PG_NUM_DEFAULT" \
+        --pg_num_min "$PG_NUM_DEFAULT" \
+        --pg_autoscale_mode "$PG_AUTOSCALE" \
+        --application cephfs \
+        --size "$ENTITY_SIZE" \
+        --min_size "$ENTITY_SIZE"
 }
 add_node_components() {
     echo "-> Create components (mon): "
@@ -209,6 +282,26 @@ del_cluster() {
         echo "Action must be executed on leader host! '$MANAGE_HOST' vs '$LEADER_NAME'"
     fi
 }
+get_osd_id() {
+    DEVICENAME=$1
+    FOUND=$(ceph-volume lvm list "$DEVICENAME" | grep -c "osd id")
+    if [[ "$FOUND" -gt 0 ]] ; then
+        ID=$(ceph-volume lvm list "$DEVICENAME" | grep "osd id" | awk '{print $3}')
+        echo "$ID"
+        return 0
+    fi
+    echo -1
+    return 1
+}
+local_osd_lvmstate() {
+    device=$1
+    OSD_ID=$(get_osd_id "$device")
+    vgroup=$(pvs --no-headings | grep "$device" | awk '{print $2}')
+    if [[ "$vgroup" == "" ]]; then
+        return 0
+    fi
+    return 1
+}
 add_node() {
     echo "--- Add Node ------------------------------------------------"
     echo "=> Trying to add node via $MANAGE_HOST"
@@ -234,33 +327,19 @@ del_node() {
         echo "Action must NOT be executed on leader host! '$MANAGE_HOST' vs '$LEADER_NAME'"
     fi
 }
-
-get_osd_id() {
-    DEVICENAME=$1
-    FOUND=$(ceph-volume lvm list "$DEVICENAME" | grep -c "osd id")
-    if [[ "$FOUND" -gt 0 ]] ; then
-        ID=$(ceph-volume lvm list "$DEVICENAME" | grep "osd id" | awk '{print $3}')
-        echo "$ID"
-        return 0
-    fi
-    echo -1
-    return 1
-}
 clean_osd() {
-    device=$1
-    OSD_ID=$(get_osd_id "$device")
-    if [[ "$CLEANUP_STORAGE" -eq 1  ]]; then
-        vgroup=$(pvs --no-headings | grep "$device" | awk '{print $2}')
-        if [[ "$OSD_ID" != "-1" ]]; then
-            echo "Device is still in use by ceph: $OSD_ID"
-        fi
-        if [[ "$vgroup" != "" ]]; then
-            echo "Device is still in use by lvm: $device"
-            # ceph-volume lvm zap "$ENTITY_NAME"
-            vgremove -y "$vgroup"
-            wipefs -a "$device"
-        fi
+    echo "--- Clean OSD -----------------------------------------------"
+    echo "=> Trying to clean osd via $MANAGE_HOST"
+    if [[ ${#PARSED_ENTITIES[*]} -gt 0 ]] ; then
+        echo "-> Clean OSD list (${ENTITY_LIST[*]}): "
+        for device in ${PARSED_ENTITIES[*]}; do
+            local_osd_clean "$device"
+        done;
+    else
+        echo "-> Clean OSD ($ENTITY_NAME): "
+        local_osd_clean "$ENTITY_NAME"
     fi
+    [[ $VERBOSE -eq 1 ]] && status_disks
 }
 add_osd() {
     echo "--- Add OSD -------------------------------------------------"
@@ -268,25 +347,11 @@ add_osd() {
     if [[ ${#PARSED_ENTITIES[*]} -gt 0 ]] ; then
         echo "-> Add OSD list (${ENTITY_LIST[*]}): "
         for device in ${PARSED_ENTITIES[*]}; do
-            OSD_ID=$(get_osd_id "$device")
-            clean_osd "$device"
-            if [[ "$OSD_ID" == "-1" ]]; then
-                echo "-> Create OSD ($device): "
-                pveceph osd create "$device"
-            else
-                echo "OSD is already in use"
-            fi
+            local_osd_add "$device"
         done;
     else
         echo "-> Cleanup OSD ($ENTITY_NAME): "
-        clean_osd "$ENTITY_NAME"
-        OSD_ID=$(get_osd_id "$device")
-        if [[ "$OSD_ID" == "-1" ]]; then
-            echo "-> Create OSD ($ENTITY_NAME): "
-            pveceph osd create "$ENTITY_NAME"
-        else
-            echo "OSD is already in use"
-        fi
+        local_osd_add "$ENTITY_NAME"
     fi
     [[ $VERBOSE -eq 1 ]] && status_disks
 }
@@ -296,32 +361,13 @@ del_osd() {
     if [[ ${#PARSED_ENTITIES[*]} -gt 0 ]] ; then
         echo "-> Delete OSD list (${ENTITY_LIST[*]}): "
         for device in ${PARSED_ENTITIES[*]}; do
-            OSD_ID=$(get_osd_id "$device")
-            if [[ "$OSD_ID" -ge 0 ]]; then
-                echo "-> Stop OSD: osd id '$OSD_ID'"
-                ceph osd down osd."${OSD_ID}"
-                ceph osd out osd."${OSD_ID}"
-                ceph osd stop osd."${OSD_ID}"
-                umount "${device}"
-                echo "-> Delete OSD: "
-                pveceph osd destroy "$OSD_ID" --cleanup "$CLEANUP_STORAGE"
-            fi
+            local_osd_del "$device"
         done;
     else
-        OSD_ID=$(get_osd_id "$ENTITY_NAME")
-        if [[ "$OSD_ID" -ge 0 ]]; then
-            echo "-> Stop OSD: osd id '$OSD_ID'"
-            ceph osd down osd."${OSD_ID}"
-            ceph osd out osd."${OSD_ID}"
-            ceph osd stop osd."${OSD_ID}"
-            umount "${device}"
-            echo "-> Delete OSD: "
-            pveceph osd destroy "$OSD_ID" --cleanup "$CLEANUP_STORAGE"
-        fi
+        local_osd_del "$ENTITY_NAME"
     fi
     [[ $VERBOSE -eq 1 ]] && status_disks
 }
-
 add_rbd() {
     echo "--- Add RBD Pool --------------------------------------------"
     echo "=> Trying to add pool via $MANAGE_HOST"
@@ -329,14 +375,8 @@ add_rbd() {
     HOST_CHECK=$?
     if [[ $HOST_CHECK -eq 0 ]] ; then
         echo "-> Create RBD Pool ($ENTITY_NAME): "
-        pveceph pool create "$ENTITY_NAME" \
-            -pg_num "$PG_NUM_DEFAULT" \
-            -pg_num_min "$PG_NUM_DEFAULT" \
-            --pg_autoscale_mode "$PG_AUTOSCALE" \
-            --application rbd \
-            --add_storages "$ADD_STORAGE" \
-            --size "$ENTITY_SIZE" \
-            --min_size "$ENTITY_SIZE"
+        pveceph pool create "$ENTITY_NAME" --application rbd
+        set_pool_options "$ENTITY_NAME"
     else
         echo "Action must be executed on leader host! '$MANAGE_HOST' vs '$LEADER_NAME'"
     fi
@@ -353,7 +393,6 @@ del_rbd() {
         echo "Action must be executed on leader host! '$MANAGE_HOST' vs '$LEADER_NAME'"
     fi
 }
-
 add_fs() {
     echo "--- Add FS Pool ---------------------------------------------"
     echo "=> Trying to add fs via $MANAGE_HOST"
@@ -361,25 +400,11 @@ add_fs() {
     HOST_CHECK=$?
     if [[ $HOST_CHECK -eq 0 ]] ; then
         echo "-> Create FS Pool ($ENTITY_NAME): "
-        pveceph fs create -name "$ENTITY_NAME" \
-            -add-storage "$ADD_STORAGE" \
-            -pg_num "$PG_NUM_DEFAULT"
+        pveceph fs create -name "$ENTITY_NAME" -add-storage "$ADD_STORAGE"
         echo "-> Set size data pool ($ENTITY_SIZE): "
-        pveceph pool set "${ENTITY_NAME}_data" \
-            --pg_num "$PG_NUM_DEFAULT" \
-            --pg_num_min "$PG_NUM_DEFAULT" \
-            --pg_autoscale_mode "$PG_AUTOSCALE" \
-            --application cephfs \
-            --size "$ENTITY_SIZE" \
-            --min_size "$ENTITY_SIZE"
+        set_pool_options "${ENTITY_NAME}_data"
         echo "-> Set size metadata pool ($ENTITY_SIZE): "
-        pveceph pool set "${ENTITY_NAME}_metadata" \
-            --pg_num "$PG_NUM_DEFAULT" \
-            --pg_num_min "$PG_NUM_DEFAULT" \
-            --pg_autoscale_mode "$PG_AUTOSCALE" \
-            --application cephfs \
-            --size "$ENTITY_SIZE" \
-            --min_size "$ENTITY_SIZE"
+        set_pool_options "${ENTITY_NAME}_metadata"
     else
         echo "Action must be executed on leader host! '$MANAGE_HOST' vs '$LEADER_NAME'"
     fi
@@ -406,7 +431,7 @@ add_all_osd() {
     echo ""
     for node in ${MEMBERS_PROX_MANAGE_NAME[*]}; do
         echo "### SSH: Calling to $node (add-osd) ###"
-        ssh "$SSHOPTS" "root@$node" "$SCRIPTNAME -a add-osd -C -N $ENTITY_LIST"
+        ssh "$SSHOPTS" "root@$node" "$SCRIPTNAME -a add-osd $SSHOPTS_CALL -N $ENTITY_LIST"
     done;
 }
 del_all_osd() {
@@ -415,10 +440,18 @@ del_all_osd() {
     echo ""
     for node in ${MEMBERS_PROX_MANAGE_NAME[*]}; do
         echo "### SSH: Calling to $node (del-osd) ###"
-        ssh "$SSHOPTS" "root@$node" "$SCRIPTNAME -a del-osd -C -N $ENTITY_LIST"
+        ssh "$SSHOPTS" "root@$node" "$SCRIPTNAME -a del-osd $SSHOPTS_CALL -N $ENTITY_LIST"
     done;
 }
-
+clean_all_osd() {
+    echo "--- Cleans All OSD ------------------------------------------"
+    echo "=> Trying to clean all osd via $MANAGE_HOST"
+    echo ""
+    for node in ${MEMBERS_PROX_MANAGE_NAME[*]}; do
+        echo "### SSH: Calling to $node (del-osd) ###"
+        ssh "$SSHOPTS" "root@$node" "$SCRIPTNAME -a clean-osd $SSHOPTS_CALL -N $ENTITY_LIST"
+    done;
+}
 bootstrap_cluster() {
     echo "--- Bootstrap Cluster ---------------------------------------"
     echo "=> Trying to bootstrap via $MANAGE_HOST"
@@ -433,7 +466,7 @@ bootstrap_cluster() {
                 ssh "$SSHOPTS" "root@$node" "$SCRIPTNAME -a add-node"
             fi
             echo "### SSH: Calling to $node (add-osd) ###"
-            ssh "$SSHOPTS" "root@$node" "$SCRIPTNAME -a add-osd -N $ENTITY_LIST"
+            ssh "$SSHOPTS" "root@$node" "$SCRIPTNAME $SSHOPTS_CALL -a add-osd -N $ENTITY_LIST"
         done;
     else
         echo "Action must be executed on leader host! '$MANAGE_HOST' vs '$LEADER_NAME'"
@@ -449,9 +482,11 @@ wipe_cluster() {
     HOST_CHECK=$?
     if [[ $HOST_CHECK -eq 0 ]] ; then
         for node in ${MEMBERS_PROX_MANAGE_NAME[*]}; do
+            echo "### SSH: Calling to $node (del-osd) ###"
+            ssh "$SSHOPTS" "root@$node" "$SCRIPTNAME $SSHOPTS_CALL -a del-osd -N $ENTITY_LIST"
             if [[ "$node" != "$LEADER_NAME" ]] ; then
                 echo "### SSH: Calling to $node (del-node) ###"
-                ssh "$SSHOPTS" "root@$node" "$SCRIPTNAME -a del-node"
+                ssh "$SSHOPTS" "root@$node" "$SCRIPTNAME $SSHOPTS_CALL -a del-node"
             fi
         done;
         del_cluster
@@ -469,9 +504,8 @@ status_disks() {
     lsblk
 }
 
-
 # Read arrays
-read_osdlist
+read_entitylist
 read_nodes_from_config
 
 # Choose action
@@ -491,6 +525,10 @@ case "$ACTION" in
     "del-node")
         del_node
         ;;
+    "clean-all-osd")
+        [[ -z "$ENTITY_LIST" ]] && echo "No entities specified" && usage && exit 1
+        clean_all_osd
+        ;;
     "add-all-osd")
         [[ -z "$ENTITY_LIST" ]] && echo "No entities specified" && usage && exit 1
         add_all_osd
@@ -506,6 +544,10 @@ case "$ACTION" in
     "del-osd")
         [[ -z "$ENTITY_NAME" && -z "$ENTITY_LIST" ]] && echo "No entities specified" && usage && exit 1
         del_osd
+        ;;
+    "clean-osd")
+        [[ -z "$ENTITY_NAME" && -z "$ENTITY_LIST" ]] && echo "No entities specified" && usage && exit 1
+        clean_osd
         ;;
     "add-rbd")
         [[ -z "$ENTITY_NAME" ]] && echo "No name specified" && usage && exit 1
@@ -542,7 +584,7 @@ case "$ACTION" in
         ;;
     *)
         usage
-        echo "Invalid target: '$1'"
+        echo "Invalid target: '$ACTION'"
         ;;
 esac
 echo "-------------------------------------------------------------"
