@@ -21,6 +21,7 @@ REP_SIZE=""
 BUCKET_CLASS=""
 BUCKET_TYPE=""
 BUCKET_LOCATION=""
+ENTITY_LIST=""
 
 # ceph osd pool create cachepool 64
 # ceph osd tier add myecpool cachepool
@@ -38,7 +39,8 @@ usage() {
     echo "    Parameters:"
     echo "      -a action_name       : Name of the action to execute"
     echo "      -n entity_name       : Name of the entity"
-    echo "      -N entity_related    : Name of the related entity"
+    echo "      -N entity_list       : List of the entities"
+    echo "      -R entity_related    : Name of the related entity"
     echo "      -r replicated_size   : Size of the replica (int)"
     echo "      -k data_chunks       : Amount of data chunks (int)"
     echo "      -m coding_chunks     : Amount of coding chunks (int)"
@@ -76,7 +78,7 @@ usage() {
     echo "      unmount-fs               : Unmount fs (implies -r or (-k and -m))"
     echo "      "
     echo "    Group Actions:"
-    echo "      bootstrap                : init with dashboard, hosts and disks"
+    echo "      bootstrap-cluster        : init with dashboard, hosts, disks and crush"
     echo "      create-dashboard         : Enable dashboard module"
     echo "      enforce-bucket-root      : Forces all hosts to root bucket"
     echo "      enforce-bucket-locations : Forces all hosts to correct location"
@@ -107,6 +109,13 @@ read_nodes_from_config() {
     if [[ "$NODES_CEPH_MANAGE_NAME" != "" ]]; then
         IFS=',' read -ra MEMBERS_CEPH_MANAGE_NAME <<< "$NODES_CEPH_MANAGE_NAME"
         LINE="${#MEMBERS_CEPH_MANAGE_NAME[*]} configured cluster Members: ${MEMBERS_CEPH_MANAGE_NAME[*]}"
+        [[ $VERBOSE -eq 1 ]] && echo "$LINE"
+    fi
+}
+read_entitylist() {
+    if [[ "$ENTITY_LIST" != "" ]]; then
+        IFS=',' read -ra PARSED_ENTITIES <<< "$ENTITY_LIST"
+        LINE="${#PARSED_ENTITIES[*]} parsed entities: ${PARSED_ENTITIES[*]}"
         [[ $VERBOSE -eq 1 ]] && echo "$LINE"
     fi
 }
@@ -539,6 +548,10 @@ add_all_rules() {
     echo "--- Del Crush Rules ------------------------------------------"
     add_ec_rule "rule-ec-2dc-k2m1" "citk2m1"
     add_ec_rule "rule-ec-2dc-k2m2" "citk2m2"
+    add_ec_rule "rule-ec-2dc-k3m1" "citk3m1"
+    add_ec_rule "rule-ec-2dc-k3m2" "citk3m2"
+    add_ec_rule "rule-ec-2dc-k4m1" "citk4m1"
+    add_ec_rule "rule-ec-2dc-k4m2" "citk4m2"
     add_rep_rule "rule-rep-2dc-hdd" "building1" "host" "hdd"
     add_rep_rule "rule-rep-2dc-ssd" "building2" "host" "ssd"
 }
@@ -546,6 +559,10 @@ del_all_rules() {
     echo "--- Del Crush Rules ------------------------------------------"
     del_ec_rule "rule-ec-2dc-k2m1"
     del_ec_rule "rule-ec-2dc-k2m2"
+    del_ec_rule "rule-ec-2dc-k3m1"
+    del_ec_rule "rule-ec-2dc-k3m2"
+    del_ec_rule "rule-ec-2dc-k4m1"
+    del_ec_rule "rule-ec-2dc-k4m2"
     del_rep_rule "rule-rep-2dc-hdd"
     del_rep_rule "rule-rep-2dc-ssd"
 }
@@ -600,10 +617,14 @@ unmount_all_fs() {
 add_all_disks() {
     for i in $(seq 0 $(("${#MEMBERS_CEPH_MANAGE_NAME[*]}" - 1))); do
         item="${MEMBERS_CEPH_MANAGE_NAME[$i]}"
-        sudo ceph orch daemon add osd "$item:/dev/vdb"
-        sudo ceph orch daemon add osd "$item:/dev/vdc"
-        sudo ceph orch daemon add osd "$item:/dev/nvme0n1"
-        sudo ceph orch daemon add osd "$item:/dev/nvme1n1"
+        for j in $(seq 0 $(("${#PARSED_ENTITIES[*]}" - 1))); do
+            device="${PARSED_ENTITIES[$j]}"
+            sudo ceph orch daemon add osd "$item:$device"
+            if [ "$SLEEPTIME" -gt 0 ] ; then
+                echo "Waiting ${SLEEPTIME}s for other hosts..."
+                sleep "$SLEEPTIME"
+            fi
+        done
         if [ "$SLEEPTIME" -gt 0 ] ; then
             echo "Waiting ${SLEEPTIME}s for other hosts..."
             sleep "$SLEEPTIME"
@@ -703,7 +724,7 @@ wait_for_cfs_stop() {
     done
     echo "Filesystem stopped! Resuming operations now..."
 }
-while getopts ":d:a:n:N:r:k:m:p:s:b:o:t:l:h " o; do
+while getopts ":d:a:n:N:R:r:k:m:p:s:b:o:t:l:h " o; do
     # echo "Param: '$o' -> '$OPTARG'"
     case "$o" in
         a)
@@ -716,6 +737,9 @@ while getopts ":d:a:n:N:r:k:m:p:s:b:o:t:l:h " o; do
             ENTITY_NAME=${OPTARG}
             ;;
         N)
+            ENTITY_LIST=${OPTARG}
+            ;;
+        R)
             ENTITY_RELATED=${OPTARG}
             ;;
         r)
@@ -759,6 +783,7 @@ while getopts ":d:a:n:N:r:k:m:p:s:b:o:t:l:h " o; do
 done
 shift $((OPTIND-1))
 
+read_entitylist
 read_nodes_from_config
 case "$ACTION" in
     "status-cluster")
@@ -782,11 +807,19 @@ case "$ACTION" in
     "add-all-disks")
         add_all_disks
         ;;
-    "bootstrap")
+    "bootstrap-cluster")
         init_cluster
         create_dashboard
         add_all_hosts
         add_all_disks
+        enforce_bucket_root
+        del_all_profiles
+        del_all_buckets
+        del_all_rules
+        add_all_profiles
+        add_all_buckets
+        add_all_rules
+        enforce_bucket_locations
         ;;
     "add-all-buckets")
         add_all_buckets

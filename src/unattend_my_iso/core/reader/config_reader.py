@@ -148,9 +148,24 @@ def get_configs(work_path: str) -> list[TaskConfig]:
         cfg = get_config(cfg_sys, template_name, template_overlay)
         result.append(cfg)
     elif template_overlay != "*":
-        cfg = get_config(cfg_sys, template_name, template_overlay)
-        result.append(cfg)
-    else:
+        if "," in template_overlay:
+            log_debug(f"Using multiple overlays: {template_overlay}")
+            names = template_overlay.split(",")
+            syspath = cfg_sys.path_templates
+            path = f"{syspath}/iso/{template_name}"
+            overlays = list_overlays(path)
+            for overlay in overlays:
+                log_debug(f"Using names: {overlay}")
+                if overlay in names:
+                    cfg = get_config(cfg_sys, template_name, overlay)
+                    if cfg is not None:
+                        cfg.target.template_overlay = overlay
+                        result.append(cfg)
+        else:
+            log_debug(f"Using single overlay: {template_overlay}")
+            cfg = get_config(cfg_sys, template_name, template_overlay)
+            result.append(cfg)
+    elif template_overlay == "*":
         syspath = cfg_sys.path_templates
         path = f"{syspath}/iso/{template_name}"
         overlays = list_overlays(path)
