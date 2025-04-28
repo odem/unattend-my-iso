@@ -1,15 +1,11 @@
 #!/bin/bash
 
-# Environment variables
-POSTINST_PATH=/opt/umi/postinstall
-cd "$POSTINST_PATH" || exit 1
-envfile=../config/env.bash
-if [[ -f "$envfile" ]]; then
-    # shellcheck disable=SC1090
-    source "$envfile"
-fi
+# shellcheck disable=SC1090,1091
+[[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
 
+# Globals
 export DEBIAN_FRONTEND=noninteractive
+
 for file in /opt/umi/packages/* ; do 
     if [[ -f "$file" ]] ; then
         dpkg -i "$file"

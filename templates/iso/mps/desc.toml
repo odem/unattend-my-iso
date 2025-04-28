@@ -6,68 +6,36 @@ virtio_url = ""
 iso_name = "debian-12.10.0-amd64-netinst.iso"
 iso_url = "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.10.0-amd64-netinst.iso"
 iso_type = "linux"
-answerfile = "preseed_fixip.cfg"
+answerfile = "preseed_on_enc_dhcp.cfg"
 path_postinstall = "postinstall"
 file_postinstall = "postinstall.bash"
 
 [run]
 vmname = "mps-test"
-net_prepare_fw = true
-net_prepare_nics = true
-net_prepare_bridges = true
+disks = [
+  [
+    "os-hdd0.qcow2",
+    "256G",
+    "hdd",
+    "none",
+  ],
+  [
+    "data-hdd1.qcow2",
+    "128G",
+    "hdd",
+    "none",
+  ],
+]
 net_ports = [[2220, 22]]
-net_bridges = [
-  [
-    "vmbr1",
-    "10.40.123.1",
-    "24",
-    true,
-  ],
-  [
-    "vmbr2",
-    "10.40.124.1",
-    "24",
-    true,
-  ],
-  [
-    "vmbr3",
-    "10.40.125.1",
-    "24",
-    true,
-  ],
-  [
-    "vmbr4",
-    "10.40.126.1",
-    "24",
-    true,
-  ],
-]
-net_devs = [
-  [
-    "tap1-mps",
-    "vmbr1",
-  ],
-  [
-    "tap2-mps",
-    "vmbr2",
-  ],
-  [
-    "tap3-mps",
-    "vmbr3",
-  ],
-  [
-    "tap4-mps",
-    "vmbr4",
-  ],
-]
+net_devs = [["nat"]]
 
 [addon_postinstall]
+joblist_late = ["/opt/umi/postinstall/installer/postinstall_mps.bash"]
 copy_additional_scripts = [
-  "installer/postinstall_offline_packages.bash",
-  "installer/postinstall_hostnetwork.bash",
-  "installer/postinstall_apt.bash",
-  "installer/postinstall_ssh.bash",
-  "installer/postinstall_locale.bash",
+  "installer/default/hostnet_dhcp.bash",
+  "installer/default/apt.bash",
+  "installer/default/ssh.bash",
+  "installer/default/locale.bash",
 ]
 enable_grub_theme = true
 
@@ -75,27 +43,38 @@ enable_grub_theme = true
 grub_theme = "anon"
 
 [addon_answerfile]
-host_name = "debian12"
+host_name = "mps"
 host_domain = "local"
-net_dhcp = true
-net_ip = "10.40.123.100"
-net_mask = "255.255.255.0"
-net_gateway = "10.40.123.1"
-net_dns = "10.40.123.1"
 packages_install = [
   "openssh-server",
   "build-essential",
   "vim",
   "git",
-  "make",
-  "debconf",
   "sudo",
-  "lsb-release",
-  "net-tools",
-  "psmisc",
-  "dnsutils",
-  "fontconfig",
-  "curl",
-  "gnupg",
+  "make",
+  "bc",
   "bsdmainutils",
+  "debconf",
+  "lsb-release",
+  "fontconfig",
+  "psmisc",
+  "kitty",
+  "tcpdump",
+  "traceroute",
+  "ntp",
+  "gnupg",
+  "curl",
+  "wget",
+  "gnupg",
+  "dnsutils",
+  "net-tools",
+  "bridge-utils",
+  "uml-utilities",
+  "iftop",
+  "sysstat",
 ]
+
+[[env]]
+"DEFAULT_HOST" = "mps"
+"DEFAULT_DOMAIN" = "local"
+"DEFAULT_NIC_0" = "enp0s2"

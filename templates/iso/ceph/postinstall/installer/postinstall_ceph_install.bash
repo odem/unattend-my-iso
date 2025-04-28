@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# shellcheck disable=SC1090,1091
+[[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
+
+# Globals
 export DEBIAN_FRONTEND=noninteractive
 
 # Sources

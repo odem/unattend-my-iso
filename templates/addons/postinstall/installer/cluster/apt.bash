@@ -1,16 +1,10 @@
 #!/bin/bash
 
+# shellcheck disable=SC1090,1091
+[[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
+
 # Globals
 export DEBIAN_FRONTEND=noninteractive
-
-# Environment variables
-POSTINST_PATH=/opt/umi/postinstall
-cd "$POSTINST_PATH" || exit 1
-envfile=../config/env.bash
-if [[ -f "$envfile" ]]; then
-    # shellcheck disable=SC1090
-    source "$envfile"
-fi
 
 # Proxy config
 if [ "$ISO_TARGET_TYPE" == "live" ] ; then
@@ -23,11 +17,6 @@ EOF
 Acquire::http::Proxy "http://$PROXY_IP";
 Acquire::https::Proxy "http://$PROXY_IP";
 EOF
-    #     mkdir -p /etc/pve
-    #     touch /etc/pve/datacenter.cfg
-    #     cat << EOF >/etc/pve/datacenter.cfg
-    # http_proxy: http://$PROXY_IP
-    # EOF
     fi
 fi
 

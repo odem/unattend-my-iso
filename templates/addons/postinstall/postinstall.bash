@@ -1,14 +1,6 @@
 #!/bin/bash
-
-
-# Environment variables
-POSTINST_PATH=/opt/umi/postinstall
-cd "$POSTINST_PATH" || exit 1
-envfile=../config/env.bash
-if [[ -f "$envfile" ]]; then
-    # shellcheck disable=SC1090
-    source "$envfile"
-fi
+# shellcheck disable=SC1090,1091
+[[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
 JOBS=CFG_JOBS_ALL 
 
 # Copy bashrc
@@ -37,6 +29,10 @@ EOF
 # Create firstboot script
 cat <<EOF > /firstboot.bash
 #!/bin/bash
+echo "#########################################################################"
+echo "# Unattend-My-Iso: POSTINSTALL"
+echo "#########################################################################"
+sleep 3
 EOF
 
 # Add Jobs

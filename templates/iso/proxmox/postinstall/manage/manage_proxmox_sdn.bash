@@ -1,19 +1,13 @@
 #!/bin/bash
 
+# shellcheck disable=SC1090,1091
+[[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
+
 SDNDIR=/etc/pve/sdn
 NAME_ZONE_VLANS=znMain
 NAME_VNET_VLAN=advlan
 PREFIX_SUBNET_VLAN=10.10.100
 TAG_VLAN=1234
-
-# Environment variables
-POSTINST_PATH=/opt/umi/postinstall
-cd "$POSTINST_PATH" || exit 1
-envfile=../config/env.bash
-if [[ -f "$envfile" ]]; then
-    # shellcheck disable=SC1090
-    source "$envfile"
-fi
 
 echo "Update Zones..."
 cat<<EOF > "$SDNDIR/zones.cfg"

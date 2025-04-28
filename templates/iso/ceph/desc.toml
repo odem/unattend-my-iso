@@ -95,16 +95,14 @@ net_devs = [
 ]
 [addon_postinstall]
 joblist_early = []
-joblist_late = [
-  "/opt/umi/postinstall/installer/postinstall_ceph_install.bash",
-  "/opt/umi/postinstall/manage/manage_ceph_pools.bash",
-]
+joblist_late = ["/opt/umi/postinstall/installer/postinstall_ceph_install.bash"]
 copy_additional_scripts = [
-  "installer/postinstall_offline_packages.bash",
-  "installer/postinstall_hostnetwork.bash",
-  "installer/postinstall_apt.bash",
-  "installer/postinstall_ssh.bash",
-  "installer/postinstall_locale.bash",
+  "installer/default/offline_packages.bash",
+  "installer/cluster/hostnet.bash",
+  "installer/cluster/hostnames.bash",
+  "installer/cluster/apt.bash",
+  "installer/default/ssh.bash",
+  "installer/default/locale.bash",
 ]
 
 [addon_answerfile]
@@ -119,6 +117,7 @@ include_offline_packages = ["ifenslave", "vlan"]
 packages_install = ["openssh-server"]
 
 [[env]]
+"CEPH_UI_PASSWORD" = "aaa12345"
 "ISO_TARGET_TYPE" = "vm"
 "MANAGE_NET" = "10.10.123"
 "MANAGE_IP" = "10.10.123.80"

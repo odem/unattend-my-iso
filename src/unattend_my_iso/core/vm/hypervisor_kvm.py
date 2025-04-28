@@ -312,29 +312,41 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         if len(args_hv.netdevs) == 0:
             return []
         for devargs in args_hv.netdevs:
-            mac = self._generate_random_mac()
-            if len(devargs) == 2:
+            name = ""
+            bridge = ""
+            if len(devargs) > 0:
+                name = devargs[0]
+            if len(devargs) >= 2:
                 name = devargs[0]
                 bridge = devargs[1]
+            if name != "":
+                if bridge == "" and name.startswith("nat"):
+                    log_debug(
+                        f"Using NAT device with ports: {args_hv.portfwd}",
+                        self.__class__.__qualname__,
+                    )
+                    arr_fwd = []
+                    for portlist in args_hv.portfwd:
+                        arr_fwd += [f"hostfwd=tcp::{portlist[0]}-:{portlist[1]}"]
+                    userstr = f'user,{",".join(arr_fwd)}'
+                    arr_netdevs += [
+                        "-net",
+                        "nic,model=virtio",
+                        "-net",
+                        userstr,
+                    ]
                 if bridge != "":
-                    if name != "" and name.startswith("nat"):
-                        arr_fwd = []
-                        for portlist in args_hv.portfwd:
-                            arr_fwd += [f"hostfwd=tcp::{portlist[0]}-:{portlist[1]}"]
-                        userstr = f'user,{",".join(arr_fwd)}'
-                        arr_netdevs += [
-                            "-net",
-                            f"nic,model=virtio,mac={mac}",
-                            "-net",
-                            userstr,
-                        ]
-                    elif name != "" and name.startswith("tap"):
-                        netname = f"net{i}"
-                        devopt = f"e1000,netdev={netname},mac={mac}"
-                        scriptopts = "script=no,downscript=no"
-                        tapopt = f"tap,id={netname},ifname={name},{scriptopts}"
-                        arr_netdevs += ["-netdev", tapopt, "-device", devopt]
-                        i += 1
+                    log_debug(
+                        f"Using TAP device with bridge: {bridge}",
+                        self.__class__.__qualname__,
+                    )
+                    mac = self._generate_random_mac()
+                    netname = f"net{i}"
+                    devopt = f"e1000,netdev={netname},mac={mac}"
+                    scriptopts = "script=no,downscript=no"
+                    tapopt = f"tap,id={netname},ifname={name},{scriptopts}"
+                    arr_netdevs += ["-netdev", tapopt, "-device", devopt]
+                    i += 1
         return arr_netdevs
 
     def _create_disk_args(self, args: TaskConfig, args_hv: HypervisorArgs) -> list[str]:

@@ -1,14 +1,7 @@
 #!/bin/bash
-# shellcheck disable=SC1090,2005,2029,2048
 
-# Environment variables
-POSTINST_PATH=/opt/umi/postinstall
-cd "$POSTINST_PATH" || exit 1
-envfile=../config/env.bash
-if [[ -f "$envfile" ]]; then
-    # shellcheck disable=SC1090
-    source "$envfile"
-fi
+# shellcheck disable=SC1090,1091
+[[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
 
 LEADER_NAME=$DEFAULT_LEADER_PROXMOX
 MEMBERS_PROX_MANAGE_NAME=()

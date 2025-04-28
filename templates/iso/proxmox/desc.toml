@@ -101,22 +101,22 @@ grub_kernel_lvm_alt2 = "6.8.12-10-pve"
 [addon_postinstall]
 joblist_early = []
 joblist_late = [
-  "/opt/umi/postinstall/installer/postinstall_proxmox_hostnames.bash",
   "/opt/umi/postinstall/installer/postinstall_proxmox_install.bash",
   "/opt/umi/postinstall/manage/manage_ceph_cluster_hyper.bash",
   "/opt/umi/postinstall/manage/manage_proxmox_localpools.bash",
   "/opt/umi/postinstall/manage/manage_proxmox_sdn.bash",
 ]
 copy_additional_scripts = [
-  "installer/postinstall_offline_packages.bash",
-  "installer/postinstall_hostnetwork.bash",
-  "installer/postinstall_apt.bash",
-  "installer/postinstall_ssh.bash",
-  "installer/postinstall_locale.bash",
+  "installer/default/offline_packages.bash",
+  "installer/cluster/hostnet.bash",
+  "installer/cluster/hostnames.bash",
+  "installer/cluster/apt.bash",
+  "installer/default/ssh.bash",
+  "installer/default/locale.bash",
 ]
 
 [addon_answerfile]
-host_name = "proxmox"
+host_name = "proxmox-p1"
 host_domain = "local"
 net_dhcp = true
 net_ip = "10.10.123.100"

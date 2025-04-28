@@ -81,7 +81,7 @@ class RunArgs(ArgumentBase):
     vmname: str = "testvm"
     verbosity: int = 1
     disks: list[list[str]] = field(
-        default_factory=lambda: [["disk1.qcow2", "64G", "hdd"]]
+        default_factory=lambda: [["disk1.qcow2", "256G", "hdd"]]
     )
     uefi_boot: bool = True
     cdrom_boot: bool = True
@@ -91,9 +91,7 @@ class RunArgs(ArgumentBase):
     uplink_dev: str = ""
     net_ports: list[list[int]] = field(default_factory=lambda: [[]])
     net_devs: list[list[str]] = field(default_factory=lambda: [[]])
-    net_bridges: list[list[str]] = field(
-        default_factory=lambda: [["vmbr0", "10.10.123.1", "24", True]]
-    )
+    net_bridges: list[list[str]] = field(default_factory=lambda: [[]])
     res_cpu: int = 2
     res_mem: int = 2048
     net_prepare_fw: bool = True

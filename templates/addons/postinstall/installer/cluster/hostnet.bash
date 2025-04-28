@@ -1,16 +1,10 @@
 #!/bin/bash
 
+# shellcheck disable=SC1090,1091
+[[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
+
 # Globals
 export DEBIAN_FRONTEND=noninteractive
-
-# Environment variables
-POSTINST_PATH=/opt/umi/postinstall
-cd "$POSTINST_PATH" || exit 1
-envfile=../config/env.bash
-if [[ -f "$envfile" ]]; then
-    # shellcheck disable=SC1090
-    source "$envfile"
-fi
 
 # Bail if requirements are not met
 if  [ "$MANAGE_IP" = "" ] || [ "$MANAGE_HOST" = "" ] \
@@ -120,22 +114,6 @@ iface $INTERFACE_VLAN_STORAGE inet static
 #Ceph
 EOF
 
-# Hostname
-echo "$MANAGE_HOST" > /etc/hostname
-hostname -b "$MANAGE_HOST"
-
-# Common hosts
-cat <<EOF > /etc/hosts
-# local
-127.0.0.1 localhost
-127.0.1.1 $MANAGE_HOST $MANAGE_HOST.$MANAGE_DOMAIN 
-
-# ipv6
-# The following lines are desirable for IPv6 capable hosts
-::1     localhost ip6-localhost ip6-loopback
-ff02::1 ip6-allnodes
-ff02::2 ip6-allrouters
-EOF
 
 # Restart networking
 service networking restart

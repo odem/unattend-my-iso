@@ -1,17 +1,11 @@
 #!/bin/bash
 
+# shellcheck disable=SC1090,1091
+[[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
+
 # Globals
 PROXMOX_DEBURL=http://download.proxmox.com/debian/pve
 PROXMOX_KEYURL=https://enterprise.proxmox.com/debian/proxmox-release-bookworm.gpg
-
-# Environment variables
-POSTINST_PATH=/opt/umi/postinstall
-cd "$POSTINST_PATH" || exit 1
-envfile=../config/env.bash
-if [[ -f "$envfile" ]]; then
-    # shellcheck disable=SC1090
-    source "$envfile"
-fi
 
 install_kernel() {
     sudo -E apt --yes update && sudo -E apt --yes install wget python3.11-venv

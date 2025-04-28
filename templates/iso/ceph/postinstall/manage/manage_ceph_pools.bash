@@ -1,10 +1,9 @@
 #!/bin/bash
-# Disable Warnings: Variables axpanding clientside,Not following included file
-# shellcheck disable=SC2029,SC1091
-script_path="$(dirname "$(realpath "$0")")"
-source "$script_path/../hostconfig.env"
-MONITOR_LIST="$CEPH_IP_1,$CEPH_IP_2,$CEPH_IP_3,$CEPH_IP_4"
-DISK_PREFIX=/dev/vd
+
+# shellcheck disable=SC1090,1091
+[[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
+
+MONITOR_LIST="$NODES_CEPH_MANAGE_NAME"
 SLEEPTIME=3
 TEST_POOL_RBDREP=repblock
 TEST_POOL_RBDEC=ecblock
@@ -104,11 +103,20 @@ usage() {
     echo "      status-storage           : Collect status messages for storage"
     echo "      "
 }
+read_nodes_from_config() {
+    if [[ "$NODES_CEPH_MANAGE_NAME" != "" ]]; then
+        IFS=',' read -ra MEMBERS_CEPH_MANAGE_NAME <<< "$NODES_CEPH_MANAGE_NAME"
+        LINE="${#MEMBERS_CEPH_MANAGE_NAME[*]} configured cluster Members: ${MEMBERS_CEPH_MANAGE_NAME[*]}"
+        [[ $VERBOSE -eq 1 ]] && echo "$LINE"
+    fi
+}
 ping_hosts() {
     echo "--- Ping Hosts -----------------------------------------------"
-    ping -c1 "$CEPH_IP_2"
-    ping -c1 "$CEPH_IP_3"
-    ping -c1 "$CEPH_IP_4"
+    for i in $(seq 0 $(("${#MEMBERS_CEPH_MANAGE_NAME[*]}" - 1))); do
+        item="${MEMBERS_CEPH_MANAGE_NAME[$i]}"
+        echo "Pinging $item ..."
+        ping -c 1 "$item"
+    done
 }
 init_cluster() {
     ping_hosts
@@ -139,6 +147,7 @@ add_bucket() {
     del_bucket "$B_NAME"
     echo "--- Create CRUSH Rule ----------------------------------------"
     echo "Creating crush rule: $B_NAME (Location: $B_LOCATION)"
+    # shellcheck disable=SC2086
     ceph osd crush add-bucket "$B_NAME" "$B_TYPE" $B_LOCATION # Do not quote location!
 
 }
@@ -155,6 +164,7 @@ move_bucket() {
     MOVEB_LOCATION="${2}"
     echo "--- Move CRUSH Bucket ----------------------------------------"
     echo "Moving crush bucket: $MOVEB_NAME (Location: $MOVEB_LOCATION)"
+    # shellcheck disable=SC2086
     ceph osd crush move "$MOVEB_NAME" $MOVEB_LOCATION # Do not quote location!
 }
 add_ec_rule() {
@@ -468,21 +478,22 @@ unmount_fs() {
 
 add_all_hosts() {
     echo "--- Add Hosts ------------------------------------------------"
-    ping -c1 "$CEPH_IP_2"
-    ping -c1 "$CEPH_IP_3"
-    ping -c1 "$CEPH_IP_4"
-    {
-        ssh-keyscan "$CEPH_HOST_2"
-        ssh-keyscan "$CEPH_HOST_3"
-        ssh-keyscan "$CEPH_HOST_4"
-    } >> ~/.ssh/known_hosts
-    PUBKEYSTR=$(cat /etc/ceph/ceph.pub)
-    ssh ceph-p2 "echo $PUBKEYSTR >> /root/.ssh/authorized_keys"
-    ssh ceph-p3 "echo $PUBKEYSTR >> /root/.ssh/authorized_keys"
-    ssh ceph-p4 "echo $PUBKEYSTR >> /root/.ssh/authorized_keys"
-    sudo ceph orch host add "$CEPH_HOST_2" "$CEPH_IP_2"
-    sudo ceph orch host add "$CEPH_HOST_3" "$CEPH_IP_3"
-    sudo ceph orch host add "$CEPH_HOST_4" "$CEPH_IP_4"
+    for i in $(seq 0 $(("${#MEMBERS_CEPH_MANAGE_NAME[*]}" - 1))); do
+        item="${MEMBERS_CEPH_MANAGE_NAME[$i]}"
+        ip="${MEMBERS_CEPH_MANAGE_IP[$i]}"
+        echo "Pinging $item ..."
+        ping -c 1 "$item"
+        ssh-keyscan "$item" >> ~/.ssh/knwon_hosts
+        scp /etc/ceph/ceph.conf "$item":/etc/ceph/
+        scp /etc/ceph/ceph.client.admin.keyring "$item":/etc/ceph/
+        PUBKEYSTR=$(cat /etc/ceph/ceph.pub)
+        ssh "$item" "echo $PUBKEYSTR >> /root/.ssh/authorized_keys"
+        sudo ceph orch host add "$item" "$ip"
+        if [ "$SLEEPTIME" -gt 0 ] ; then
+            echo "Waiting ${SLEEPTIME}s for other hosts..."
+            sleep "$SLEEPTIME"
+        fi
+    done
 }
 del_all_profiles() {
     echo "--- Delete EC-Profiles ---------------------------------------"
@@ -508,17 +519,21 @@ del_all_buckets() {
 }
 enforce_bucket_locations() {
     echo "--- Enforce Bucket Locations ---------------------------------"
-    move_bucket "ceph-p1" "root=default datacenter=building1"
-    move_bucket "ceph-p2" "root=default datacenter=building1"
-    move_bucket "ceph-p3" "root=default datacenter=building2"
-    move_bucket "ceph-p4" "root=default datacenter=building2"
+    for i in $(seq 0 $(("${#MEMBERS_CEPH_MANAGE_NAME[*]}" - 1))); do
+        item="${MEMBERS_CEPH_MANAGE_NAME[$i]}"
+        DC="building1"
+        if (( i % 2 == 0 )); then
+            DC="building2"
+        fi
+        move_bucket "$item" "root=default datacenter=$DC"
+    done
 }
 enforce_bucket_root() {
     echo "--- Enforce Bucket Locations ---------------------------------"
-    move_bucket "ceph-p1" "root=default"
-    move_bucket "ceph-p2" "root=default"
-    move_bucket "ceph-p3" "root=default"
-    move_bucket "ceph-p4" "root=default"
+    for i in $(seq 0 $(("${#MEMBERS_CEPH_MANAGE_NAME[*]}" - 1))); do
+        item="${MEMBERS_CEPH_MANAGE_NAME[$i]}"
+        move_bucket "$item" "root=default"
+    done
 }
 add_all_rules() {
     echo "--- Del Crush Rules ------------------------------------------"
@@ -583,48 +598,17 @@ unmount_all_fs() {
     unmount_fs "${TEST_POOL_CFSEC}31"
 }
 add_all_disks() {
-    echo "--- Add Disks CP1 ---------------------------------------------"
-    sudo ceph orch daemon add osd "$CEPH_HOST_1:${DISK_PREFIX}b"
-    if [ "$SLEEPTIME" -gt 0 ] ; then
-        echo "Waiting ${SLEEPTIME}s for other hosts..."
-        sleep "$SLEEPTIME"
-    fi
-    sudo ceph orch daemon add osd "$CEPH_HOST_1:/dev/nvme0n1"
-    if [ "$SLEEPTIME" -gt 0 ] ; then
-        echo "Waiting ${SLEEPTIME}s for other hosts..."
-        sleep "$SLEEPTIME"
-    fi
-    echo "--- Add Disks CP2 ---------------------------------------------"
-    sudo ceph orch daemon add osd "$CEPH_HOST_2:${DISK_PREFIX}b"
-    if [ "$SLEEPTIME" -gt 0 ] ; then
-        echo "Waiting ${SLEEPTIME}s for other hosts..."
-        sleep "$SLEEPTIME"
-    fi
-    sudo ceph orch daemon add osd "$CEPH_HOST_2:/dev/nvme0n1"
-    if [ "$SLEEPTIME" -gt 0 ] ; then
-        echo "Waiting ${SLEEPTIME}s for other hosts..."
-        sleep "$SLEEPTIME"
-    fi
-    echo "--- Add Disks CP3 ---------------------------------------------"
-    sudo ceph orch daemon add osd "$CEPH_HOST_3:${DISK_PREFIX}b"
-    if [ "$SLEEPTIME" -gt 0 ] ; then
-        echo "Waiting ${SLEEPTIME}s for other hosts..."
-        sleep "$SLEEPTIME"
-    fi
-    sudo ceph orch daemon add osd "$CEPH_HOST_3:/dev/nvme0n1"
-    if [ "$SLEEPTIME" -gt 0 ] ; then
-        echo "Waiting ${SLEEPTIME}s for other hosts..."
-        sleep "$SLEEPTIME"
-    fi
-    echo "--- Add Disks CP4 ---------------------------------------------"
-    sudo ceph orch daemon add osd "$CEPH_HOST_4:${DISK_PREFIX}b"
-    echo "Disks added. Waiting for initialization..."
-    sleep "$SLEEPTIME"
-    sudo ceph orch daemon add osd "$CEPH_HOST_4:/dev/nvme0n1"
-    if [ "$SLEEPTIME" -gt 0 ] ; then
-        echo "Waiting ${SLEEPTIME}s for other hosts..."
-        sleep "$SLEEPTIME"
-    fi
+    for i in $(seq 0 $(("${#MEMBERS_CEPH_MANAGE_NAME[*]}" - 1))); do
+        item="${MEMBERS_CEPH_MANAGE_NAME[$i]}"
+        sudo ceph orch daemon add osd "$item:/dev/vdb"
+        sudo ceph orch daemon add osd "$item:/dev/vdc"
+        sudo ceph orch daemon add osd "$item:/dev/nvme0n1"
+        sudo ceph orch daemon add osd "$item:/dev/nvme1n1"
+        if [ "$SLEEPTIME" -gt 0 ] ; then
+            echo "Waiting ${SLEEPTIME}s for other hosts..."
+            sleep "$SLEEPTIME"
+        fi
+    done
 }
 status_cluster() {
     echo ""
@@ -775,6 +759,7 @@ while getopts ":d:a:n:N:r:k:m:p:s:b:o:t:l:h " o; do
 done
 shift $((OPTIND-1))
 
+read_nodes_from_config
 case "$ACTION" in
     "status-cluster")
         status_cluster
