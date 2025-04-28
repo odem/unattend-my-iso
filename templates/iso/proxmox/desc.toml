@@ -6,7 +6,7 @@ virtio_url = ""
 iso_name = "debian-12.10.0-amd64-netinst.iso"
 iso_url = "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.10.0-amd64-netinst.iso"
 iso_type = "linux"
-answerfile = "preseed_offline_no_enc.cfg"
+answerfile = "preseed_off_no_enc.cfg"
 path_postinstall = "postinstall"
 file_postinstall = "postinstall.bash"
 
