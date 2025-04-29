@@ -6,6 +6,11 @@
 # Globals
 export DEBIAN_FRONTEND=noninteractive
 
+echo "-------------------------------------------------------------------------"
+echo "- Unattend-My-Iso: POSTINSTALL APT (CLUSTER)"
+echo "-------------------------------------------------------------------------"
+sleep 1
+
 # Proxy config
 if [ "$ISO_TARGET_TYPE" == "live" ] ; then
     if [ ! "$PROXY_IP" = "" ] ; then

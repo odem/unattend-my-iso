@@ -4,13 +4,13 @@ name = "ceph-p13"
 [addon_answerfile]
 host_name = "ceph-p13"
 host_domain = "local"
-net_ip = "10.10.123.117"
+net_ip = "10.10.123.113"
 
 [[env]]
 "MANAGE_HOST" = "ceph-p13"
-"MANAGE_IP" = "10.10.123.117"
-"HB_IP" = "10.20.124.117"
-"STORAGE_IP" = "10.20.125.117"
+"MANAGE_IP" = "10.10.123.113"
+"HB_IP" = "10.20.124.113"
+"STORAGE_IP" = "10.20.125.113"
 
 [run]
 vmname = "ceph-p13"

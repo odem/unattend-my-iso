@@ -6,6 +6,11 @@
 # Globals
 export DEBIAN_FRONTEND=noninteractive
 
+echo "-------------------------------------------------------------------------"
+echo "- Unattend-My-Iso: POSTINSTALL HOSTNET_DHCP"
+echo "-------------------------------------------------------------------------"
+sleep 1
+
 # Bail if requirements are not met
 if  [ "$DEFAULT_IP" = "" ] || [ "$DEFAULT_HOST" = "" ] \
     || [ "$DEFAULT_DOMAIN" = "" ] ; then

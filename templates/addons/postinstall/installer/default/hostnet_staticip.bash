@@ -7,7 +7,7 @@
 export DEBIAN_FRONTEND=noninteractive
 
 echo "-------------------------------------------------------------------------"
-echo "- Unattend-My-Iso: POSTINSTALL HOSTNET_STATIC_IP"
+echo "- Unattend-My-Iso: POSTINSTALL HOSTNET_STATIC"
 echo "-------------------------------------------------------------------------"
 sleep 1
 

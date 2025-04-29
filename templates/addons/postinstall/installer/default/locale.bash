@@ -7,6 +7,11 @@
 export DEBIAN_FRONTEND=noninteractive
 LOCALESTR=en_US.UTF-8
 
+echo "-------------------------------------------------------------------------"
+echo "- Unattend-My-Iso: POSTINSTALL LOCALE"
+echo "-------------------------------------------------------------------------"
+sleep 1
+
 unset LANG
 unset LANGUAGE
 unset LC_LANG

@@ -6,6 +6,11 @@
 # Globals
 export DEBIAN_FRONTEND=noninteractive
 
+echo "-------------------------------------------------------------------------"
+echo "- Unattend-My-Iso: POSTINSTALL HOSTNAMES"
+echo "-------------------------------------------------------------------------"
+sleep 1
+
 # Hostname
 echo "$DEFAULT_HOST" > /etc/hostname
 hostname -b "$DEFAULT_HOST"

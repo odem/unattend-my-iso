@@ -6,6 +6,11 @@
 # Globals
 export DEBIAN_FRONTEND=noninteractive
 
+echo "-------------------------------------------------------------------------"
+echo "- Unattend-My-Iso: POSTINSTALL APT"
+echo "-------------------------------------------------------------------------"
+sleep 1
+
 # Sources
 cat<< EOF > /etc/apt/sources.list
 deb http://deb.debian.org/debian/ bookworm main contrib non-free-firmware

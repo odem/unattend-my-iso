@@ -90,7 +90,7 @@ class RunArgs(ArgumentBase):
     uefi_ovmf_code: str = "/usr/share/OVMF/OVMF_CODE.fd"
     uplink_dev: str = ""
     net_ports: list[list[int]] = field(default_factory=lambda: [[]])
-    net_devs: list[list[str]] = field(default_factory=lambda: [[]])
+    net_devs: list[list[str]] = field(default_factory=lambda: [["nat"]])
     net_bridges: list[list[str]] = field(default_factory=lambda: [[]])
     res_cpu: int = 2
     res_mem: int = 2048

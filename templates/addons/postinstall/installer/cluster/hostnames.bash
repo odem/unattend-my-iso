@@ -6,6 +6,11 @@
 # Globals
 export DEBIAN_FRONTEND=noninteractive
 
+echo "-------------------------------------------------------------------------"
+echo "- Unattend-My-Iso: POSTINSTALL HOSTNAMES (CLUSTER)"
+echo "-------------------------------------------------------------------------"
+sleep 1
+
 
 echo "Reading nodes from config (Ceph Management)..."
 if [[ "$NODES_CEPH_MANAGE_NAME" != "" ]]; then

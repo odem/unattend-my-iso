@@ -6,6 +6,11 @@
 # Globals
 export DEBIAN_FRONTEND=noninteractive
 
+echo "-------------------------------------------------------------------------"
+echo "- Unattend-My-Iso: POSTINSTALL HOSTNET (CLUSTER)"
+echo "-------------------------------------------------------------------------"
+sleep 1
+
 # Bail if requirements are not met
 if  [ "$MANAGE_IP" = "" ] || [ "$MANAGE_HOST" = "" ] \
     || [ "$MANAGE_DOMAIN" = "" ] ; then

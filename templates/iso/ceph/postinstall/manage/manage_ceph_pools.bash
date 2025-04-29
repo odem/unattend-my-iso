@@ -509,12 +509,18 @@ del_all_profiles() {
     del_ec_profile "$NAME_PREFIX_PROFILE" "2" "1"
     del_ec_profile "$NAME_PREFIX_PROFILE" "2" "2"
     del_ec_profile "$NAME_PREFIX_PROFILE" "3" "1"
+    del_ec_profile "$NAME_PREFIX_PROFILE" "3" "2"
+    del_ec_profile "$NAME_PREFIX_PROFILE" "4" "1"
+    del_ec_profile "$NAME_PREFIX_PROFILE" "4" "2"
 }
 add_all_profiles() {
     echo "--- Create EC-Profiles ---------------------------------------"
     add_ec_profile "$NAME_PREFIX_PROFILE" "2" "1" "host"
     add_ec_profile "$NAME_PREFIX_PROFILE" "2" "2" "host"
     add_ec_profile "$NAME_PREFIX_PROFILE" "3" "1" "host"
+    add_ec_profile "$NAME_PREFIX_PROFILE" "3" "2" "host"
+    add_ec_profile "$NAME_PREFIX_PROFILE" "4" "1" "host"
+    add_ec_profile "$NAME_PREFIX_PROFILE" "4" "2" "host"
 }
 add_all_buckets() {
     echo "--- Add Crush Buckets ----------------------------------------"

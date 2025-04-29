@@ -1,5 +1,10 @@
 #!/bin/bash
 
+echo "-------------------------------------------------------------------------"
+echo "- Unattend-My-Iso: POSTINSTALL SSH"
+echo "-------------------------------------------------------------------------"
+sleep 1
+
 # shellcheck disable=SC1090,1091
 [[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
 

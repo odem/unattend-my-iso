@@ -6,6 +6,11 @@
 # Globals
 export DEBIAN_FRONTEND=noninteractive
 
+echo "-------------------------------------------------------------------------"
+echo "- Unattend-My-Iso: POSTINSTALL OFFLINE_PACKAGES"
+echo "-------------------------------------------------------------------------"
+sleep 1
+
 for file in /opt/umi/packages/* ; do 
     if [[ -f "$file" ]] ; then
         dpkg -i "$file"
