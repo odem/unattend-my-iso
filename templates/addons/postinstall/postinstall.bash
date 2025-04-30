@@ -3,6 +3,11 @@
 [[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
 JOBS=CFG_JOBS_ALL 
 
+echo "#########################################################################"
+echo "# Unattend-My-Iso: POSTINSTALL"
+echo "#########################################################################"
+sleep 3
+
 # Copy bashrc
 if [[ -f /opt/umi/config/.bashrc ]] ; then
     chmod 644 ~/.bashrc
@@ -30,7 +35,7 @@ EOF
 cat <<EOF > /firstboot.bash
 #!/bin/bash
 echo "#########################################################################"
-echo "# Unattend-My-Iso: POSTINSTALL"
+echo "# Unattend-My-Iso: FIRSTBOOT"
 echo "#########################################################################"
 sleep 3
 EOF
@@ -40,7 +45,10 @@ num_jobs=${#JOBS[@]}
 echo "JOBS: ${JOBS[*]}"
 echo "Num Jobs: $num_jobs"
 for ((i=0; i<num_jobs; i++)); do
-    echo "${JOBS[$i]}" >> /firstboot.bash
+    job="${JOBS[$i]}"
+    echo "$job"
+    printf '%s\n' "${JOBS[$i]}" >> /firstboot.bash
+    sleep 1
 done
 
 # Add Trailer
