@@ -1,3 +1,4 @@
+import os
 from unattend_my_iso.common.logging import log_error
 
 

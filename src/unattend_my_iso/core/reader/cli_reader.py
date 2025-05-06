@@ -251,6 +251,27 @@ class CommandlineReader:
             help="Enable or disable answerfile addon (true or false)",
         )
         group_target.add_argument(
+            "-aEn",
+            "--answerfile_enable_networking",
+            type=str,
+            default=None,
+            help="Enable or disable networking during isntallation",
+        )
+        group_target.add_argument(
+            "-aEd",
+            "--answerfile_enable_dhcp",
+            type=str,
+            default=None,
+            help="Enable or disable dhcp during isntallation",
+        )
+        group_target.add_argument(
+            "-aEc",
+            "--answerfile_enable_crypto",
+            type=str,
+            default=None,
+            help="Enable or disable disk encryption",
+        )
+        group_target.add_argument(
             "-alm",
             "--locale_multi",
             type=str,

@@ -6,7 +6,7 @@ virtio_url = ""
 iso_name = "debian-12.10.0-amd64-netinst.iso"
 iso_url = "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.10.0-amd64-netinst.iso"
 iso_type = "linux"
-answerfile = "preseed_on_enc_dhcp.cfg"
+answerfile = ""
 path_postinstall = "postinstall"
 file_postinstall = "postinstall.bash"
 
@@ -43,6 +43,8 @@ enable_grub_theme = true
 grub_theme = "anon"
 
 [addon_answerfile]
+answerfile_enable_dhcp = true
+answerfile_enable_crypto = true
 host_name = "mps"
 host_domain = "local"
 packages_install = [

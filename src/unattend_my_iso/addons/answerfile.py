@@ -3,7 +3,8 @@ from typing_extensions import override
 from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.common.logging import log_debug, log_error
-from unattend_my_iso.common.model import Replaceable
+from unattend_my_iso.common.model import DIOption, Replaceable
+from unattend_my_iso.core.generators.answerfile_preseed import AnswerfilePreseed
 from unattend_my_iso.core.subprocess import caller
 
 
@@ -13,11 +14,33 @@ class AnswerFileAddon(UmiAddon):
 
     @override
     def integrate_addon(self, args: TaskConfig, template: TemplateConfig) -> bool:
-        if self.copy_answerfile(args, template) is False:
-            return False
+        if template.answerfile != "":
+            if self.copy_answerfile(args, template) is False:
+                return False
+        else:
+            if self.generate_answerfile(args, template) is False:
+                return False
         if self.copy_offline_packages(args, template) is False:
             return False
         return True
+
+    def generate_answerfile(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        inter = self.files._get_path_intermediate(args)
+        interpreseed = f"{inter}/preseed.cfg"
+        if template.iso_type == "windows":
+            interpreseed = f"{inter}/autounattend.xml"
+        gen = AnswerfilePreseed()
+        cfg_all = gen.generate_answerfile(args, template)
+        ret = []
+        for opt in cfg_all:
+            ret.append(opt.__str__())
+        finalstring = "\n".join(ret)
+        log_debug(f"FINALSTRING {finalstring}", self.__class__.__qualname__)
+        self.files.rm(interpreseed)
+        if self.files.append_to_file(interpreseed, finalstring) is False:
+            return False
+        rules = self._create_replacements(args, interpreseed)
+        return self._apply_replacements(rules)
 
     def copy_answerfile(self, args: TaskConfig, template: TemplateConfig) -> bool:
         inter = self.files._get_path_intermediate(args)

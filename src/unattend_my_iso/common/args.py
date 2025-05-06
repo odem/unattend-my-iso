@@ -106,6 +106,9 @@ class RunArgs(ArgumentBase):
 @dataclass
 class AddonArgsAnswerFile(ArgumentBase):
     answerfile_enabled: bool = True
+    answerfile_enable_networking: bool = True
+    answerfile_enable_dhcp: bool = True
+    answerfile_enable_crypto: bool = True
     locale_string: str = DEFAULT_LOCALE
     locale_multi: str = f"{DEFAULT_LOCALE}.UTF-8"
     locale_keyboard: str = DEFAULT_KEYBOARD
@@ -167,8 +170,8 @@ class AddonArgsGrub(ArgumentBase):
             # "install/gtk",
         ]
     )
-    grub_kernel_lvm_alt1: str = "6.2.16-20-pve"
-    grub_kernel_lvm_alt2: str = "6.8.12-9-pve"
+    grub_kernel_lvm_alt1: str = ""
+    grub_kernel_lvm_alt2: str = ""
     sleeptime: int = 0
     timeout: int = -1
 
