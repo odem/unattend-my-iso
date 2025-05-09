@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# shellcheck disable=SC1090,1091
-[[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
-
 # Globals
 export DEBIAN_FRONTEND=noninteractive
+set -e
+
+# shellcheck disable=SC1090,1091
+[[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
 
 echo "-------------------------------------------------------------------------"
 echo "- Unattend-My-Iso: POSTINSTALL HOSTNAMES (CLUSTER)"
@@ -129,10 +130,14 @@ if [[ ${#MEMBERS_CEPH_MANAGE_NAME[*]} -gt 0 ]] ; then
 fi
 
 # Remove Job From Jobfile
+echo "Sucessfully invoked all actions"
 SERVICE=/firstboot.bash
 if [[ -f "$SERVICE" ]]; then
     filename="$(basename "$0")"
     # shellcheck disable=SC2086
     sed s#$filename##g -i "$SERVICE"
+    echo "Removed job from firstboot script: $(basename "$0")"
 fi
+echo ""
+sleep 1
 exit 0

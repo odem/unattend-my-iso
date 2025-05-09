@@ -31,9 +31,9 @@ alias ns='sudo netstat -tulpano'
 alias sifa='sudo ifconfig -a'
 alias sbs='sudo brctl show'
 alias srn='sudo route -n'
-alias silv='sudo iptables -L -v -n'
-alias silv='sudo iptables -L -v -n -t nat'
+alias siptl='sudo iptables -L -v -n'
+alias siptln='sudo iptables -L -v -n -t nat'
 
 # Alias config: umi
-alias umipost='cd /opt/umi/postinstall'
-alias umienv='source /opt/umi/config/env.bash'
+alias umi-post='cd /opt/umi/postinstall'
+alias umi-env='source /opt/umi/config/env.bash'

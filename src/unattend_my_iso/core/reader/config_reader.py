@@ -79,7 +79,7 @@ def _match_group_with_template(
             name = fld[0]
             val = fld[1]
             setattr(result, name, val)
-            log_debug(f"tpl_update for {target} name={name}", "ConfigReader")
+            log_debug(f"tpl_update for {target} name={name} val={val}", "ConfigReader")
         return result
 
 

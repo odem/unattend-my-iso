@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# shellcheck disable=SC1090,1091
-[[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
-
 # Globals
 export DEBIAN_FRONTEND=noninteractive
+set -e
+
+# shellcheck disable=SC1090,1091
+[[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
 
 echo "-------------------------------------------------------------------------"
 echo "- Unattend-My-Iso: POSTINSTALL APT"
@@ -20,13 +21,20 @@ deb http://security.debian.org/debian-security bookworm-security main contrib no
 EOF
 
 # update and install essentials
-apt-get update -y && apt-get upgrade -y
+apt-get update -y
+apt-get install -f -y
+apt-get upgrade -y
+
 
 # Remove Job From Jobfile
+echo "Sucessfully invoked all actions"
 SERVICE=/firstboot.bash
 if [[ -f "$SERVICE" ]]; then
     filename="$(basename "$0")"
     # shellcheck disable=SC2086
     sed s#$filename##g -i "$SERVICE"
+    echo "Removed job from firstboot script: $(basename "$0")"
 fi
+echo ""
+sleep 1
 exit 0

@@ -327,7 +327,8 @@ class UmiHypervisorKvm(UmiHypervisorBase):
                     )
                     arr_fwd = []
                     for portlist in args_hv.portfwd:
-                        arr_fwd += [f"hostfwd=tcp::{portlist[0]}-:{portlist[1]}"]
+                        if len(portlist) > 1:
+                            arr_fwd += [f"hostfwd=tcp::{portlist[0]}-:{portlist[1]}"]
                     userstr = f'user,{",".join(arr_fwd)}'
                     arr_netdevs += [
                         "-net",

@@ -6,7 +6,7 @@ virtio_url = ""
 iso_name = "debian-12.10.0-amd64-netinst.iso"
 iso_url = "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.10.0-amd64-netinst.iso"
 iso_type = "linux"
-answerfile = "preseed_off_no_enc.cfg"
+answerfile = ""
 path_postinstall = "postinstall"
 file_postinstall = "postinstall.bash"
 
@@ -101,6 +101,7 @@ copy_additional_scripts = [
   "installer/cluster/hostnet.bash",
   "installer/cluster/hostnames.bash",
   "installer/cluster/apt.bash",
+  "installer/cluster/essentials.bash",
   "installer/default/ssh.bash",
   "installer/default/locale.bash",
 ]

@@ -272,6 +272,27 @@ class CommandlineReader:
             help="Enable or disable disk encryption",
         )
         group_target.add_argument(
+            "-aEl",
+            "--answerfile_enable_lvm",
+            type=str,
+            default=None,
+            help="Enable or disable lvm",
+        )
+        group_target.add_argument(
+            "-aECp",
+            "--answerfile_confirm_partitioning",
+            type=str,
+            default=None,
+            help="Confirms partitioning",
+        )
+        group_target.add_argument(
+            "-aECr",
+            "--answerfile_confirm_final_reboot",
+            type=str,
+            default=None,
+            help="Confirms final reboot",
+        )
+        group_target.add_argument(
             "-alm",
             "--locale_multi",
             type=str,
@@ -349,11 +370,11 @@ class CommandlineReader:
             help="The crypto password to use",
         )
         group_target.add_argument(
-            "-adc",
-            "--disk_cryptname",
+            "-adl",
+            "--disk_lvm_vg",
             type=str,
             default=None,
-            help="The crypto disk name to use",
+            help="The name of the lvm volume group",
         )
         group_target.add_argument(
             "-atu",

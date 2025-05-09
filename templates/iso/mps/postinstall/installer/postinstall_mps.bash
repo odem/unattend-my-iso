@@ -12,7 +12,7 @@ git clone https://github.com/odem/mps.git
 cd mps || exit 2
 
 # user
-sudo ./bootstrap.bash -u "$CFG_USER_OTHER_NAME" -p "$CFG_USER_OTHER_PASSWORD"
+# sudo ./bootstrap.bash -u "$CFG_USER_OTHER_NAME" -p "$CFG_USER_OTHER_PASSWORD"
 # sudo -u "$CFG_USER_OTHER_NAME" ./installer/terminal-essentials.bash
 # sudo -u "$CFG_USER_OTHER_NAME" ./installer/terminal-homedir.bash
 # sudo -u "$CFG_USER_OTHER_NAME" ./installer/terminal-fonts.bash
@@ -24,11 +24,11 @@ sudo ./bootstrap.bash -u "$CFG_USER_OTHER_NAME" -p "$CFG_USER_OTHER_PASSWORD"
 # sudo -u "$CFG_USER_OTHER_NAME" ./installer/desktop-qtile.bash
 
 # root
-sudo -u "root" ./installer/terminal-essentials.bash
-sudo -u "root" ./installer/terminal-homedir.bash
-sudo -u "root" ./installer/terminal-fonts.bash
-sudo -u "root" ./installer/terminal-vim.bash
-sudo -u "root" ./installer/terminal-nvim.bash
+# sudo -u "root" ./installer/terminal-essentials.bash
+# sudo -u "root" ./installer/terminal-homedir.bash
+# sudo -u "root" ./installer/terminal-fonts.bash
+# sudo -u "root" ./installer/terminal-vim.bash
+# sudo -u "root" ./installer/terminal-nvim.bash
 
 # Optimizations
 # sudo -u "root" ./installer/optimize-grubmenu.bash

@@ -106,9 +106,12 @@ class RunArgs(ArgumentBase):
 @dataclass
 class AddonArgsAnswerFile(ArgumentBase):
     answerfile_enabled: bool = True
-    answerfile_enable_networking: bool = True
-    answerfile_enable_dhcp: bool = True
-    answerfile_enable_crypto: bool = True
+    answerfile_enable_networking: bool = False
+    answerfile_enable_dhcp: bool = False
+    answerfile_enable_crypto: bool = False
+    answerfile_enable_lvm: bool = False
+    answerfile_confirm_partitioning: bool = False
+    answerfile_confirm_final_reboot: bool = False
     locale_string: str = DEFAULT_LOCALE
     locale_multi: str = f"{DEFAULT_LOCALE}.UTF-8"
     locale_keyboard: str = DEFAULT_KEYBOARD
@@ -120,7 +123,7 @@ class AddonArgsAnswerFile(ArgumentBase):
     net_gateway: str = f"{DEFAULT_SUBNET}.1"
     net_dns: str = f"{DEFAULT_SUBNET}.1"
     disk_password: str = DEFAULT_PASSWORD_CRYPTO
-    disk_cryptname: str = "vg_crypto"
+    disk_lvm_vg: str = "vg_main"
     time_utc: bool = True
     time_zone: str = DEFAULT_TIMEZONE
     time_ntp: bool = True
@@ -142,7 +145,7 @@ class AddonArgsSsh(ArgumentBase):
     config_client: str = ""
     config_daemon: str = "sshd_config"
     config_auth: str = "authorized_keys"
-    config_auth_append: str = f"{HOMEDIR}/.ssh/id_rsa.pub"
+    config_auth_append: str = f"{HOMEDIR}/.ssh/id_rsa_dummy.pub"
     config_key: str = "id_rsa"
 
 

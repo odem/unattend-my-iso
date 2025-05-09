@@ -14,7 +14,7 @@ curl -fsSL https://download.ceph.com/keys/release.asc \
 
 # Installation
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y cephadm ceph ceph-common ceph-fuse attr bsdmainutils jq
+sudo apt install -y cephadm ceph ceph-common ceph-fuse
 sudo cephadm version
 sudo ceph -v
 

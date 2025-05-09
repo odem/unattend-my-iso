@@ -8,21 +8,11 @@ set -e
 [[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
 
 echo "-------------------------------------------------------------------------"
-echo "- Unattend-My-Iso: POSTINSTALL HOSTNET_DHCP"
+echo "- Unattend-My-Iso: POSTINSTALL ESSENTIALS"
 echo "-------------------------------------------------------------------------"
 sleep 1
 
-# Create network config
-cat <<EOF > /etc/network/interfaces
-
-auto $DEFAULT_NIC_0
-iface $DEFAULT_NIC_0 inet dhcp
-#Default Uplink
-
-EOF
-
-systemctl daemon-reload
-systemctl restart networking
+usermod -aG sudo "$CFG_USER_OTHER_NAME"
 
 # Remove Job From Jobfile
 echo "Sucessfully invoked all actions"

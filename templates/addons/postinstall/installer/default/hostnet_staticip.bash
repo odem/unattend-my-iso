@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# shellcheck disable=SC1090,1091
-[[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
-
 # Globals
 export DEBIAN_FRONTEND=noninteractive
+set -e
+
+# shellcheck disable=SC1090,1091
+[[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
 
 echo "-------------------------------------------------------------------------"
 echo "- Unattend-My-Iso: POSTINSTALL HOSTNET_STATIC"
@@ -39,10 +40,14 @@ echo "nameserver $DEFAULT_NS1" > /etc/resolv.conf
 echo "nameserver $DEFAULT_NS2" >> /etc/resolv.conf
 
 # Remove Job From Jobfile
+echo "Sucessfully invoked all actions"
 SERVICE=/firstboot.bash
 if [[ -f "$SERVICE" ]]; then
     filename="$(basename "$0")"
     # shellcheck disable=SC2086
     sed s#$filename##g -i "$SERVICE"
+    echo "Removed job from firstboot script: $(basename "$0")"
 fi
+echo ""
+sleep 1
 exit 0

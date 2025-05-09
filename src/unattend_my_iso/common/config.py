@@ -52,11 +52,11 @@ class TaskResult:
 class TemplateConfig(ArgumentBase):
     name: str
     name_overlay: str
-    virtio_name: str
-    virtio_url: str
     iso_name: str
     iso_url: str
     iso_type: str
+    virtio_name: str = ""
+    virtio_url: str = ""
     answerfile: str = ""
     path_postinstall: str = ""
     file_postinstall: str = ""

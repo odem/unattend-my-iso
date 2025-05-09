@@ -23,6 +23,7 @@ copy_additional_scripts = [
   "installer/default/hostnet_dhcp.bash",
   "installer/default/hostnames.bash",
   "installer/default/apt.bash",
+  "installer/default/essentials.bash",
   "installer/default/ssh.bash",
   "installer/default/locale.bash",
 ]
