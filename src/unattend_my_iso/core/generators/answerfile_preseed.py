@@ -7,9 +7,7 @@ RECIPE_NAME = "custom-lvm"
 
 
 class AnswerfilePreseed:
-    def generate_answerfile(
-        self, args: TaskConfig, template: TemplateConfig
-    ) -> list[DIOption]:
+    def generate_answerfile(self, args: TaskConfig) -> list[DIOption]:
         cfg_locale = self.generate_fragment_locale(args)
         cfg_network = self.generate_fragment_network(args)
         cfg_partman = self.generate_fragment_partman(args)
@@ -105,7 +103,7 @@ class AnswerfilePreseed:
         ]
         result += [
             DIOption("#", "Packages"),
-            DIOption("tasksel/first", ["ssh-server", "sudo"], "multiselect", "tasksel"),
+            DIOption("tasksel/first", ["ssh-server"], "multiselect", "tasksel"),
             DIOption("pkgsel/upgrade", "full-upgrade"),
             DIOption("pkgsel/include", c.packages_install),
             DIOption("#", "Popularity Contest"),
@@ -180,7 +178,7 @@ class AnswerfilePreseed:
         ]
         if c.answerfile_enable_crypto:
             result += [
-                DIOption("#", "Partman (CRYPTO)"),
+                DIOption("#", "Partman (LUKS+LVM)"),
                 DIOption("partman-auto/method", "crypto"),
                 DIOption("partman-auto/choose_recipe", "autocrypt-recipe", "select"),
                 DIOption("partman-auto/expert_recipe_file", "/autocrypt-recipe"),
@@ -240,7 +238,7 @@ class AnswerfilePreseed:
         if c.answerfile_confirm_final_reboot:
             result += [
                 DIOption("#", "Confirm Reboot"),
-                # DIOption("finish-install/reboot_in_progress", "", "note"),
+                DIOption("finish-install/reboot_in_progress", "", "note"),
                 DIOption("debian-installer/exit/reboot", True),
             ]
         return result
@@ -248,7 +246,12 @@ class AnswerfilePreseed:
     def generate_fragment_recipe(self, args: TaskConfig) -> list[DIOption]:
         recipe = AnswerfileRecipe()
         recipe = recipe.generate_recipe(RECIPE_NAME, args.addons.answerfile.disk_lvm_vg)
+        methods = "REGULAR"
+        if args.addons.answerfile.answerfile_enable_crypto:
+            methods = "LUKS+LVM"
+        elif args.addons.answerfile.answerfile_enable_lvm:
+            methods = "LVM"
         return [
-            DIOption("#", "Recipe (LVM+LUKS)"),
+            DIOption("#", f"Recipe ({methods})"),
             DIOption("partman-auto/expert_recipe", recipe),
         ]

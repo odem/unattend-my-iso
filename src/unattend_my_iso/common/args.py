@@ -112,8 +112,8 @@ class AddonArgsAnswerFile(ArgumentBase):
     answerfile_enable_dhcp: bool = True
     answerfile_enable_crypto: bool = False
     answerfile_enable_lvm: bool = False
-    answerfile_confirm_partitioning: bool = False
-    answerfile_confirm_final_reboot: bool = False
+    answerfile_confirm_partitioning: bool = True
+    answerfile_confirm_final_reboot: bool = True
     answerfile_hook_dir_cdrom: str = "/umi"
     answerfile_hook_dir_target: str = "/opt/umi"
     answerfile_hook_filename: str = "postinstall/postinstall.bash"

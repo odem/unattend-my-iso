@@ -18,7 +18,6 @@ class AnswerfileCommands:
         return result
 
     def generate_default_hook_commands(self, args: TaskConfig) -> list[str]:
-        result = []
         cfg = args.addons.answerfile
         cdrom_dir = cfg.answerfile_hook_dir_cdrom
         target_dir = cfg.answerfile_hook_dir_target
@@ -32,4 +31,4 @@ class AnswerfileCommands:
                 f"in-target chmod 700 {target_dir}/{filename}",
                 f"in-target /bin/bash {target_dir}/{filename}",
             ]
-        return result
+        return cmdlist

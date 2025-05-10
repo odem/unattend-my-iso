@@ -29,8 +29,6 @@ grub_theme = "anon"
 timeout = 0
 
 [addon_answerfile]
-answerfile_confirm_partitioning = true
-answerfile_confirm_final_reboot = true
 host_name = "mps"
 
 [[env]]

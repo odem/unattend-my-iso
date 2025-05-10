@@ -30,7 +30,7 @@ class AnswerFileAddon(UmiAddon):
         if template.iso_type == "windows":
             interpreseed = f"{inter}/autounattend.xml"
         gen = AnswerfilePreseed()
-        cfg_all = gen.generate_answerfile(args, template)
+        cfg_all = gen.generate_answerfile(args)
         ret = []
         for opt in cfg_all:
             ret.append(opt.__str__())
