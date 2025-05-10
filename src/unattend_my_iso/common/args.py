@@ -9,11 +9,13 @@ DEFAULT_SUBNET = "10.10.123"
 DEFAULT_TIMEZONE = "EU/Berlin"
 DEFAULT_LOCALE = "en_US"
 DEFAULT_KEYBOARD = "de"
+DEFAULT_HOSTNAME = "foo"
+DEFAULT_DOMAIN = "local"
+DEFAULT_VGNAME = "vg_main"
+DEFAULT_USERNAME = "umi"
 DEFAULT_PASSWORD_ROOT = "rootpass"
 DEFAULT_PASSWORD_USER = "umipass"
 DEFAULT_PASSWORD_CRYPTO = "diskpass"
-DEFAULT_HOSTNAME = "foo"
-DEFAULT_DOMAIN = "local"
 
 
 class ArgumentBase:
@@ -106,8 +108,8 @@ class RunArgs(ArgumentBase):
 @dataclass
 class AddonArgsAnswerFile(ArgumentBase):
     answerfile_enabled: bool = True
-    answerfile_enable_networking: bool = False
-    answerfile_enable_dhcp: bool = False
+    answerfile_enable_networking: bool = True
+    answerfile_enable_dhcp: bool = True
     answerfile_enable_crypto: bool = False
     answerfile_enable_lvm: bool = False
     answerfile_confirm_partitioning: bool = False
@@ -126,15 +128,15 @@ class AddonArgsAnswerFile(ArgumentBase):
     net_gateway: str = f"{DEFAULT_SUBNET}.1"
     net_dns: str = f"{DEFAULT_SUBNET}.1"
     disk_password: str = DEFAULT_PASSWORD_CRYPTO
-    disk_lvm_vg: str = "vg_main"
+    disk_lvm_vg: str = DEFAULT_VGNAME
     time_utc: bool = True
     time_zone: str = DEFAULT_TIMEZONE
     time_ntp: bool = True
     user_root_enabled: bool = True
     user_root_password: str = DEFAULT_PASSWORD_ROOT
     user_other_enabled: bool = True
-    user_other_name: str = "umi"
-    user_other_fullname: str = "umi"
+    user_other_name: str = DEFAULT_USERNAME
+    user_other_fullname: str = DEFAULT_USERNAME
     user_other_password: str = DEFAULT_PASSWORD_USER
     packages_install: list[str] = field(default_factory=lambda: [])
     grub_install_device: str = "default"

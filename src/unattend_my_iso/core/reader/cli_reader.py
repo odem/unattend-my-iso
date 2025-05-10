@@ -293,6 +293,27 @@ class CommandlineReader:
             help="Confirms final reboot",
         )
         group_target.add_argument(
+            "-aHc",
+            "--answerfile_hook_dir_cdrom",
+            type=str,
+            default=None,
+            help="Hook dir for cdrom",
+        )
+        group_target.add_argument(
+            "-aHt",
+            "--answerfile_hook_dir_target",
+            type=str,
+            default=None,
+            help="Hook dir for target",
+        )
+        group_target.add_argument(
+            "-aHf",
+            "--answerfile_hook_filename",
+            type=str,
+            default=None,
+            help="Hook filename",
+        )
+        group_target.add_argument(
             "-alm",
             "--locale_multi",
             type=str,

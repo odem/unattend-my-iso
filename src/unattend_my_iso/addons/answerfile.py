@@ -3,7 +3,7 @@ from typing_extensions import override
 from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.common.logging import log_debug, log_error, log_info
-from unattend_my_iso.common.model import DIOption, Replaceable
+from unattend_my_iso.common.model import Replaceable
 from unattend_my_iso.core.generators.answerfile_preseed import AnswerfilePreseed
 from unattend_my_iso.core.subprocess import caller
 
@@ -35,6 +35,7 @@ class AnswerFileAddon(UmiAddon):
         for opt in cfg_all:
             ret.append(opt.__str__())
         finalstring = "\n".join(ret)
+        log_debug(f"Answerfile generated:\n{finalstring}", self.__class__.__qualname__)
         self.files.rm(interpreseed)
         if self.files.append_to_file(interpreseed, finalstring) is False:
             return False

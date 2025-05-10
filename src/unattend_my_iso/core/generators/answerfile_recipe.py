@@ -1,4 +1,3 @@
-from unattend_my_iso.common.logging import log_info
 from unattend_my_iso.common.model import PartitionFlag, RecipeDescription
 
 LINE_PREFIX = "    "

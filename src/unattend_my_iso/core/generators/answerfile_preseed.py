@@ -10,16 +10,16 @@ class AnswerfilePreseed:
     def generate_answerfile(
         self, args: TaskConfig, template: TemplateConfig
     ) -> list[DIOption]:
-        cfg_locale = self.generate_fragment_locale(args, template)
-        cfg_network = self.generate_fragment_network(args, template)
-        cfg_partman = self.generate_fragment_partman(args, template)
-        cfg_mirrors = self.generate_fragment_mirrors(args, template)
-        cfg_time = self.generate_fragment_time(args, template)
-        cfg_users = self.generate_fragment_users(args, template)
-        cfg_packages = self.generate_fragment_packages(args, template)
-        cfg_grub = self.generate_fragment_grub(args, template)
-        cfg_hooklate = self.generate_fragment_hook_late(args, template)
-        cfg_reboot = self.generate_fragment_reboot(args, template)
+        cfg_locale = self.generate_fragment_locale(args)
+        cfg_network = self.generate_fragment_network(args)
+        cfg_partman = self.generate_fragment_partman(args)
+        cfg_mirrors = self.generate_fragment_mirrors()
+        cfg_time = self.generate_fragment_time(args)
+        cfg_users = self.generate_fragment_users(args)
+        cfg_packages = self.generate_fragment_packages(args)
+        cfg_grub = self.generate_fragment_grub(args)
+        cfg_hooklate = self.generate_fragment_hook_late(args)
+        cfg_reboot = self.generate_fragment_reboot(args)
         return [
             *cfg_locale,
             *cfg_time,
@@ -33,9 +33,7 @@ class AnswerfilePreseed:
             *cfg_reboot,
         ]
 
-    def generate_fragment_locale(
-        self, args: TaskConfig, template: TemplateConfig
-    ) -> list[DIOption]:
+    def generate_fragment_locale(self, args: TaskConfig) -> list[DIOption]:
         c = args.addons.answerfile
         return [
             DIOption("#", "Locale"),
@@ -44,9 +42,7 @@ class AnswerfilePreseed:
             DIOption("keyboard-configuration/xkb-keymap", c.locale_keyboard, "select"),
         ]
 
-    def generate_fragment_time(
-        self, args: TaskConfig, template: TemplateConfig
-    ) -> list[DIOption]:
+    def generate_fragment_time(self, args: TaskConfig) -> list[DIOption]:
         c = args.addons.answerfile
         return [
             DIOption("#", "Time"),
@@ -55,9 +51,7 @@ class AnswerfilePreseed:
             DIOption("time/zone", c.time_zone),
         ]
 
-    def generate_fragment_users(
-        self, args: TaskConfig, template: TemplateConfig
-    ) -> list[DIOption]:
+    def generate_fragment_users(self, args: TaskConfig) -> list[DIOption]:
         c = args.addons.answerfile
         return [
             DIOption("#", "Users (root)"),
@@ -72,9 +66,7 @@ class AnswerfilePreseed:
             DIOption("passwd/user-password-again", c.user_other_password, "password"),
         ]
 
-    def generate_fragment_mirrors(
-        self, args: TaskConfig, template: TemplateConfig
-    ) -> list[DIOption]:
+    def generate_fragment_mirrors(self) -> list[DIOption]:
         return [
             DIOption("#", "Mirrors"),
             DIOption("mirror/country", "manual"),
@@ -83,9 +75,7 @@ class AnswerfilePreseed:
             DIOption("mirror/http/proxy", ""),
         ]
 
-    def generate_fragment_grub(
-        self, args: TaskConfig, template: TemplateConfig
-    ) -> list[DIOption]:
+    def generate_fragment_grub(self, args: TaskConfig) -> list[DIOption]:
         c = args.addons.answerfile
         return [
             DIOption("#", "Grub"),
@@ -99,9 +89,7 @@ class AnswerfilePreseed:
             DIOption("grub-installer/bootdev", c.grub_install_device),
         ]
 
-    def generate_fragment_packages(
-        self, args: TaskConfig, template: TemplateConfig
-    ) -> list[DIOption]:
+    def generate_fragment_packages(self, args: TaskConfig) -> list[DIOption]:
         c = args.addons.answerfile
         result = []
         result += [
@@ -127,9 +115,7 @@ class AnswerfilePreseed:
         ]
         return result
 
-    def generate_fragment_network(
-        self, args: TaskConfig, template: TemplateConfig
-    ) -> list[DIOption]:
+    def generate_fragment_network(self, args: TaskConfig) -> list[DIOption]:
         ret = []
         c = args.addons.answerfile
         if c.answerfile_enable_networking:
@@ -169,32 +155,16 @@ class AnswerfilePreseed:
             ]
         return ret
 
-    def generate_fragment_hook_late(
-        self, args: TaskConfig, template: TemplateConfig
-    ) -> list[DIOption]:
-        cfg = args.addons.answerfile
-        cdrom_dir = cfg.answerfile_hook_dir_cdrom
-        target_dir = cfg.answerfile_hook_dir_target
-        filename = cfg.answerfile_hook_filename
-        cmdlist = [
-            f"mkdir -p /target{target_dir}/",
-            f"cp -r /cdrom{cdrom_dir}/* /target{target_dir}/",
-        ]
-        if args.addons.postinstall.postinstall_enabled:
-            cmdlist += [
-                f"in-target chmod 700 {target_dir}/{filename}",
-                f"in-target /bin/bash {target_dir}/{filename}",
-            ]
+    def generate_fragment_hook_late(self, args: TaskConfig) -> list[DIOption]:
         cmd = AnswerfileCommands()
-        cmd_full = cmd.generate_fragment_hook_late(cmdlist, args, template)
+        cmdlist = cmd.generate_default_hook_commands(args)
+        cmd_full = cmd.generate_fragment_hook_late(cmdlist)
         return [
             DIOption("#", "Hook (Late)"),
             DIOption("preseed/late_command", cmd_full),
         ]
 
-    def generate_fragment_partman(
-        self, args: TaskConfig, template: TemplateConfig
-    ) -> list[DIOption]:
+    def generate_fragment_partman(self, args: TaskConfig) -> list[DIOption]:
         c = args.addons.answerfile
         result = []
         result += [
@@ -249,7 +219,7 @@ class AnswerfilePreseed:
                     DIOption("partman-auto/choose_recipe", RECIPE_NAME),
                 ]
 
-        result += self.generate_fragment_recipe(args, template)
+        result += self.generate_fragment_recipe(args)
         result += [
             DIOption("#", "Partman (Confirm)"),
             DIOption("partman/confirm", True),
@@ -264,22 +234,18 @@ class AnswerfilePreseed:
 
         return result
 
-    def generate_fragment_reboot(
-        self, args: TaskConfig, template: TemplateConfig
-    ) -> list[DIOption]:
+    def generate_fragment_reboot(self, args: TaskConfig) -> list[DIOption]:
         result = []
         c = args.addons.answerfile
         if c.answerfile_confirm_final_reboot:
             result += [
                 DIOption("#", "Confirm Reboot"),
-                DIOption("finish-install/reboot_in_progress", "", "note"),
+                # DIOption("finish-install/reboot_in_progress", "", "note"),
                 DIOption("debian-installer/exit/reboot", True),
             ]
         return result
 
-    def generate_fragment_recipe(
-        self, args: TaskConfig, template: TemplateConfig
-    ) -> list[DIOption]:
+    def generate_fragment_recipe(self, args: TaskConfig) -> list[DIOption]:
         recipe = AnswerfileRecipe()
         recipe = recipe.generate_recipe(RECIPE_NAME, args.addons.answerfile.disk_lvm_vg)
         return [
