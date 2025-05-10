@@ -10,13 +10,15 @@ set -e
 echo "-------------------------------------------------------------------------"
 echo "- Unattend-My-Iso: POSTINSTALL ESSENTIALS"
 echo "-------------------------------------------------------------------------"
+echo ""
 sleep 1
 
 
+# Update and install
 apt update -y
 apt install -f -y
 apt upgrade -y
-apt install -y openssh-server attr jq wget curl bc vim sudo
+apt install -y openssh-server attr jq wget curl bc git vim make sudo 
 
 # Remove Job From Jobfile
 echo "Sucessfully invoked all actions"

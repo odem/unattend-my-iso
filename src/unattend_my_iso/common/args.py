@@ -112,6 +112,9 @@ class AddonArgsAnswerFile(ArgumentBase):
     answerfile_enable_lvm: bool = False
     answerfile_confirm_partitioning: bool = False
     answerfile_confirm_final_reboot: bool = False
+    answerfile_hook_dir_cdrom: str = "/umi"
+    answerfile_hook_dir_target: str = "/opt/umi"
+    answerfile_hook_filename: str = "postinstall/postinstall.bash"
     locale_string: str = DEFAULT_LOCALE
     locale_multi: str = f"{DEFAULT_LOCALE}.UTF-8"
     locale_keyboard: str = DEFAULT_KEYBOARD

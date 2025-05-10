@@ -8,10 +8,12 @@ set -e
 [[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
 
 echo "-------------------------------------------------------------------------"
-echo "- Unattend-My-Iso: POSTINSTALL ESSENTIALS"
+echo "- Unattend-My-Iso: POSTINSTALL USER"
 echo "-------------------------------------------------------------------------"
+echo ""
 sleep 1
 
+# Add user to sudo group
 usermod -aG sudo "$CFG_USER_OTHER_NAME"
 
 # Remove Job From Jobfile

@@ -117,7 +117,7 @@ class AnswerfilePreseed:
         ]
         result += [
             DIOption("#", "Packages"),
-            DIOption("tasksel/first", ["ssh-server"], "multiselect", "tasksel"),
+            DIOption("tasksel/first", ["ssh-server", "sudo"], "multiselect", "tasksel"),
             DIOption("pkgsel/upgrade", "full-upgrade"),
             DIOption("pkgsel/include", c.packages_install),
             DIOption("#", "Popularity Contest"),
@@ -173,16 +173,18 @@ class AnswerfilePreseed:
         self, args: TaskConfig, template: TemplateConfig
     ) -> list[DIOption]:
         cfg = args.addons.answerfile
-        cdrom_dir = "/umi"
-        target_dir = "/opt/umi"
-        filename = "postinstall/postinstall.bash"
+        cdrom_dir = cfg.answerfile_hook_dir_cdrom
+        target_dir = cfg.answerfile_hook_dir_target
+        filename = cfg.answerfile_hook_filename
         cmdlist = [
-            f"in-target usermod -aG sudo {cfg.user_other_name}",
             f"mkdir -p /target{target_dir}/",
             f"cp -r /cdrom{cdrom_dir}/* /target{target_dir}/",
-            f"in-target chmod 700 {target_dir}/{filename}",
-            f"in-target /bin/bash {target_dir}/{filename}",
         ]
+        if args.addons.postinstall.postinstall_enabled:
+            cmdlist += [
+                f"in-target chmod 700 {target_dir}/{filename}",
+                f"in-target /bin/bash {target_dir}/{filename}",
+            ]
         cmd = AnswerfileCommands()
         cmd_full = cmd.generate_fragment_hook_late(cmdlist, args, template)
         return [

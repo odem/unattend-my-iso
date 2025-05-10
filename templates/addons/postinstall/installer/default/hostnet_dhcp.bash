@@ -10,6 +10,7 @@ set -e
 echo "-------------------------------------------------------------------------"
 echo "- Unattend-My-Iso: POSTINSTALL HOSTNET_DHCP"
 echo "-------------------------------------------------------------------------"
+echo ""
 sleep 1
 
 # Create network config

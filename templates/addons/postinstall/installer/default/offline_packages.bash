@@ -9,6 +9,7 @@ export DEBIAN_FRONTEND=noninteractive
 echo "-------------------------------------------------------------------------"
 echo "- Unattend-My-Iso: POSTINSTALL OFFLINE_PACKAGES"
 echo "-------------------------------------------------------------------------"
+echo ""
 sleep 1
 
 # Install packages

@@ -10,6 +10,7 @@ set -e
 echo "-------------------------------------------------------------------------"
 echo "- Unattend-My-Iso: POSTINSTALL HOSTNET_STATIC"
 echo "-------------------------------------------------------------------------"
+echo ""
 sleep 1
 
 # Bail if requirements are not met
