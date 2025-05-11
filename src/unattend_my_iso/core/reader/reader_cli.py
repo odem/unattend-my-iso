@@ -424,7 +424,7 @@ class CommandlineReader:
         )
         group_target.add_argument(
             "-aurp",
-            "--user_root_password",
+            "--user_root_pw",
             type=str,
             default=None,
             help="The root password to use",
@@ -452,7 +452,7 @@ class CommandlineReader:
         )
         group_target.add_argument(
             "-auop",
-            "--user_other_password",
+            "--user_other_pw",
             type=str,
             default=None,
             help="The other user password to use",
@@ -463,6 +463,20 @@ class CommandlineReader:
             type=str,
             default=None,
             help="The packages to install",
+        )
+        group_target.add_argument(
+            "-aau",
+            "--additional_users",
+            type=str,
+            default=None,
+            help="Additional users to add",
+        )
+        group_target.add_argument(
+            "-asu",
+            "--sudo_users",
+            type=str,
+            default=None,
+            help="Additional users to add",
         )
         group_target.add_argument(
             "-ag",

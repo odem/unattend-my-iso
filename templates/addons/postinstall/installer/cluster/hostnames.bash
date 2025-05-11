@@ -129,6 +129,7 @@ if [[ ${#MEMBERS_CEPH_MANAGE_NAME[*]} -gt 0 ]] ; then
         echo "$NEWLINE" >> /etc/hosts
     done
 fi
+echo ""
 
 # Remove Job From Jobfile
 echo "Sucessfully invoked all actions"

@@ -26,6 +26,7 @@ if [[ -f /opt/umi/ssh/sshd_config ]] ; then
 fi
 systemctl enable ssh
 systemctl restart ssh
+echo ""
 
 # Remove Job From Jobfile
 echo "Sucessfully invoked all actions"

@@ -24,6 +24,28 @@ DEFAULT_USERNAME = "umi"
 DEFAULT_PASSWORD_ROOT = "rootpass"
 DEFAULT_PASSWORD_USER = "umipass"
 DEFAULT_PASSWORD_CRYPTO = "diskpass"
+DEFAULT_PASSWORD = "otherpass123"
+
+# Processor
+GLOBAL_WORKPATHS = ["/etc/umi", "/usr/share/umi", f"{HOMEDIR}/.config/umi"]
 
 # Logger
 LOGGER = None
+
+# ANSWERFILE
+RECIPE_NAME = "custom-lvm"
+
+# Answerfile Recipe
+LINE_PREFIX = "    "
+LINE_LENGTH_MAX = 78
+DOUBLE_PREFIX = f"{LINE_PREFIX}{LINE_PREFIX}"
+TRIPLE_PREFIX = f"{DOUBLE_PREFIX}{LINE_PREFIX}"
+LINE_CONT = " \\\n"
+RECIPE_DISK_CONT = f"{DOUBLE_PREFIX}{'.':70}{LINE_CONT}"
+RECIPE_DISK_END = f"{DOUBLE_PREFIX}.\n"
+
+# Debugging
+DEBUG_TEMPLATE = "proxmox"
+DEBUG_OVERLAY = "*"
+DEBUG_VERBOSITY = "3"
+DEBUG_PROCTYPE = "net_start"

@@ -2,7 +2,7 @@ import os
 import shutil
 import requests
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
-from unattend_my_iso.common.logging import log_debug, log_error
+from unattend_my_iso.common.logging import log_debug, log_error, log_info
 from unattend_my_iso.core.subprocess.caller import run
 from unattend_my_iso.core.files.file_contents import UmiFileContents
 from unattend_my_iso.core.files.file_mounts import UmiFileMounts
@@ -73,11 +73,11 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
             response = requests.get(url)
             if response.status_code == 200:
                 dst = f"{dir}/{name}"
-                log_debug(f"Download success! Storing to '{dst}'")
+                log_info(f"Download success! Storing to '{dst}'")
                 if os.path.exists(dir):
                     with open(dst, "wb") as file:
                         file.write(response.content)
-                        return True
+                    return True
                 else:
                     log_error(f"Iso folder does not exist: '{dir}'")
             else:

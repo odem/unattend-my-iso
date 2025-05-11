@@ -1,13 +1,14 @@
 import logging
 import sys
+from unattend_my_iso.common.const import (
+    DEBUG_OVERLAY,
+    DEBUG_PROCTYPE,
+    DEBUG_TEMPLATE,
+    DEBUG_VERBOSITY,
+)
 from unattend_my_iso.core.reader.reader_cli import CommandlineReader
-from unattend_my_iso.common.logging import init_logger
+from unattend_my_iso.common.logging import init_logger, log_info
 from unattend_my_iso.core.processing.processor import UmiTaskProcessor
-
-DEBUG_TEMPLATE = "proxmox"
-DEBUG_OVERLAY = "*"
-DEBUG_VERBOSITY = "3"
-DEBUG_PROCTYPE = "net_start"
 
 
 def do_main(work_path: str = ""):
@@ -45,12 +46,6 @@ def do_debug_init():
     sys.argv += ["-to", DEBUG_OVERLAY]
     sys.argv += ["-tp", DEBUG_PROCTYPE]
     sys.argv += ["-rv", DEBUG_VERBOSITY]
-    # reader = CommandlineReader()
-    # p = reader._create_cli_parser_all()
-    # args = p.parse_args()
-    # kwargs = args._get_kwargs()
-    # for item in kwargs:
-    #     log_error(f"ITEM: {item}", "INIT")
 
 
 def main(work_path: str = "", debug: bool = False):

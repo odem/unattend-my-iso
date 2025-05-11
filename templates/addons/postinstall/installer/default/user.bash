@@ -13,8 +13,30 @@ echo "-------------------------------------------------------------------------"
 echo ""
 sleep 1
 
-# Add user to sudo group
-usermod -aG sudo "$CFG_USER_OTHER_NAME"
+# Configure root user
+echo "-> Prepare user 'root'"
+# TODO: What to do here?
+
+# Configure default user
+if [[ "$CFG_USER_OTHER_NAME" != "" ]]; then
+    echo "-> Prepare default user '$CFG_USER_OTHER_NAME'"
+    /sbin/usermod -aG sudo "$CFG_USER_OTHER_NAME"
+fi
+# Configure additional users
+for i in $(seq 0 $(("${#CFG_ADDITIONAL_USERS[*]}" - 1))); do
+    ADDITIONAL_NAME="${CFG_ADDITIONAL_USERS[$i]}"
+    echo "-> Prepare additional user '$ADDITIONAL_NAME'"
+    echo "${ADDITIONAL_NAME}:${ADDITIONAL_NAME}pass" | chpasswd
+    cp /opt/umi/config/.bashrc /home/"$ADDITIONAL_NAME"
+done
+
+# Configure sudo users
+for i in $(seq 0 $(("${#CFG_ADDITIONAL_USERS[*]}" - 1))); do
+    ADDITIONAL_NAME="${CFG_ADDITIONAL_USERS[$i]}"
+    echo "-> Prepare sudo user '$ADDITIONAL_NAME'"
+    /sbin/usermod -aG sudo "$ADDITIONAL_NAME"
+done
+echo ""
 
 # Remove Job From Jobfile
 echo "Sucessfully invoked all actions"

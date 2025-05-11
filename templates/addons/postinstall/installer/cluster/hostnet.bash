@@ -126,6 +126,7 @@ EOF
 service networking restart
 echo "nameserver $MANAGE_NS1" > /etc/resolv.conf
 echo "nameserver $MANAGE_NS2" >> /etc/resolv.conf
+echo ""
 
 # Remove Job From Jobfile
 echo "Sucessfully invoked all actions"

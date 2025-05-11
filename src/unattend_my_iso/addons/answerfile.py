@@ -108,11 +108,14 @@ class AnswerFileAddon(UmiAddon):
                 Replaceable(preseed, "CFG_TIME_NTP", c.time_ntp),
                 Replaceable(preseed, "CFG_USER_OTHER_NAME", c.user_other_name),
                 Replaceable(preseed, "CFG_USER_OTHER_FULLNAME", c.user_other_fullname),
-                Replaceable(preseed, "CFG_USER_OTHER_PASSWORD", c.user_other_password),
+                Replaceable(preseed, "CFG_USER_OTHER_PASSWORD", c.user_other_pw),
                 Replaceable(preseed, "CFG_GRUB_INSTALL_DEVICE", c.grub_install_device),
-                Replaceable(preseed, "CFG_USER_ROOT_PASSWORD", c.user_root_password),
+                Replaceable(preseed, "CFG_USER_ROOT_PW", c.user_root_pw),
                 Replaceable(preseed, "CFG_USER_ROOT_ENABLED", c.user_root_enabled),
                 Replaceable(preseed, "CFG_USER_OTHER_ENABLED", c.user_other_enabled),
+                Replaceable(preseed, "CFG_USER_OTHER_NAME", c.user_other_name),
+                Replaceable(preseed, "CFG_USER_OTHER_FULLNAME", c.user_other_fullname),
+                Replaceable(preseed, "CFG_USER_OTHER_PW", c.user_other_pw),
                 Replaceable(preseed, "CFG_PACKAGES_INSTALL", packages),
             ]
         return rules

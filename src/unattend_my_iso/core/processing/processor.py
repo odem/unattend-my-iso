@@ -1,5 +1,6 @@
 from unattend_my_iso.common.config import TaskResult
-from unattend_my_iso.common.logging import log_debug, log_error
+from unattend_my_iso.common.const import GLOBAL_WORKPATHS
+from unattend_my_iso.common.logging import log_debug, log_error, log_info
 from unattend_my_iso.core.reader.reader_config import TaskConfig, get_configs
 from unattend_my_iso.core.processing.processor_task_isogen import TaskProcessorIsogen
 from unattend_my_iso.core.processing.processor_task_vmrun import TaskProcessorVmRun
@@ -15,6 +16,20 @@ class UmiTaskProcessor(
     def __init__(self, work_path: str = ""):
         TaskProcessorIsogen.__init__(self, work_path)
         TaskProcessorVmRun.__init__(self, work_path)
+        if work_path == "":
+            log_debug(
+                f"Global work_path search space: {GLOBAL_WORKPATHS}",
+                self.__class__.__qualname__,
+            )
+            log_info(
+                f"Using searched work_path: {self.work_path}",
+                self.__class__.__qualname__,
+            )
+        else:
+            log_info(
+                f"Using supplied work_path: {self.work_path}",
+                self.__class__.__qualname__,
+            )
 
     def do_process(self):
         taskconfigs = get_configs(self.work_path)

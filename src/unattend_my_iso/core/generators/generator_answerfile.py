@@ -1,12 +1,15 @@
 from unattend_my_iso.common.config import TaskConfig
+from unattend_my_iso.common.const import (
+    DEFAULT_PASSWORD,
+    DEFAULT_USERNAME,
+    RECIPE_NAME,
+)
 from unattend_my_iso.common.model import DIOption
 from unattend_my_iso.core.generators.generator_recipe import (
     LINE_CONT,
     LINE_PREFIX,
     AnswerfileRecipe,
 )
-
-RECIPE_NAME = "custom-lvm"
 
 
 class AnswerfilePreseed:
@@ -54,18 +57,29 @@ class AnswerfilePreseed:
 
     def generate_fragment_users(self, args: TaskConfig) -> list[DIOption]:
         c = args.addons.answerfile
-        return [
+        result = []
+        result += [
             DIOption("#", "Users (root)"),
             DIOption("passwd/root-login", c.user_root_enabled),
-            DIOption("passwd/root-password", c.user_root_password, "password"),
-            DIOption("passwd/root-password-again", c.user_root_password, "password"),
+            DIOption("passwd/root-password", c.user_root_pw, "password"),
+            DIOption("passwd/root-password-again", c.user_root_pw, "password"),
+        ]
+
+        result += [
             DIOption("#", "Users (OTHER)"),
             DIOption("passwd/make-user", c.user_other_enabled),
-            DIOption("passwd/user-fullname", c.user_other_fullname),
-            DIOption("passwd/username", c.user_other_name),
-            DIOption("passwd/user-password", c.user_other_password, "password"),
-            DIOption("passwd/user-password-again", c.user_other_password, "password"),
         ]
+        if c.user_other_enabled:
+            user = DEFAULT_USERNAME if c.user_other_name == "" else c.user_other_name
+            pw = DEFAULT_PASSWORD if c.user_other_pw == "" else c.user_other_pw
+
+            result += [
+                DIOption("passwd/user-fullname", c.user_other_fullname),
+                DIOption("passwd/username", user),
+                DIOption("passwd/user-password", pw, "password"),
+                DIOption("passwd/user-password-again", pw, "password"),
+            ]
+        return result
 
     def generate_fragment_mirrors(self) -> list[DIOption]:
         return [
@@ -184,6 +198,9 @@ class AnswerfilePreseed:
             f"mkdir -p /target{target_dir}/",
             f"cp -r /cdrom{cdrom_dir}/* /target{target_dir}/",
         ]
+        if len(args.addons.answerfile.additional_users) > 0:
+            for user in args.addons.answerfile.additional_users:
+                cmdlist += [f"in-target adduser --disabled-password --gecos '' {user}"]
         if args.addons.postinstall.postinstall_enabled:
             cmdlist += [
                 f"in-target chmod 700 {target_dir}/{filename}",

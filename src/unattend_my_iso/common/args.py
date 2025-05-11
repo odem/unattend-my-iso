@@ -132,11 +132,13 @@ class AddonArgsAnswerFile(ArgumentBase):
     time_zone: str = DEFAULT_TIMEZONE
     time_ntp: bool = True
     user_root_enabled: bool = True
-    user_root_password: str = DEFAULT_PASSWORD_ROOT
+    user_root_pw: str = DEFAULT_PASSWORD_ROOT
     user_other_enabled: bool = True
     user_other_name: str = DEFAULT_USERNAME
     user_other_fullname: str = DEFAULT_USERNAME
-    user_other_password: str = DEFAULT_PASSWORD_USER
+    user_other_pw: str = DEFAULT_PASSWORD_USER
+    additional_users: list[str] = field(default_factory=lambda: [])
+    sudo_users: list[str] = field(default_factory=lambda: [])
     packages_install: list[str] = field(default_factory=lambda: [])
     grub_install_device: str = "default"
     include_offline_packages: list[str] = field(default_factory=lambda: [])

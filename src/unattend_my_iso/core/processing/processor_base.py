@@ -1,10 +1,12 @@
 import os
+import sys
 from typing import Optional
 from unattend_my_iso.addons.answerfile import AnswerFileAddon
 from unattend_my_iso.addons.grub import GrubAddon
 from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.addons.postinstall import PostinstallAddon
 from unattend_my_iso.addons.ssh import SshAddon
+from unattend_my_iso.common.const import GLOBAL_WORKPATHS
 from unattend_my_iso.common.templates import read_templates_isos
 from unattend_my_iso.core.files.file_manager import UmiFileManager
 from unattend_my_iso.core.generators.generator_iso import UmiIsoGenerator
@@ -33,13 +35,25 @@ class TaskProcessorBase:
     netman: UmiNetworkManager = UmiNetworkManager()
 
     def __init__(self, work_path: str = ""):
-        self.work_path = work_path
-        if self.work_path == "":
-            self.work_path = self.files.cwd()
-        self.sysconfig = get_cfg_sys(work_path=self.work_path)
-        self._get_addons()
-        self._get_templates()
-        self._get_overlays()
+
+        if work_path == "":
+            testpaths = GLOBAL_WORKPATHS.copy()
+            testpaths.append(self.files.cwd())
+            for testpath in testpaths:
+                if (
+                    os.path.exists(f"{testpath}/templates")
+                    or testpath == self.files.cwd()
+                ):
+                    self.work_path = testpath
+                    break
+        if self.work_path != "":
+            self.sysconfig = get_cfg_sys(work_path=self.work_path)
+            self._get_addons()
+            self._get_templates()
+            self._get_overlays()
+        else:
+            log_error(f"No work_path found: {self.files.cwd()}")
+            sys.exit(1)
 
     def _create_efidisk_windows(self, args: TaskConfig) -> bool:
         dstinter = self.files._get_path_intermediate(args)
@@ -152,8 +166,9 @@ class TaskProcessorBase:
 
     def _download_file(self, args: TaskConfig, url: str, name: str) -> bool:
         fullname = self.files._get_path_isofile(args)
-        self.files.http_download(url=url, name=name, dir=self.sysconfig.path_iso)
-        return self.exists(fullname)
+        if self.exists(os.path.basename(fullname)) is False:
+            os.makedirs(os.path.basename(fullname))
+        return self.files.http_download(url=url, name=name, dir=self.sysconfig.path_iso)
 
     def _get_success_result(self, msg: str = ""):
         return TaskResult(True, msg=msg, msg_short="", msg_out="", msg_err="")

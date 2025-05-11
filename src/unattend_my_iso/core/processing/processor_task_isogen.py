@@ -90,7 +90,8 @@ class TaskProcessorIsogen(TaskProcessorBase):
                 f"ISO-OS requires download ({os.path.basename(srciso)})",
                 self.__class__.__qualname__,
             )
-            return self._download_file(args, template.iso_url, template.iso_name)
+            result = self._download_file(args, template.iso_url, template.iso_name)
+            return result
 
     def _extract_iso_contents(self, args: TaskConfig, template: TemplateConfig) -> bool:
         dir_mount = self.files._get_path_mountpath(args)

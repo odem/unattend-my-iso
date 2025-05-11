@@ -1,12 +1,13 @@
 from unattend_my_iso.common.model import PartitionFlag, RecipeDescription
-
-LINE_PREFIX = "    "
-LINE_LENGTH_MAX = 78
-DOUBLE_PREFIX = f"{LINE_PREFIX}{LINE_PREFIX}"
-TRIPLE_PREFIX = f"{DOUBLE_PREFIX}{LINE_PREFIX}"
-LINE_CONT = " \\\n"
-RECIPE_DISK_CONT = f"{DOUBLE_PREFIX}{'.':70}{LINE_CONT}"
-RECIPE_DISK_END = f"{DOUBLE_PREFIX}.\n"
+from unattend_my_iso.common.const import (
+    DOUBLE_PREFIX,
+    LINE_CONT,
+    LINE_LENGTH_MAX,
+    LINE_PREFIX,
+    RECIPE_DISK_CONT,
+    RECIPE_DISK_END,
+    TRIPLE_PREFIX,
+)
 
 
 class AnswerfileRecipe:

@@ -30,6 +30,8 @@ timeout = 0
 
 [addon_answerfile]
 host_name = "mps"
+additional_users = ["user3", "user4", "user5"]
+sudo_users = ["umi", "user3", "user4", "user5"]
 
 [[env]]
 "DEFAULT_HOST" = "mps"
