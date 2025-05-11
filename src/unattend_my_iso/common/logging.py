@@ -1,6 +1,5 @@
 import logging
-
-LOGGER = None
+from unattend_my_iso.common.const import LOGGER
 
 
 def init_logger(level: int):

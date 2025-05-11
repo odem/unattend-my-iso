@@ -11,11 +11,10 @@ RECIPE_DISK_END = f"{DOUBLE_PREFIX}.\n"
 
 class AnswerfileRecipe:
 
-    def generate_recipe(self, name: str, vg_name: str) -> str:
+    def generate_recipe(self, name: str, disks: list[RecipeDescription]) -> str:
         i = 0
         body = ""
         recipe_head = self.create_recipe_head(name)
-        disks = self.get_default_partitions(vg_name)
         for disk in disks:
             fragment = self.create_partition_fragment(disk)
             if fragment != "":

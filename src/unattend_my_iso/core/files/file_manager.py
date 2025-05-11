@@ -1,12 +1,11 @@
 import os
-from unattend_my_iso.core.subprocess.caller import run
-from os.path import isdir, isfile
 import shutil
 import requests
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
+from unattend_my_iso.common.logging import log_debug, log_error
+from unattend_my_iso.core.subprocess.caller import run
 from unattend_my_iso.core.files.file_contents import UmiFileContents
 from unattend_my_iso.core.files.file_mounts import UmiFileMounts
-from unattend_my_iso.common.logging import log_debug, log_error
 from unattend_my_iso.core.files.file_replacements import UmiFileReplacements
 
 
@@ -23,9 +22,9 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
     def rm(self, src: str) -> bool:
         try:
             if os.path.exists(src):
-                if isfile(src):
+                if os.path.isfile(src):
                     os.remove(src)
-                elif isdir(src):
+                elif os.path.isdir(src):
                     shutil.rmtree(src)
                 else:
                     log_error("Cant delete unknown file object")
@@ -47,9 +46,9 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
     def cp(self, src: str, dst: str) -> bool:
         try:
             if os.path.exists(src):
-                if isfile(src):
+                if os.path.isfile(src):
                     shutil.copy(src, dst)
-                elif isdir(src):
+                elif os.path.isdir(src):
                     shutil.copytree(src, dst, dirs_exist_ok=True, symlinks=True)
                 else:
                     log_error("Cant delete unknown file object")

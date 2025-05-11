@@ -1,3 +1,4 @@
+import os
 from unattend_my_iso.common.config import TaskResult, TaskConfig, TemplateConfig
 from unattend_my_iso.common.logging import log_error
 from unattend_my_iso.core.processing.processor_base import TaskProcessorBase
@@ -11,17 +12,20 @@ class TaskProcessorVmRun(TaskProcessorBase):
     def task_vm_start(self, args: TaskConfig, template: TemplateConfig) -> TaskResult:
         hyperargs = self.hvrunner.vm_get_args(args, template)
         vmdir = self.files._get_path_vm(args)
+        if os.path.exists(vmdir) is False:
+            os.makedirs(vmdir)
         recreate = True if args.run.clean_old_vm else False
         if recreate:
             if self.files.rm(vmdir) is False:
                 log_error(f"Could not delete vm dir: {vmdir}")
                 return self._get_error_result(f"Error on deleting vmdir: {vmdir}")
 
-        socketdir = f"{vmdir}/swtpm"
         if hyperargs is not None:
             if template.iso_type == "windows":
-                if self.hvrunner.vm_prepare_tpm(socketdir, template) is False:
+                if self.hvrunner.vm_prepare_tpm(args, hyperargs) is False:
                     return self._get_error_result("Error on swtpm")
+            if self.hvrunner.prepare_disk_efi(args) is False:
+                return self._get_error_result("Error on prepare disk")
             if self.hvrunner.vm_prepare_disks(args, hyperargs) is False:
                 return self._get_error_result("Error on prepare disk")
             if self.hvrunner.vm_run(args, hyperargs) is False:

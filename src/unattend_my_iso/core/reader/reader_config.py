@@ -1,6 +1,9 @@
 from dataclasses import fields, is_dataclass
-import os
 from typing import Any, Optional
+from unattend_my_iso.common.config import SysConfig, TaskConfig, get_cfg_sys
+from unattend_my_iso.common.const import DEFAULT_TEMPLATE, DEFAULT_TEMPLATE_OVERLAY
+from unattend_my_iso.common.logging import log_debug, log_error
+from unattend_my_iso.common.templates import list_overlays
 from unattend_my_iso.common.args import (
     AddonArgs,
     AddonArgsAnswerFile,
@@ -12,19 +15,10 @@ from unattend_my_iso.common.args import (
     TargetArgs,
     get_group_arguments,
 )
-from unattend_my_iso.common.config import (
-    DEFAULT_TEMPLATE,
-    DEFAULT_TEMPLATE_OVERLAY,
-    SysConfig,
-    TaskConfig,
-    get_cfg_sys,
-)
-from unattend_my_iso.common.logging import log_debug, log_error
-from unattend_my_iso.common.templates import list_overlays
 
 
 def get_cli_group(name: str) -> Optional[Any]:
-    from unattend_my_iso.core.reader.cli_reader import CommandlineReader
+    from unattend_my_iso.core.reader.reader_cli import CommandlineReader
 
     reader = CommandlineReader()
     return reader.read_cli_group(name)
@@ -61,12 +55,7 @@ def _match_group_with_template(
     if overlay_name != "":
         filename = f"desc.{overlay_name}.toml"
     file_template = f"{template_path}/iso/{template_name}/{filename}"
-    toml_group = read_template_group(file_template, target)
-    if toml_group is None:
-        log_error(
-            f"client config is not a valid dataclass: {toml_group}", "ConfigReader"
-        )
-        return None
+    toml_group: list | dict = read_template_group(file_template, target)
     if isinstance(toml_group, list) and len(toml_group) == 1:
         cfg_dict = toml_group[0]
         if isinstance(cfg_dict, dict) and isinstance(result, EnvironmentArgs):
@@ -103,13 +92,13 @@ def _match_group_with_cli(result: Optional[Any], target: str) -> Optional[Any]:
 def _get_normalized_value(obj_dest, obj_src, name: str) -> Optional[Any]:
     val = getattr(obj_src, name)
     if val is not None:
-        if type(getattr(obj_dest, name)) is bool:
+        extracted = getattr(obj_dest, name)
+        if type(extracted) is bool:
             lowername = str(val).lower()
             if lowername in ("true", "false"):
                 val = True if lowername == "true" else False
-        if type(getattr(obj_dest, name)) is list:
+        elif type(extracted) is list:
             if isinstance(getattr(obj_src, name), list):
-                # log_debug(f"VAL: {val}")
                 testval = "".join(val)
                 if isinstance(testval, str):
                     if testval.startswith("[") and testval.endswith("]"):
@@ -119,16 +108,27 @@ def _get_normalized_value(obj_dest, obj_src, name: str) -> Optional[Any]:
                             if "," in testval:
                                 arr = testval.split(sep=",")
                                 val = [(arr[0], arr[1])]
-                                os._exit(0)
     return val
 
 
 def get_configs(work_path: str) -> list[TaskConfig]:
     result = []
     cfg_sys = get_cfg_sys(work_path)
+    template_name, template_overlay = get_name_and_overlay()
+    if template_overlay == "":
+        cfg = get_config(cfg_sys, template_name, template_overlay)
+        result.append(cfg)
+    elif template_overlay != "*":
+        result += get_configs_overlay_list(cfg_sys, template_name, template_overlay)
+    elif template_overlay == "*":
+        result += get_configs_overlay_all(cfg_sys, template_name)
+    return result
+
+
+def get_name_and_overlay() -> tuple[str, str]:
     cli_target = get_cli_group("target")
     if cli_target is None:
-        return []
+        return "", ""
     template_name = ""
     template_overlay = ""
     if isinstance(cli_target, TargetArgs) and cli_target.template is None:
@@ -143,37 +143,43 @@ def get_configs(work_path: str) -> list[TaskConfig]:
         log_debug(
             f"Use template : {template_name} ({template_overlay})", "ConfigReader"
         )
+    return template_name, template_overlay
 
-    if template_overlay == "":
-        cfg = get_config(cfg_sys, template_name, template_overlay)
-        result.append(cfg)
-    elif template_overlay != "*":
-        if "," in template_overlay:
-            log_debug(f"Using multiple overlays: {template_overlay}")
-            names = template_overlay.split(",")
-            syspath = cfg_sys.path_templates
-            path = f"{syspath}/iso/{template_name}"
-            overlays = list_overlays(path)
-            for overlay in overlays:
-                log_debug(f"Using names: {overlay}")
-                if overlay in names:
-                    cfg = get_config(cfg_sys, template_name, overlay)
-                    if cfg is not None:
-                        cfg.target.template_overlay = overlay
-                        result.append(cfg)
-        else:
-            log_debug(f"Using single overlay: {template_overlay}")
-            cfg = get_config(cfg_sys, template_name, template_overlay)
-            result.append(cfg)
-    elif template_overlay == "*":
+
+def get_configs_overlay_list(
+    cfg_sys, template_name: str, template_overlay: str
+) -> list[TaskConfig]:
+    result = []
+    if "," in template_overlay:
+        log_debug(f"Using multiple overlays: {template_overlay}")
+        names = template_overlay.split(",")
         syspath = cfg_sys.path_templates
         path = f"{syspath}/iso/{template_name}"
         overlays = list_overlays(path)
         for overlay in overlays:
-            cfg = get_config(cfg_sys, template_name, overlay)
-            if cfg is not None:
-                cfg.target.template_overlay = overlay
-                result.append(cfg)
+            log_debug(f"Using names: {overlay}")
+            if overlay in names:
+                cfg = get_config(cfg_sys, template_name, overlay)
+                if cfg is not None:
+                    cfg.target.template_overlay = overlay
+                    result.append(cfg)
+    else:
+        log_debug(f"Using single overlay: {template_overlay}")
+        cfg = get_config(cfg_sys, template_name, template_overlay)
+        result.append(cfg)
+    return result
+
+
+def get_configs_overlay_all(cfg_sys, template_name: str) -> list[TaskConfig]:
+    result = []
+    syspath = cfg_sys.path_templates
+    path = f"{syspath}/iso/{template_name}"
+    overlays = list_overlays(path)
+    for overlay in overlays:
+        cfg = get_config(cfg_sys, template_name, overlay)
+        if cfg is not None:
+            cfg.target.template_overlay = overlay
+            result.append(cfg)
     return result
 
 

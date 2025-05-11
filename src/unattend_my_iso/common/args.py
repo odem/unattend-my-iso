@@ -1,21 +1,20 @@
-import os
 from dataclasses import dataclass, field
 from typing import Any, Optional
-
-# user
-HOMEDIR = os.path.expanduser("~")
-USER = os.getlogin()
-DEFAULT_SUBNET = "10.10.123"
-DEFAULT_TIMEZONE = "EU/Berlin"
-DEFAULT_LOCALE = "en_US"
-DEFAULT_KEYBOARD = "de"
-DEFAULT_HOSTNAME = "foo"
-DEFAULT_DOMAIN = "local"
-DEFAULT_VGNAME = "vg_main"
-DEFAULT_USERNAME = "umi"
-DEFAULT_PASSWORD_ROOT = "rootpass"
-DEFAULT_PASSWORD_USER = "umipass"
-DEFAULT_PASSWORD_CRYPTO = "diskpass"
+from unattend_my_iso.common.const import (
+    DEFAULT_DOMAIN,
+    DEFAULT_HOSTNAME,
+    DEFAULT_KEYBOARD,
+    DEFAULT_LOCALE,
+    DEFAULT_PASSWORD_CRYPTO,
+    DEFAULT_PASSWORD_ROOT,
+    DEFAULT_PASSWORD_USER,
+    DEFAULT_SUBNET,
+    DEFAULT_TIMEZONE,
+    DEFAULT_USERNAME,
+    DEFAULT_VGNAME,
+    HOMEDIR,
+    USER,
+)
 
 
 class ArgumentBase:

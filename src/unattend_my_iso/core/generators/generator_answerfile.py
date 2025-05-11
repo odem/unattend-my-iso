@@ -1,7 +1,10 @@
-from unattend_my_iso.common.config import TaskConfig, TemplateConfig
+from unattend_my_iso.common.config import TaskConfig
 from unattend_my_iso.common.model import DIOption
-from unattend_my_iso.core.generators.answerfile_commands import AnswerfileCommands
-from unattend_my_iso.core.generators.answerfile_recipe import AnswerfileRecipe
+from unattend_my_iso.core.generators.generator_recipe import (
+    LINE_CONT,
+    LINE_PREFIX,
+    AnswerfileRecipe,
+)
 
 RECIPE_NAME = "custom-lvm"
 
@@ -154,13 +157,39 @@ class AnswerfilePreseed:
         return ret
 
     def generate_fragment_hook_late(self, args: TaskConfig) -> list[DIOption]:
-        cmd = AnswerfileCommands()
-        cmdlist = cmd.generate_default_hook_commands(args)
-        cmd_full = cmd.generate_fragment_hook_late(cmdlist)
+        cmdlist = self.create_hooks_late(args)
+        cmd_full = self.convert_tasklist(cmdlist)
         return [
             DIOption("#", "Hook (Late)"),
             DIOption("preseed/late_command", cmd_full),
         ]
+
+    def convert_tasklist(self, tasks: list[str]) -> str:
+        i = 0
+        result = f"{'':47}{LINE_CONT}"
+        for task in tasks:
+            line = f"{LINE_PREFIX}{task};"
+            if i < len(tasks) - 1:
+                line = f"{line:78} {LINE_CONT}"
+            result = f"{result}{line}"
+            i += 1
+        return result
+
+    def create_hooks_late(self, args: TaskConfig) -> list[str]:
+        cfg = args.addons.answerfile
+        cdrom_dir = cfg.answerfile_hook_dir_cdrom
+        target_dir = cfg.answerfile_hook_dir_target
+        filename = cfg.answerfile_hook_filename
+        cmdlist = [
+            f"mkdir -p /target{target_dir}/",
+            f"cp -r /cdrom{cdrom_dir}/* /target{target_dir}/",
+        ]
+        if args.addons.postinstall.postinstall_enabled:
+            cmdlist += [
+                f"in-target chmod 700 {target_dir}/{filename}",
+                f"in-target /bin/bash {target_dir}/{filename}",
+            ]
+        return cmdlist
 
     def generate_fragment_partman(self, args: TaskConfig) -> list[DIOption]:
         c = args.addons.answerfile
@@ -245,7 +274,8 @@ class AnswerfilePreseed:
 
     def generate_fragment_recipe(self, args: TaskConfig) -> list[DIOption]:
         recipe = AnswerfileRecipe()
-        recipe = recipe.generate_recipe(RECIPE_NAME, args.addons.answerfile.disk_lvm_vg)
+        disks = recipe.get_default_partitions(args.addons.answerfile.disk_lvm_vg)
+        recipe = recipe.generate_recipe(RECIPE_NAME, disks)
         methods = "REGULAR"
         if args.addons.answerfile.answerfile_enable_crypto:
             methods = "LUKS+LVM"

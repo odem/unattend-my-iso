@@ -1,11 +1,6 @@
-from unattend_my_iso.core.subprocess.caller import (
-    run,
-    Popen,
-    PIPE,
-    DEVNULL,
-)
 import os
 import shutil
+from unattend_my_iso.core.subprocess.caller import run, Popen, PIPE, DEVNULL
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.common.logging import log_debug, log_error, log_info
 from unattend_my_iso.core.files.file_manager import UmiFileManager
@@ -58,15 +53,7 @@ class UmiIsoGenerator:
         with open(initrd_filepath, "rb") as initrd_file:
             gzip_process = Popen(["gzip", "-d", "-c"], stdin=initrd_file, stdout=PIPE)
             run(
-                [
-                    "fakeroot",
-                    "cpio",
-                    "-D",
-                    path_mod,
-                    "--extract",
-                    "--make-directories",
-                    "--no-absolute-filenames",
-                ],
+                self._get_cpio_cmd_extract(path_mod),
                 stdin=gzip_process.stdout,
                 stdout=DEVNULL,
                 stderr=DEVNULL,
@@ -78,13 +65,9 @@ class UmiIsoGenerator:
         preseed_dst = os.path.join(path_mod, "preseed.cfg")
         shutil.copy(preseed_src, preseed_dst)
         os.chdir(path_mod)
-        run(
-            f"find . | cpio -o -H newc 2>/dev/null | gzip -9 > {{}}/{path_src}/initrd-umi.gz".format(
-                base_dir
-            ),
-            shell=True,
-            check=True,
-        )
+        cmd = "find . | cpio -o -H newc 2>/dev/null | gzip -9"
+        args = f"{cmd} > {{}}/{path_src}/initrd-umi.gz".format(base_dir)
+        run(args, shell=True, check=True)
         log_debug(f"Delete irmod : {path_mod}", self.__class__.__qualname__)
         shutil.rmtree(path_mod, ignore_errors=False)
         log_info(f"Created irmod: {path_src}", self.__class__.__qualname__)
@@ -94,42 +77,73 @@ class UmiIsoGenerator:
         dstmount = f"{mntpath}/efiboot"
         dstmgr = f"{dstmount}/efi/boot"
         srcefi = f"{infolder}/efiboot.img"
+
+        # Create
+        log_debug(f"Create disk  : {infolder}/efiboot.img")
         run(
             ["dd", "if=/dev/zero", f"of={srcefi}", "bs=1M", "count=64"],
             capture_output=True,
             text=True,
         )
+
+        # Format
+        log_debug(f"Format disk  : {infolder}/efiboot.img")
         run(
             ["/usr/sbin/mkfs.fat", "-F32", f"{infolder}/efiboot.img"],
             capture_output=True,
             text=True,
         )
-        log_debug(f"Create efi   : {infolder}/efiboot.img")
+
+        # Mount
+        log_debug(f"Mount efi    : {dstmount}")
         os.makedirs(dstmount, exist_ok=True)
         self.files.mount_folder(srcefi, dstmount, "loop")
         run(["sudo", "mkdir", "-p", f"{dstmount}/efi/boot"])
+
+        # Extract
+        log_debug(f"Extract mgr  : {dstmgr}")
         run(
-            [
-                "sudo",
-                "wimlib-imagex",
-                "extract",
-                f"{infolder}/sources/boot.wim",
-                "1",
-                "Windows/Boot/EFI/bootmgfw.efi",
-                f"--dest-dir={dstmgr}",
-            ],
+            self._get_wimlib_cmd_extract(infolder, dstmgr),
             capture_output=True,
             text=True,
         )
-        run(
-            [
-                "sudo",
-                "mv",
-                f"{dstmgr}/bootmgfw.efi",
-                f"{dstmgr}/bootx64.efi",
-            ]
-        )
+        run(["sudo", "mv", f"{dstmgr}/bootmgfw.efi", f"{dstmgr}/bootx64.efi"])
         self.files.unmount_folder(dstmount)
+
+    def _generate_md5sum(self, infolder: str):
+        find_command = f"find {infolder} -type f"
+        cmd = f"md5sum $( {find_command} ) > {infolder}/md5sum.txt 2>/dev/null"
+        try:
+            proc = run(cmd, shell=True, check=True, capture_output=True, text=True)
+            if proc.returncode != 0:
+                log_error(
+                    f"Error on md5sum: {proc.stdout}{proc.stderr}",
+                    self.__class__.__qualname__,
+                )
+        except Exception as exe:
+            log_error(f"Exception on md5sum: {exe}", self.__class__.__qualname__)
+
+    def _get_cpio_cmd_extract(self, path_mod: str) -> list[str]:
+        return [
+            "fakeroot",
+            "cpio",
+            "-D",
+            path_mod,
+            "--extract",
+            "--make-directories",
+            "--no-absolute-filenames",
+        ]
+
+    def _get_wimlib_cmd_extract(self, infolder: str, dstmgr: str) -> list[str]:
+        return [
+            "sudo",
+            "wimlib-imagex",
+            "extract",
+            f"{infolder}/sources/boot.wim",
+            "1",
+            "Windows/Boot/EFI/bootmgfw.efi",
+            f"--dest-dir={dstmgr}",
+        ]
 
     def _get_xorriso_cmd_linux(
         self, infolder: str, volname: str, outfile: str, mbrfile: str
@@ -196,20 +210,3 @@ class UmiIsoGenerator:
             f"{outfile}.iso",
             infolder,
         ]
-
-    def _generate_md5sum(self, infolder: str):
-        find_command = f"find {infolder} -type f"
-        md5sum_command = (
-            f"md5sum $( {find_command} ) > {infolder}/md5sum.txt 2>/dev/null"
-        )
-        try:
-            proc = run(
-                md5sum_command, shell=True, check=True, capture_output=True, text=True
-            )
-            if proc.returncode != 0:
-                log_error(
-                    f"Error on md5sum: {proc.stdout}{proc.stderr}",
-                    self.__class__.__qualname__,
-                )
-        except Exception as exe:
-            log_error(f"Exception on md5sum: {exe}", self.__class__.__qualname__)

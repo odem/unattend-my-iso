@@ -11,12 +11,7 @@ from unattend_my_iso.common.args import (
     RunArgs,
     TargetArgs,
 )
-
-
-# Globals
-APP_VERSION = "0.0.2"
-DEFAULT_TEMPLATE = "mps"
-DEFAULT_TEMPLATE_OVERLAY = "*"
+from unattend_my_iso.common.const import APP_VERSION
 
 
 @dataclass

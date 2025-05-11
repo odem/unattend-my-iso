@@ -1,7 +1,7 @@
 import logging
 import sys
-from unattend_my_iso.core.reader.cli_reader import CommandlineReader
-from unattend_my_iso.common.logging import init_logger, log_debug, log_error, log_info
+from unattend_my_iso.core.reader.reader_cli import CommandlineReader
+from unattend_my_iso.common.logging import init_logger
 from unattend_my_iso.core.processing.processor import UmiTaskProcessor
 
 DEBUG_TEMPLATE = "proxmox"

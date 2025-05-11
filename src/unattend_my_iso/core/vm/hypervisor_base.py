@@ -52,5 +52,9 @@ class UmiHypervisorBase(ABC):
         raise NotImplementedError("Not implemented")
 
     @abstractmethod
-    def vm_prepare_tpm(self, socketdir: str, template: TemplateConfig) -> bool:
+    def prepare_disk_efi(self, args: TaskConfig) -> bool:
+        raise NotImplementedError("Not implemented")
+
+    @abstractmethod
+    def vm_prepare_tpm(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:
         raise NotImplementedError("Not implemented")

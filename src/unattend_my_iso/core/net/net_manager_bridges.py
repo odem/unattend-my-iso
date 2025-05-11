@@ -1,8 +1,4 @@
-from unattend_my_iso.core.subprocess.caller import (
-    run,
-    CalledProcessError,
-    PIPE,
-)
+from unattend_my_iso.core.subprocess.caller import run, CalledProcessError, PIPE
 from unattend_my_iso.common.logging import log_debug, log_error
 
 

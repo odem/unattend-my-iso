@@ -4,7 +4,7 @@ from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.common.logging import log_debug, log_error, log_info
 from unattend_my_iso.common.model import Replaceable
-from unattend_my_iso.core.generators.answerfile_preseed import AnswerfilePreseed
+from unattend_my_iso.core.generators.generator_answerfile import AnswerfilePreseed
 from unattend_my_iso.core.subprocess import caller
 
 
@@ -20,7 +20,7 @@ class AnswerFileAddon(UmiAddon):
         else:
             if self.generate_answerfile(args, template) is False:
                 return False
-        if self.copy_offline_packages(args, template) is False:
+        if self.copy_offline_packages(args) is False:
             return False
         return True
 
@@ -58,7 +58,7 @@ class AnswerFileAddon(UmiAddon):
             log_error(f"Path does not exist: {srcpreseed}", "Answerfile")
         return False
 
-    def copy_offline_packages(self, args: TaskConfig, template: TemplateConfig) -> bool:
+    def copy_offline_packages(self, args: TaskConfig) -> bool:
         interpath = self.files._get_path_intermediate(args)
         dst = f"{interpath}/umi/packages"
         if os.path.exists(dst) is False:

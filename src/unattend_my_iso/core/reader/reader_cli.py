@@ -1,4 +1,5 @@
-import sys
+import argparse
+import textwrap
 from typing import Any, Optional
 from unattend_my_iso.common.args import (
     AddonArgsAnswerFile,
@@ -9,10 +10,6 @@ from unattend_my_iso.common.args import (
     RunArgs,
     TargetArgs,
 )
-from unattend_my_iso.common.logging import log_debug, log_info
-
-import argparse
-import textwrap
 
 
 class CommandlineReader:

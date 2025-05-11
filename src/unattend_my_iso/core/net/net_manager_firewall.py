@@ -25,21 +25,7 @@ class FirewallManager:
         if self.has_masquerading(name):
             return True
         try:
-            run(
-                [
-                    "sudo",
-                    "iptables",
-                    "-t",
-                    "nat",
-                    "-A",
-                    "POSTROUTING",
-                    "-o",
-                    name,
-                    "-j",
-                    "MASQUERADE",
-                ],
-                check=True,
-            )
+            run(self.create_rule_masq(name, True), check=True)
             log_debug(
                 f"Added masquerading on {name}",
                 self.__class__.__qualname__,
@@ -53,30 +39,11 @@ class FirewallManager:
         if self.has_masquerading(name) is False:
             return True
         if name == "":
-            log_error(
-                f"The uplink device name was empty: {name}", self.__class__.__qualname__
-            )
+            log_error(f"No uplink device: {name}", self.__class__.__qualname__)
             return False
         try:
-            run(
-                [
-                    "sudo",
-                    "iptables",
-                    "-t",
-                    "nat",
-                    "-D",
-                    "POSTROUTING",
-                    "-o",
-                    name,
-                    "-j",
-                    "MASQUERADE",
-                ],
-                check=True,
-            )
-            log_debug(
-                f"Deleted masquerading on {name}",
-                self.__class__.__qualname__,
-            )
+            run(self.create_rule_masq(name, False), check=True)
+            log_debug(f"Deleted masquerading on {name}", self.__class__.__qualname__)
         except CalledProcessError as e:
             log_error(f"Error creating {name}: {e}", self.__class__.__qualname__)
             return False
@@ -109,7 +76,7 @@ class FirewallManager:
             )
             interfaces = []
 
-            if proc.stdout != None and proc.stdout != "":
+            if proc.stdout is not None and proc.stdout != "":
                 for line in proc.stdout.strip().splitlines():
                     parts = line.split()
                     if "dev" in parts:
@@ -137,3 +104,20 @@ class FirewallManager:
                 f"Exception while setting ip forwarding: {e}",
                 self.__class__.__qualname__,
             )
+
+    def create_rule_masq(self, name: str, add: bool) -> list[str]:
+        action = "-A"
+        if add is False:
+            action = "-D"
+        return [
+            "sudo",
+            "iptables",
+            "-t",
+            "nat",
+            action,
+            "POSTROUTING",
+            "-o",
+            name,
+            "-j",
+            "MASQUERADE",
+        ]

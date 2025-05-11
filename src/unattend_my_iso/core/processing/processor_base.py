@@ -7,12 +7,12 @@ from unattend_my_iso.addons.postinstall import PostinstallAddon
 from unattend_my_iso.addons.ssh import SshAddon
 from unattend_my_iso.common.templates import read_templates_isos
 from unattend_my_iso.core.files.file_manager import UmiFileManager
-from unattend_my_iso.core.iso.iso_generator import UmiIsoGenerator
+from unattend_my_iso.core.generators.generator_iso import UmiIsoGenerator
 from unattend_my_iso.core.net.net_manager import UmiNetworkManager
-from unattend_my_iso.core.reader.toml_reader import TomlReader
+from unattend_my_iso.core.reader.reader_toml import TomlReader
 from unattend_my_iso.core.vm.hypervisor_base import UmiHypervisorBase
 from unattend_my_iso.core.vm.hypervisor_kvm import UmiHypervisorKvm
-from unattend_my_iso.common.logging import log_debug, log_error, log_info
+from unattend_my_iso.common.logging import log_error, log_info
 from unattend_my_iso.common.config import (
     SysConfig,
     TaskConfig,
@@ -134,7 +134,6 @@ class TaskProcessorBase:
                         setattr(obj_overlay, fld_name, fld_val)
                     setattr(obj_overlay, "name_overlay", name)
                     overlay_name = f"{template.name}.{name}"
-                    # log_debug(f"Adding Overlay: {obj_overlay.get_config_values()}")
                     self.overlays[overlay_name] = obj_overlay
 
     def _get_task_template(self, args: TaskConfig) -> Optional[TemplateConfig]:

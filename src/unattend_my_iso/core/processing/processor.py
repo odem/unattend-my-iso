@@ -1,6 +1,6 @@
 from unattend_my_iso.common.config import TaskResult
-from unattend_my_iso.common.logging import log_debug, log_error, log_info
-from unattend_my_iso.core.reader.config_reader import TaskConfig, get_configs
+from unattend_my_iso.common.logging import log_debug, log_error
+from unattend_my_iso.core.reader.reader_config import TaskConfig, get_configs
 from unattend_my_iso.core.processing.processor_task_isogen import TaskProcessorIsogen
 from unattend_my_iso.core.processing.processor_task_vmrun import TaskProcessorVmRun
 from unattend_my_iso.core.processing.processor_task_networking import (
