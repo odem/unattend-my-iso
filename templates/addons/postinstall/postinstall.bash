@@ -56,3 +56,4 @@ EOF
 chmod +x /firstboot.bash
 systemctl daemon-reload
 systemctl enable firstboot
+exit 0

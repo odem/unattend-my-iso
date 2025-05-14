@@ -26,13 +26,14 @@ fi
 for i in $(seq 0 $(("${#CFG_ADDITIONAL_USERS[*]}" - 1))); do
     ADDITIONAL_NAME="${CFG_ADDITIONAL_USERS[$i]}"
     echo "-> Prepare additional user '$ADDITIONAL_NAME'"
+    # /sbin/adduser --disabled-password --gecos '' "$ADDITIONAL_NAME"
     echo "${ADDITIONAL_NAME}:${ADDITIONAL_NAME}pass" | chpasswd
     cp /opt/umi/config/.bashrc /home/"$ADDITIONAL_NAME"
 done
 
 # Configure sudo users
-for i in $(seq 0 $(("${#CFG_ADDITIONAL_USERS[*]}" - 1))); do
-    ADDITIONAL_NAME="${CFG_ADDITIONAL_USERS[$i]}"
+for i in $(seq 0 $(("${#CFG_SUDO_USERS[*]}" - 1))); do
+    ADDITIONAL_NAME="${CFG_SUDO_USERS[$i]}"
     echo "-> Prepare sudo user '$ADDITIONAL_NAME'"
     /sbin/usermod -aG sudo "$ADDITIONAL_NAME"
 done

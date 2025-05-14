@@ -75,7 +75,11 @@ class PostinstallAddon(UmiAddon):
     ) -> bool:
         interpath = self.files._get_path_intermediate(args)
 
-        for filename in args.addons.postinstall.copy_additional_scripts:
+        allscripts = [
+            *args.addons.postinstall.copy_additional_scripts,
+            *args.addons.postinstall.exec_additional_scripts,
+        ]
+        for filename in allscripts:
             log_debug(f"Copy File {filename}", self.__class__.__qualname__)
             srcpath = self.get_template_path_optional("postinstall", filename, args)
             dstfile = f"{interpath}/umi/postinstall/{filename}"
@@ -138,7 +142,7 @@ class PostinstallAddon(UmiAddon):
         post = args.addons.postinstall
         joblist_arg += self._create_params_list(post.joblist_early)
         joblist_arg += self._create_params_list(
-            post.copy_additional_scripts, "/opt/umi/postinstall/"
+            post.exec_additional_scripts, "/opt/umi/postinstall/"
         )
         joblist_arg += self._create_params_list(post.joblist_late)
         joblist_arg += [")"]

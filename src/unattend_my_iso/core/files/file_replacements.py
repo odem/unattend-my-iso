@@ -7,11 +7,15 @@ class UmiFileReplacements:
     def __init__(self):
         pass
 
-    def replace_string(self, file_path: str, find: str, replace: str) -> bool:
+    def replace_string(self, file_path: str, find: str, replace: str | bool) -> bool:
         try:
             with open(file_path, "r") as file:
                 content = file.read()
-            updated_content = content.replace(find, replace)
+            if isinstance(replace, bool):
+                term = "true" if replace else "false"
+            else:
+                term = replace
+            updated_content = content.replace(find, term)
             with open(file_path, "w") as file:
                 file.write(updated_content)
             basename = os.path.basename(file_path)

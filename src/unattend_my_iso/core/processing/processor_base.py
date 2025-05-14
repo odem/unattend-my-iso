@@ -37,8 +37,7 @@ class TaskProcessorBase:
     def __init__(self, work_path: str = ""):
 
         if work_path == "":
-            testpaths = GLOBAL_WORKPATHS.copy()
-            testpaths.append(self.files.cwd())
+            testpaths = GLOBAL_WORKPATHS
             for testpath in testpaths:
                 if (
                     os.path.exists(f"{testpath}/templates")

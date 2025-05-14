@@ -5,14 +5,16 @@ from unattend_my_iso.common.const import (
     DEFAULT_HOSTNAME,
     DEFAULT_KEYBOARD,
     DEFAULT_LOCALE,
+    DEFAULT_PASSWORD_CHARSET,
     DEFAULT_PASSWORD_CRYPTO,
+    DEFAULT_PASSWORD_LENGTH,
     DEFAULT_PASSWORD_ROOT,
     DEFAULT_PASSWORD_USER,
     DEFAULT_SUBNET,
     DEFAULT_TIMEZONE,
     DEFAULT_USERNAME,
     DEFAULT_VGNAME,
-    HOMEDIR,
+    HOME,
     USER,
 )
 
@@ -99,7 +101,7 @@ class RunArgs(ArgumentBase):
     net_prepare_nics: bool = True
     net_prepare_bridges: bool = True
     clean_old_vm: bool = False
-    build_homedir: str = HOMEDIR
+    build_homedir: str = HOME
     build_user: str = USER
     file_pid: str = "vm.pid"
 
@@ -151,7 +153,7 @@ class AddonArgsSsh(ArgumentBase):
     config_client: str = ""
     config_daemon: str = "sshd_config"
     config_auth: str = "authorized_keys"
-    config_auth_append: str = f"{HOMEDIR}/.ssh/id_rsa_dummy.pub"
+    config_auth_append: str = f"{HOME}/.ssh/id_rsa_dummy.pub"
     config_key: str = "id_rsa"
 
 
@@ -161,9 +163,12 @@ class AddonArgsPostinstall(ArgumentBase):
     enable_grub_theme: bool = True
     create_config: bool = True
     bashrc_file: str = ".bashrc"
+    password_length: int = DEFAULT_PASSWORD_LENGTH
+    password_charset: str = DEFAULT_PASSWORD_CHARSET
     joblist_early: list[str] = field(default_factory=lambda: [])
     joblist_late: list[str] = field(default_factory=lambda: [])
     copy_additional_scripts: list[str] = field(default_factory=lambda: [])
+    exec_additional_scripts: list[str] = field(default_factory=lambda: [])
 
 
 @dataclass

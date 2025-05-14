@@ -12,8 +12,11 @@ vmname = "mps-test"
 net_ports = [[2220, 22]]
 
 [addon_postinstall]
+password_length = 24
+password_charset = 'A-Za-z0-9!$%$&/()=?+*#-_.:,;<>' # No quotes and backslahes
 joblist_late = ["/opt/umi/postinstall/installer/postinstall_mps.bash"]
-copy_additional_scripts = [
+copy_additional_scripts = ["installer/default/finalize.bash"]
+exec_additional_scripts = [
   "installer/default/offline_packages.bash",
   "installer/default/hostnet_dhcp.bash",
   "installer/default/apt.bash",
@@ -21,6 +24,7 @@ copy_additional_scripts = [
   "installer/default/user.bash",
   "installer/default/ssh.bash",
   "installer/default/locale.bash",
+  # "installer/default/finalize.bash",
 ]
 enable_grub_theme = true
 

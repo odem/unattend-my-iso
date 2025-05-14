@@ -88,8 +88,8 @@ class AnswerFileAddon(UmiAddon):
         c = args.addons.answerfile
         rules = []
         if os.path.exists(preseed):
-            foo = " \\\n"
-            packages = foo.join(c.packages_install)
+            line_end = " \\\n"
+            packages = line_end.join(c.packages_install)
             rules += [
                 Replaceable(preseed, "CFG_LOCALE_STRING", c.locale_string),
                 Replaceable(preseed, "CFG_LOCALE_MULTI", c.locale_multi),

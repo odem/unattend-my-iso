@@ -159,6 +159,20 @@ class CommandlineReader:
             help="Enable or disable a config to be copied into the target (true or false)",
         )
         group_target.add_argument(
+            "-ppl",
+            "--password_length",
+            type=int,
+            default=None,
+            help="Length of generated password",
+        )
+        group_target.add_argument(
+            "-ppc",
+            "--password_charset",
+            type=str,
+            default=None,
+            help="Charset to use for passwords",
+        )
+        group_target.add_argument(
             "-pje",
             "--joblist_early",
             type=str,
@@ -175,6 +189,13 @@ class CommandlineReader:
         group_target.add_argument(
             "-pa",
             "--copy_additional_scripts",
+            type=str,
+            default=None,
+            help="Copies additional scripts (list)",
+        )
+        group_target.add_argument(
+            "-px",
+            "--exec_additional_scripts",
             type=str,
             default=None,
             help="Copies additional scripts (list)",

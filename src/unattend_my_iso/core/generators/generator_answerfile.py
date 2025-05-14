@@ -200,7 +200,9 @@ class AnswerfilePreseed:
         ]
         if len(args.addons.answerfile.additional_users) > 0:
             for user in args.addons.answerfile.additional_users:
-                cmdlist += [f"in-target adduser --disabled-password --gecos '' {user}"]
+                cmdlist += [
+                    f"in-target /sbin/adduser --disabled-password --gecos '' {user}"
+                ]
         if args.addons.postinstall.postinstall_enabled:
             cmdlist += [
                 f"in-target chmod 700 {target_dir}/{filename}",
