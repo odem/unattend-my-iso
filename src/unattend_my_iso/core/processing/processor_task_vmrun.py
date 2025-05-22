@@ -6,8 +6,8 @@ from unattend_my_iso.core.processing.processor_base import TaskProcessorBase
 
 class TaskProcessorVmRun(TaskProcessorBase):
 
-    def __init__(self, work_path: str = ""):
-        TaskProcessorBase.__init__(self, work_path)
+    def __init__(self):
+        TaskProcessorBase.__init__(self)
 
     def task_vm_start(self, args: TaskConfig, template: TemplateConfig) -> TaskResult:
         hyperargs = self.hvrunner.vm_get_args(args, template)

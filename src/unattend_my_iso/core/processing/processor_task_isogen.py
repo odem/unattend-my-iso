@@ -7,8 +7,8 @@ from unattend_my_iso.common.logging import log_info
 
 class TaskProcessorIsogen(TaskProcessorBase):
 
-    def __init__(self, work_path: str = ""):
-        TaskProcessorBase.__init__(self, work_path)
+    def __init__(self):
+        TaskProcessorBase.__init__(self)
 
     def task_build_all(self, args: TaskConfig) -> TaskResult:
         template = self._get_task_template(args)

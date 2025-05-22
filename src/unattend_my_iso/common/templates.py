@@ -23,12 +23,13 @@ def read_templates_isos(parent_folder: str) -> dict[str, TemplateConfig]:
 
 def list_overlay_files(parent_folder: str) -> list[str]:
     result = []
-    for entry in os.scandir(parent_folder):
-        if entry.is_dir() is False:
-            if entry.name != TEMPLATE_NAME:
-                if entry.name.startswith(TEMPLATE_PREFIX):
-                    if entry.name.endswith(TEMPLATE_SUFFIX):
-                        result.append(entry.name)
+    if os.path.exists(parent_folder):
+        for entry in os.scandir(parent_folder):
+            if entry.is_dir() is False:
+                if entry.name != TEMPLATE_NAME:
+                    if entry.name.startswith(TEMPLATE_PREFIX):
+                        if entry.name.endswith(TEMPLATE_SUFFIX):
+                            result.append(entry.name)
     return result
 
 
@@ -39,6 +40,7 @@ def list_overlays(parent_folder: str) -> list[str]:
             TEMPLATE_SUFFIX
         )
         result.append(overlay)
+    result.sort()
     return result
 
 

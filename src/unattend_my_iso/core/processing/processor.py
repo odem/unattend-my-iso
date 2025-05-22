@@ -1,5 +1,4 @@
 from unattend_my_iso.common.config import TaskResult
-from unattend_my_iso.common.const import GLOBAL_WORKPATHS
 from unattend_my_iso.common.logging import log_debug, log_error, log_info
 from unattend_my_iso.core.reader.reader_config import TaskConfig, get_configs
 from unattend_my_iso.core.processing.processor_task_isogen import TaskProcessorIsogen
@@ -13,29 +12,18 @@ class UmiTaskProcessor(
     TaskProcessorIsogen, TaskProcessorVmRun, TaskProcessorNetworking
 ):
 
-    def __init__(self, work_path: str = ""):
-        TaskProcessorIsogen.__init__(self, work_path)
-        TaskProcessorVmRun.__init__(self, work_path)
-        if work_path == "":
-            log_debug(
-                f"Global work_path search space: {GLOBAL_WORKPATHS}",
-                self.__class__.__qualname__,
-            )
-            log_info(
-                f"Using searched work_path: {self.work_path}",
-                self.__class__.__qualname__,
-            )
-        else:
-            log_info(
-                f"Using supplied work_path: {self.work_path}",
-                self.__class__.__qualname__,
-            )
+    def __init__(self):
+        TaskProcessorIsogen.__init__(self)
+        TaskProcessorVmRun.__init__(self)
 
     def do_process(self):
-        taskconfigs = get_configs(self.work_path)
+        taskconfigs = get_configs()
         log_debug(f"TaskConfigs : {len(taskconfigs)}", self.__class__.__qualname__)
         for cfg in taskconfigs:
             if isinstance(cfg, TaskConfig):
+                self._get_addons()
+                self._get_templates(cfg)
+                self._get_overlays(cfg)
                 result = self._process_task(cfg)
                 self._process_result(result)
             else:
@@ -44,8 +32,8 @@ class UmiTaskProcessor(
                 )
 
     def _process_task(self, args: TaskConfig) -> TaskResult:
-        log_debug(
-            f"Task : {args.target.template} ({args.target.template_overlay})",
+        log_info(
+            f"Template: {args.target.template} ({args.target.template_overlay})",
             self.__class__.__qualname__,
         )
         tasktype = args.target.proctype

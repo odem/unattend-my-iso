@@ -4,8 +4,8 @@ from unattend_my_iso.core.processing.processor_base import TaskProcessorBase
 
 class TaskProcessorNetworking(TaskProcessorBase):
 
-    def __init__(self, work_path: str = ""):
-        TaskProcessorBase.__init__(self, work_path)
+    def __init__(self):
+        TaskProcessorBase.__init__(self)
 
     def task_vm_netstart(
         self, args: TaskConfig, template: TemplateConfig

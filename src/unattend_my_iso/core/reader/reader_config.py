@@ -1,8 +1,14 @@
 from dataclasses import fields, is_dataclass
+import os
+import sys
 from typing import Any, Optional
 from unattend_my_iso.common.config import SysConfig, TaskConfig, get_cfg_sys
-from unattend_my_iso.common.const import DEFAULT_TEMPLATE, DEFAULT_TEMPLATE_OVERLAY
-from unattend_my_iso.common.logging import log_debug, log_error
+from unattend_my_iso.common.const import (
+    DEFAULT_TEMPLATE,
+    DEFAULT_TEMPLATE_OVERLAY,
+    GLOBAL_WORKPATHS,
+)
+from unattend_my_iso.common.logging import log_debug, log_error, log_info
 from unattend_my_iso.common.templates import list_overlays
 from unattend_my_iso.common.args import (
     AddonArgs,
@@ -111,39 +117,68 @@ def _get_normalized_value(obj_dest, obj_src, name: str) -> Optional[Any]:
     return val
 
 
-def get_configs(work_path: str) -> list[TaskConfig]:
+def check_work_path(work_path: str) -> str:
+    if work_path == "":
+        testpaths = GLOBAL_WORKPATHS
+        for testpath in testpaths:
+            if os.path.exists(f"{testpath}/templates") or testpath == os.getcwd():
+                work_path = testpath
+                break
+    if work_path == "":
+        log_debug(f"Global work_path search space: {GLOBAL_WORKPATHS}", "ConfigReader")
+        log_info(f"Using searched work_path: {work_path}", "ConfigReader")
+    else:
+        log_info(f"Using supplied work_path: {work_path}", "ConfigReader")
+    return work_path
+
+
+def get_configs() -> list[TaskConfig]:
     result = []
-    cfg_sys = get_cfg_sys(work_path)
-    template_name, template_overlay = get_name_and_overlay()
-    if template_overlay == "":
-        cfg = get_config(cfg_sys, template_name, template_overlay)
-        result.append(cfg)
-    elif template_overlay != "*":
-        result += get_configs_overlay_list(cfg_sys, template_name, template_overlay)
-    elif template_overlay == "*":
-        result += get_configs_overlay_all(cfg_sys, template_name)
+    work_path, template_name, template_overlay = get_required_template_args()
+    if work_path is None:
+        work_path = os.getcwd()
+    work_path = check_work_path(work_path)
+    if work_path is not None:
+        cfg_sys = get_cfg_sys(work_path)
+        if template_overlay == "":
+            cfg = get_config(cfg_sys, template_name, template_overlay)
+            result.append(cfg)
+        elif template_overlay != "*":
+            result += get_configs_overlay_list(cfg_sys, template_name, template_overlay)
+        elif template_overlay == "*":
+            result += get_configs_overlay_all(cfg_sys, template_name)
+    else:
+        sys.exit(1)
     return result
 
 
-def get_name_and_overlay() -> tuple[str, str]:
+def get_required_template_args() -> tuple[str, str, str]:
     cli_target = get_cli_group("target")
     if cli_target is None:
-        return "", ""
+        return "", "", ""
+
+    work_path = ""
     template_name = ""
     template_overlay = ""
-    if isinstance(cli_target, TargetArgs) and cli_target.template is None:
-        template_name = DEFAULT_TEMPLATE
-        template_overlay = DEFAULT_TEMPLATE_OVERLAY
-        log_debug(
-            f"Use template : {template_name} ({template_overlay})", "ConfigReader"
-        )
-    else:
-        template_name = cli_target.template
-        template_overlay = cli_target.template_overlay
-        log_debug(
-            f"Use template : {template_name} ({template_overlay})", "ConfigReader"
-        )
-    return template_name, template_overlay
+    if isinstance(cli_target, TargetArgs):
+        if cli_target.template is None:
+            template_name = DEFAULT_TEMPLATE
+            template_overlay = DEFAULT_TEMPLATE_OVERLAY
+            log_debug(
+                f"Use template : {template_name} ({template_overlay})", "ConfigReader"
+            )
+        else:
+            template_name = cli_target.template
+            template_overlay = cli_target.template_overlay
+            log_debug(
+                f"Use template : {template_name} ({template_overlay})", "ConfigReader"
+            )
+        if cli_target.work_path not in (None, ""):
+            work_path = cli_target.work_path
+        else:
+            pass
+
+    return work_path, template_name, template_overlay
 
 
 def get_configs_overlay_list(

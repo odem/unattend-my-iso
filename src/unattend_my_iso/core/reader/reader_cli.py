@@ -715,6 +715,13 @@ class CommandlineReader:
             default=None,
             help="The processor type (run, extract, addons, irmod, iso, all)",
         )
+        group_target.add_argument(
+            "-tw",
+            "--work_path",
+            type=str,
+            default=None,
+            help="The work_path to user",
+        )
         return group_target
 
     def read_cli_group(self, name: str) -> Optional[Any]:

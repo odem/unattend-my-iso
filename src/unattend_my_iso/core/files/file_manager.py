@@ -27,7 +27,9 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
                 elif os.path.isdir(src):
                     shutil.rmtree(src)
                 else:
-                    log_error("Cant delete unknown file object")
+                    log_error(
+                        "Cant delete unknown file object", self.__class__.__qualname__
+                    )
         except Exception as exe:
             log_error(f"Error on copy_file: {exe}")
             return False
@@ -39,7 +41,7 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
             if os.path.exists(src):
                 shutil.move(src, dst)
         except Exception as exe:
-            log_error(f"Error on copy_file: {exe}")
+            log_error(f"Error on copy_file: {exe}", self.__class__.__qualname__)
             return False
         return True
 
@@ -51,9 +53,11 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
                 elif os.path.isdir(src):
                     shutil.copytree(src, dst, dirs_exist_ok=True, symlinks=True)
                 else:
-                    log_error("Cant delete unknown file object")
+                    log_error(
+                        "Cant delete unknown file object", self.__class__.__qualname__
+                    )
         except Exception as exe:
-            log_error(f"Error on copy_file: {exe}")
+            log_error(f"Error on copy_file: {exe}", self.__class__.__qualname__)
             return False
         return True
 
@@ -62,28 +66,35 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
             self.rm(dst)
             run(["cp", "-r", src, dst])
         except Exception as exe:
-            log_error(f"Error on copy_folder_iso: {exe}")
+            log_error(f"Error on copy_folder_iso: {exe}", self.__class__.__qualname__)
             return False
         return True
 
     def http_download(self, url: str, name: str, dir: str) -> bool:
         try:
             os.makedirs(dir, exist_ok=True)
-            log_debug(f"Requesting: {url}")
+            log_debug(f"Requesting: {url}", self.__class__.__qualname__)
             response = requests.get(url)
             if response.status_code == 200:
                 dst = f"{dir}/{name}"
-                log_info(f"Download success! Storing to '{dst}'")
+                log_info(
+                    f"Download success! Storing to '{dst}'", self.__class__.__qualname__
+                )
                 if os.path.exists(dir):
                     with open(dst, "wb") as file:
                         file.write(response.content)
                     return True
                 else:
-                    log_error(f"Iso folder does not exist: '{dir}'")
+                    log_error(
+                        f"Iso folder does not exist: '{dir}'",
+                        self.__class__.__qualname__,
+                    )
             else:
-                log_error(f"Download failed! Url: {url}")
+                log_error(f"Download failed! Url: {url}", self.__class__.__qualname__)
         except Exception as exe:
-            log_error(f"Download failed! Url: {url}\n{exe}")
+            log_error(
+                f"Download failed! Url: {url}\n{exe}", self.__class__.__qualname__
+            )
         return False
 
     def chmod(self, dst: str, privilege: int) -> bool:
@@ -103,7 +114,10 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
                     new_permissions = current_permissions | privilege
                     os.chmod(file_path, new_permissions)
         except Exception as exe:
-            log_error(f"Error on ensure_privilege {privilege}: {exe}")
+            log_error(
+                f"Error on ensure_privilege {privilege}: {exe}",
+                self.__class__.__qualname__,
+            )
             return False
         return True
 

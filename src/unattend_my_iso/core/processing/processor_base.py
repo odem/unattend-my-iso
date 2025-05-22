@@ -1,12 +1,10 @@
 import os
-import sys
 from typing import Optional
 from unattend_my_iso.addons.answerfile import AnswerFileAddon
 from unattend_my_iso.addons.grub import GrubAddon
 from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.addons.postinstall import PostinstallAddon
 from unattend_my_iso.addons.ssh import SshAddon
-from unattend_my_iso.common.const import GLOBAL_WORKPATHS
 from unattend_my_iso.common.templates import read_templates_isos
 from unattend_my_iso.core.files.file_manager import UmiFileManager
 from unattend_my_iso.core.generators.generator_iso import UmiIsoGenerator
@@ -19,13 +17,11 @@ from unattend_my_iso.common.config import (
     SysConfig,
     TaskConfig,
     TemplateConfig,
-    get_cfg_sys,
     TaskResult,
 )
 
 
 class TaskProcessorBase:
-    work_path: str
     sysconfig: SysConfig
     templates: dict[str, TemplateConfig] = {}
     addons: dict[str, UmiAddon] = {}
@@ -34,25 +30,8 @@ class TaskProcessorBase:
     hvrunner: UmiHypervisorBase = UmiHypervisorKvm()
     netman: UmiNetworkManager = UmiNetworkManager()
 
-    def __init__(self, work_path: str = ""):
-
-        if work_path == "":
-            testpaths = GLOBAL_WORKPATHS
-            for testpath in testpaths:
-                if (
-                    os.path.exists(f"{testpath}/templates")
-                    or testpath == self.files.cwd()
-                ):
-                    self.work_path = testpath
-                    break
-        if self.work_path != "":
-            self.sysconfig = get_cfg_sys(work_path=self.work_path)
-            self._get_addons()
-            self._get_templates()
-            self._get_overlays()
-        else:
-            log_error(f"No work_path found: {self.files.cwd()}")
-            sys.exit(1)
+    def __init__(self):
+        pass
 
     def _create_efidisk_windows(self, args: TaskConfig) -> bool:
         dstinter = self.files._get_path_intermediate(args)
@@ -122,13 +101,13 @@ class TaskProcessorBase:
             postinst.addon_name: postinst,
         }
 
-    def _get_templates(self):
-        searchpath = f"{self.sysconfig.path_templates}/iso"
+    def _get_templates(self, cfg: TaskConfig):
+        searchpath = f"{cfg.sys.path_templates}/iso"
         self.templates = read_templates_isos(searchpath)
 
-    def _get_overlays(self):
+    def _get_overlays(self, cfg: TaskConfig):
         self.overlays = {}
-        searchpath = f"{self.sysconfig.path_templates}/iso"
+        searchpath = f"{cfg.sys.path_templates}/iso"
         for template in self.templates.values():
             for overlay in template.files_overlay:
                 name = ""
@@ -167,7 +146,7 @@ class TaskProcessorBase:
         fullname = self.files._get_path_isofile(args)
         if self.exists(os.path.basename(fullname)) is False:
             os.makedirs(os.path.basename(fullname))
-        return self.files.http_download(url=url, name=name, dir=self.sysconfig.path_iso)
+        return self.files.http_download(url=url, name=name, dir=args.sys.path_iso)
 
     def _get_success_result(self, msg: str = ""):
         return TaskResult(True, msg=msg, msg_short="", msg_out="", msg_err="")
