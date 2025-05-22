@@ -215,7 +215,7 @@ class TargetArgs(ArgumentBase):
     template: str = "win11"
     template_overlay: str = ""
     proctype: str = "build_all"
-    work_path: str = "."
+    work_path: str = ""
 
 
 def get_group_arguments(name: str) -> Optional[Any]:

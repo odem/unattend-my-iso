@@ -3,13 +3,13 @@ import os
 import sys
 from typing import Any, Optional
 from unattend_my_iso.common.config import SysConfig, TaskConfig, get_cfg_sys
+from unattend_my_iso.common.logging import log_debug, log_error, log_info
+from unattend_my_iso.common.templates import list_overlays
 from unattend_my_iso.common.const import (
     DEFAULT_TEMPLATE,
     DEFAULT_TEMPLATE_OVERLAY,
     GLOBAL_WORKPATHS,
 )
-from unattend_my_iso.common.logging import log_debug, log_error, log_info
-from unattend_my_iso.common.templates import list_overlays
 from unattend_my_iso.common.args import (
     AddonArgs,
     AddonArgsAnswerFile,
@@ -139,6 +139,10 @@ def get_configs() -> list[TaskConfig]:
     work_path = check_work_path(work_path)
     if work_path is not None:
         cfg_sys = get_cfg_sys(work_path)
+        if template_overlay is None:
+            pass
+        if template_overlay is None:
+            template_overlay = ""
         if template_overlay == "":
             cfg = get_config(cfg_sys, template_name, template_overlay)
             result.append(cfg)
@@ -184,23 +188,26 @@ def get_configs_overlay_list(
     cfg_sys, template_name: str, template_overlay: str
 ) -> list[TaskConfig]:
     result = []
-    if "," in template_overlay:
-        log_debug(f"Using multiple overlays: {template_overlay}")
-        names = template_overlay.split(",")
-        syspath = cfg_sys.path_templates
-        path = f"{syspath}/iso/{template_name}"
-        overlays = list_overlays(path)
-        for overlay in overlays:
-            log_debug(f"Using names: {overlay}")
-            if overlay in names:
-                cfg = get_config(cfg_sys, template_name, overlay)
-                if cfg is not None:
-                    cfg.target.template_overlay = overlay
-                    result.append(cfg)
+    if template_overlay is not None:
+        if "," in template_overlay:
+            log_debug(f"Using multiple overlays: {template_overlay}")
+            names = template_overlay.split(",")
+            syspath = cfg_sys.path_templates
+            path = f"{syspath}/iso/{template_name}"
+            overlays = list_overlays(path)
+            for overlay in overlays:
+                log_debug(f"Using names: {overlay}")
+                if overlay in names:
+                    cfg = get_config(cfg_sys, template_name, overlay)
+                    if cfg is not None:
+                        cfg.target.template_overlay = overlay
+                        result.append(cfg)
+        else:
+            log_debug(f"Using single overlay: {template_overlay}")
+            cfg = get_config(cfg_sys, template_name, template_overlay)
+            result.append(cfg)
     else:
-        log_debug(f"Using single overlay: {template_overlay}")
-        cfg = get_config(cfg_sys, template_name, template_overlay)
-        result.append(cfg)
+        log_error("Overlay is None")
     return result
 
 

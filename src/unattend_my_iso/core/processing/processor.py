@@ -20,6 +20,7 @@ class UmiTaskProcessor(
         taskconfigs = get_configs()
         log_debug(f"TaskConfigs : {len(taskconfigs)}", self.__class__.__qualname__)
         for cfg in taskconfigs:
+            log_debug(f"CFG: {len(taskconfigs)}", self.__class__.__qualname__)
             if isinstance(cfg, TaskConfig):
                 self._get_addons()
                 self._get_templates(cfg)

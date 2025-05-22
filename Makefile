@@ -20,6 +20,7 @@ BRIDGES?=true
 FIREWALL?=false
 CLEANDISK?=false
 TEMPLATEDIR?="../idris-iso-config"
+# TEMPLATEDIR?="."
 
 # Help
 usage:
@@ -66,9 +67,9 @@ boot:
 			-rov false -rbC false
 install: 
 	@source $(DIR_VENV)/bin/activate ; \
-		python3 -m src.$(PROJECT_NAME).main  -tp vm_start \
+		python3 -m src.$(PROJECT_NAME).main  -tp vm_start -rbC true \
 			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -to "$(OVERLAY)" \
-			-rD $(DAEMONIZE) -rv $(VERBOSITY) -rov $(CLEANDISK) -rbC true
+			-rD $(DAEMONIZE) -rv $(VERBOSITY) -rov $(CLEANDISK)
 stop:
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main -tp vm_stop \
