@@ -23,20 +23,33 @@ class CommandlineReader:
     Examples:
     --------------------------------------------------
 
-    High Verbosity:
+    Verbosity:
         python3 -m src.unattend_my_iso.main -rv 3
+        -> PARAM: RunArgs.verbosity INTEGER
 
     Build ISO with template debian12:
         python3 -m src.unattend_my_iso.main -tt debian12
+        -> PARAM: targetArgs.template STRING
 
     Build ISO manually:
         python3 -m src.unattend_my_iso.main -tt debian12 -tp extract
         python3 -m src.unattend_my_iso.main -tt debian12 -tp addons
         python3 -m src.unattend_my_iso.main -tt debian12 -tp irmod
         python3 -m src.unattend_my_iso.main -tt debian12 -tp iso
+        -> PARAM: targetArgs.processor STRING
 
     Run ISO:
         python3 -m src.unattend_my_iso.main -tt debian12 -tp run
+        -> PARAM: targetArgs.processor STRING
+    
+    Networking:
+        python3 -m src.unattend_my_iso.main -tt debian12 -tp net_start
+        python3 -m src.unattend_my_iso.main -tt debian12 -tp net_stop
+        -> PARAM: targetArgs.processor STRING
+    
+    Working Directory:
+        python3 -m src.unattend_my_iso.main -tt debian12 -tw /etc/umi
+        -> PARAM: targetArgs.work_dir STRING
 
             """,
         )
