@@ -44,7 +44,6 @@ def do_init(debug: bool):
         init_logger(logging.DEBUG)
     if debug:
         do_debug_init()
-    log_info(f"CWD: {os.getcwd()}")
 
 
 def do_debug_init():

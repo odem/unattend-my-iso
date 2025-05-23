@@ -9,7 +9,6 @@ file_postinstall = "postinstall.bash"
 
 [run]
 vmname = "mps-test"
-net_ports = [[2220, 22]]
 
 [addon_postinstall]
 password_length = 24

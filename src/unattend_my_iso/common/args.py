@@ -153,7 +153,7 @@ class AddonArgsSsh(ArgumentBase):
     config_client: str = ""
     config_daemon: str = "sshd_config"
     config_auth: str = "authorized_keys"
-    config_auth_append: str = f"{HOME}/.ssh/id_rsa_dummy.pub"
+    config_auth_append: str = f"{HOME}/.ssh/id_rsa.pub"
     config_key: str = "id_rsa"
 
 
