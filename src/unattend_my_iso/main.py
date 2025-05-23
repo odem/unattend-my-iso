@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 from unattend_my_iso.core.reader.reader_cli import CommandlineReader
 from unattend_my_iso.common.logging import init_logger, log_info
@@ -9,6 +10,7 @@ from unattend_my_iso.common.const import (
     DEBUG_TEMPLATE,
     DEBUG_VERBOSITY,
     DEBUG_WORKDIR,
+    DEBUG_WORKDIR_PREFIX,
     DEFAULT_DEBUG_LEVEL,
 )
 
@@ -26,7 +28,7 @@ def do_init(debug: bool):
     kwargs = args._get_kwargs()
     level = 3
     for item in kwargs:
-        if item[0] == "template":
+        if item[0] == "template" and item[1] is None:
             debug = True
         if item[0] == "verbosity":
             level = item[1] if item[1] is not None else DEFAULT_DEBUG_LEVEL
@@ -42,6 +44,7 @@ def do_init(debug: bool):
         init_logger(logging.DEBUG)
     if debug:
         do_debug_init()
+    log_info(f"CWD: {os.getcwd()}")
 
 
 def do_debug_init():
@@ -50,7 +53,10 @@ def do_debug_init():
     sys.argv += ["-to", DEBUG_OVERLAY]
     sys.argv += ["-tp", DEBUG_PROCTYPE]
     sys.argv += ["-rv", DEBUG_VERBOSITY]
-    sys.argv += ["-tw", DEBUG_WORKDIR]
+    if DEBUG_WORKDIR.startswith("/"):
+        sys.argv += ["-tw", DEBUG_WORKDIR]
+    else:
+        sys.argv += ["-tw", f"{DEBUG_WORKDIR}/{DEBUG_WORKDIR_PREFIX}"]
 
 
 def main(debug: bool = False):

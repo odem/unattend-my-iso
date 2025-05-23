@@ -52,4 +52,6 @@ DEBUG_OVERLAY = ""
 DEBUG_VERBOSITY = "3"
 DEBUG_PROCTYPE = "build_all"
 DEBUG_WORKDIR = "/home/jb/mps/repo/gitlab/idris-iso-config"
+# DEBUG_WORKDIR = "."
+DEBUG_WORKDIR_PREFIX = "../.."
 DEFAULT_DEBUG_LEVEL = 2
