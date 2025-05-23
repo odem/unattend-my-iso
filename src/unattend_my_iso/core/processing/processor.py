@@ -1,3 +1,4 @@
+import sys
 from unattend_my_iso.common.config import TaskResult
 from unattend_my_iso.common.logging import log_debug, log_error, log_info
 from unattend_my_iso.core.reader.reader_config import TaskConfig, get_configs
@@ -19,17 +20,25 @@ class UmiTaskProcessor(
     def do_process(self):
         taskconfigs = get_configs()
         log_debug(f"TaskConfigs : {len(taskconfigs)}", self.__class__.__qualname__)
-        for cfg in taskconfigs:
-            if isinstance(cfg, TaskConfig):
-                self._get_addons()
-                self._get_templates(cfg)
-                self._get_overlays(cfg)
-                result = self._process_task(cfg)
-                self._process_result(result)
-            else:
-                log_error(
-                    f"TaskConfig invalid: {taskconfigs}", self.__class__.__qualname__
-                )
+        if len(taskconfigs) > 0:
+            for cfg in taskconfigs:
+                if isinstance(cfg, TaskConfig):
+                    self._get_addons()
+                    self._get_templates(cfg)
+                    self._get_overlays(cfg)
+                    result = self._process_task(cfg)
+                    self._process_result(result)
+                else:
+                    log_error(
+                        f"TaskConfig invalid: {taskconfigs}",
+                        self.__class__.__qualname__,
+                    )
+        else:
+            log_error(
+                "No Taskconfig available after parsing arguments",
+                self.__class__.__qualname__,
+            )
+            sys.exit(1)
 
     def _process_task(self, args: TaskConfig) -> TaskResult:
         log_info(

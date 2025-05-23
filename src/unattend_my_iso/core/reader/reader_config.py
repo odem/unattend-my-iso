@@ -118,17 +118,31 @@ def _get_normalized_value(obj_dest, obj_src, name: str) -> Optional[Any]:
 
 
 def check_work_path(work_path: str) -> str:
+    cwd = os.getcwd()
+    new_path = cwd
     if work_path == "":
         log_debug(f"Global work_path search space: {GLOBAL_WORKPATHS}", "ConfigReader")
         log_info(f"Using searched work_path: {work_path}", "ConfigReader")
         testpaths = GLOBAL_WORKPATHS
         for testpath in testpaths:
             if os.path.exists(f"{testpath}/templates") or testpath == os.getcwd():
-                work_path = testpath
+                new_path = os.path.abspath(testpath)
                 break
     else:
-        log_info(f"Using supplied work_path: {work_path}", "ConfigReader")
-    return os.path.abspath(work_path)
+        if work_path.startswith("/"):
+            new_path = work_path
+            log_info(
+                f"Using user-supplied absolute work_path: {new_path}", "ConfigReader"
+            )
+        else:
+            new_path = os.path.abspath(f"{cwd}/{work_path}")
+            log_info(
+                f"Using user-supplied relative work_path: {new_path}", "ConfigReader"
+            )
+    if os.path.exists(new_path) is False:
+        log_error(f"Supplied working path was invalid: {new_path}", "Configreader")
+        sys.exit(1)
+    return new_path
 
 
 def get_configs() -> list[TaskConfig]:

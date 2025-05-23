@@ -19,8 +19,8 @@ NICS?=false
 BRIDGES?=true
 FIREWALL?=false
 CLEANDISK?=false
-TEMPLATEDIR?="../idris-iso-config"
-# TEMPLATEDIR?="."
+CWD?="../idris-iso-config"
+# CWD?="."
 
 # Help
 usage:
@@ -53,46 +53,46 @@ install-tools: build
 build: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main  -tp build_all \
-			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -to "$(OVERLAY)" -rv $(VERBOSITY)
+			-tw $(CWD) -tt $(TEMPLATE) -to "$(OVERLAY)" -rv $(VERBOSITY)
 
 build-all: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main  -tp build_all \
-			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -to "*" -rv $(VERBOSITY)
+			-tw $(CWD) -tt $(TEMPLATE) -to "*" -rv $(VERBOSITY)
 boot: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main  -tp vm_start \
-			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -to "$(OVERLAY)" \
+			-tw $(CWD) -tt $(TEMPLATE) -to "$(OVERLAY)" \
 			-rD $(DAEMONIZE) -rv $(VERBOSITY) \
 			-rov false -rbC false
 install: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main  -tp vm_start -rbC true \
-			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -to "$(OVERLAY)" \
+			-tw $(CWD) -tt $(TEMPLATE) -to "$(OVERLAY)" \
 			-rD $(DAEMONIZE) -rv $(VERBOSITY) -rov $(CLEANDISK)
 stop:
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main -tp vm_stop \
-			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -to "$(OVERLAY)" -rv $(VERBOSITY)
+			-tw $(CWD) -tt $(TEMPLATE) -to "$(OVERLAY)" -rv $(VERBOSITY)
 install-all: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main -tp vm_start \
-			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -to "*" \
+			-tw $(CWD) -tt $(TEMPLATE) -to "*" \
 			-rD $(DAEMONIZE) -rv $(VERBOSITY)
 stop-all:
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main -tp vm_stop \
-			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -to "*" -rv $(VERBOSITY)
+			-tw $(CWD) -tt $(TEMPLATE) -to "*" -rv $(VERBOSITY)
 target: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main \
-			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -to "$(OVERLAY)" -tp $(TARGET) \
+			-tw $(CWD) -tt $(TEMPLATE) -to "$(OVERLAY)" -tp $(TARGET) \
 			-rD $(DAEMONIZE) -rv $(VERBOSITY)
 
 target-all: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main -to "*" \
-			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -tp $(TARGET) \
+			-tw $(CWD) -tt $(TEMPLATE) -tp $(TARGET) \
 			-rD $(DAEMONIZE) -rv $(VERBOSITY)
 
 restart: | stop start
@@ -101,12 +101,12 @@ restart-all: | stopall startall
 net-start: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main -tp net_start \
-			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -to "$(OVERLAY)" -rv $(VERBOSITY) \
+			-tw $(CWD) -tt $(TEMPLATE) -to "$(OVERLAY)" -rv $(VERBOSITY) \
 			-rnpf "$(FIREWALL)" -rnpb "$(BRIDGES)" -rnpn "$(NICS)"
 net-stop: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main -tp net_stop \
-			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -to "$(OVERLAY)" -rv $(VERBOSITY) \
+			-tw $(CWD) -tt $(TEMPLATE) -to "$(OVERLAY)" -rv $(VERBOSITY) \
 			-rnpf "$(FIREWALL)" -rnpb "$(BRIDGES)" -rnpn "$(NICS)"
 
 help: 
