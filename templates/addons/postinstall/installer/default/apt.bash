@@ -25,6 +25,8 @@ EOF
 apt-get update -y
 apt-get install -f -y
 apt-get upgrade -y
+apt-get install -y apt-utils
+apt-get autoremove
 
 
 # Remove Job From Jobfile
@@ -33,7 +35,7 @@ SERVICE=/firstboot.bash
 if [[ -f "$SERVICE" ]]; then
     filename="$(basename "$0")"
     # shellcheck disable=SC2086
-    sed s#$filename##g -i "$SERVICE"
+    sed -i "/$filename/d" "$SERVICE"
     echo "Removed job from firstboot script: $(basename "$0")"
 fi
 echo ""

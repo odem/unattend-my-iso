@@ -20,10 +20,14 @@ pw_muser=$(< /dev/urandom tr -dc 'A-Za-z0-9!@#$%^&*()_+=' | head -c "$length")
 
 
 # Remove Job From Jobfile
+echo "Sucessfully invoked all actions"
 SERVICE=/firstboot.bash
 if [[ -f "$SERVICE" ]]; then
     filename="$(basename "$0")"
     # shellcheck disable=SC2086
-    sed s#$filename##g -i "$SERVICE"
+    sed -i "/$filename/d" "$SERVICE"
+    echo "Removed job from firstboot script: $(basename "$0")"
 fi
+echo ""
+sleep 1
 exit 0

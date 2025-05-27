@@ -23,14 +23,11 @@ fi
 cat <<EOF > /etc/network/interfaces
 
 auto $DEFAULT_NIC_0
-iface $DEFAULT_NIC_0 inet manual
+iface $DEFAULT_NIC_0 inet static
     address $DEFAULT_IP
     netmask 255.255.255.0
     dns-nameservers $DEFAULT_NS1 $DEFAULT_NS2
     gateway $DEFAULT_GW
-    bridge_ports $INTERFACE_BOND0_0
-    bridge_stp off
-    bridge_fd 0
 #Default Uplink
 
 EOF
@@ -46,7 +43,7 @@ SERVICE=/firstboot.bash
 if [[ -f "$SERVICE" ]]; then
     filename="$(basename "$0")"
     # shellcheck disable=SC2086
-    sed s#$filename##g -i "$SERVICE"
+    sed -i "/$filename/d" "$SERVICE"
     echo "Removed job from firstboot script: $(basename "$0")"
 fi
 echo ""
