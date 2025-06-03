@@ -13,6 +13,7 @@ export EDITOR=vim
 export SHELL=/bin/bash
 export LANGUAGE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
+export DISPLAY=:0
 
 # Alias config : ls
 export LS_OPTIONS='--color=auto'

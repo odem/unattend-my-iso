@@ -7,11 +7,20 @@ set -e
 # shellcheck disable=SC1090,1091
 [[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
 
+PWGEN="$CFG_PASSWORD_GENERATE"
+PWSIZE="$CFG_PASSWORD_LENGTH"
+CHARSET_PW="$CFG_PASSWORD_CHARSET"
+
 echo "-------------------------------------------------------------------------"
 echo "- Unattend-My-Iso: POSTINSTALL USER"
 echo "-------------------------------------------------------------------------"
 echo ""
 sleep 1
+
+genpw() {
+    length=$1
+    head /dev/urandom | tr -dc "$CHARSET_PW" | head -c "$length"
+}
 
 # Configure root user
 echo "-> Prepare user 'root'"
@@ -27,7 +36,12 @@ for i in $(seq 0 $(("${#CFG_ADDITIONAL_USERS[*]}" - 1))); do
     ADDITIONAL_NAME="${CFG_ADDITIONAL_USERS[$i]}"
     echo "-> Prepare additional user '$ADDITIONAL_NAME'"
     # /sbin/adduser --disabled-password --gecos '' "$ADDITIONAL_NAME"
-    echo "${ADDITIONAL_NAME}:${ADDITIONAL_NAME}pass" | chpasswd
+    if [[ $PWGEN -eq 1 ]] ; then
+        newpass=$(genpw "$PWSIZE")
+    else
+        newpass="${ADDITIONAL_NAME}pass"
+    fi
+    echo "${ADDITIONAL_NAME}:${newpass}" | chpasswd
     cp /opt/umi/config/.bashrc /home/"$ADDITIONAL_NAME"
 done
 

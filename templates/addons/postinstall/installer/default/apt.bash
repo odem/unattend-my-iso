@@ -16,9 +16,13 @@ sleep 1
 # Sources
 cat<< EOF > /etc/apt/sources.list
 deb http://deb.debian.org/debian/ bookworm main contrib non-free-firmware
+deb-src http://deb.debian.org/debian/ bookworm main contrib non-free-firmware
 deb http://deb.debian.org/debian/ bookworm-updates main contrib non-free-firmware
+deb-src http://deb.debian.org/debian/ bookworm-updates main contrib non-free-firmware
 #deb http://deb.debian.org/debian/ bookworm-backports main contrib non-free non-free-firmware
+#deb-src http://deb.debian.org/debian/ bookworm-backports main contrib non-free non-free-firmware
 deb http://security.debian.org/debian-security bookworm-security main contrib non-free-firmware
+deb-src http://security.debian.org/debian-security bookworm-security main contrib non-free-firmware
 EOF
 
 # update and install essentials
@@ -28,6 +32,19 @@ apt-get upgrade -y
 apt-get install -y apt-utils
 apt-get autoremove
 
+AUTO_UPDATES="$CFG_AUTO_UPDATES"
+if [[ "$AUTO_UPDATES" == "1" ]] ; then
+    apt-get install -y unattended-upgrades apt-listchanges
+    dpkg-reconfigure -f noninteractive unattended-upgrades
+    sed -i '/Unattended-Upgrade::Allowed-Origins/a\        "Debian stable-updates";' \
+        /etc/apt/apt.conf.d/50unattended-upgrades
+    systemctl enable --now unattended-upgrades.service
+    systemctl enable --now apt-daily-upgrade.timer
+    cat <<EOF > /etc/apt/apt.conf.d/20auto-upgrades
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+EOF
+fi
 
 # Remove Job From Jobfile
 echo "Sucessfully invoked all actions"

@@ -19,6 +19,10 @@ apt update -y
 apt install -f -y
 apt upgrade -y
 apt install -y openssh-server attr jq wget curl bc git vim make sudo 
+apt install -y \
+    kitty bc git vim make sudo psmisc net-tools tcpdump traceroute \
+    ntp lsb-release curl wget gnupg bridge-utils uml-utilities \
+    iftop sysstat
 echo ""
 
 # Remove Job From Jobfile
