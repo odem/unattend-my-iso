@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+import random
 from typing import Any
 from unattend_my_iso.common.args import (
     AddonArgs,
@@ -12,6 +13,7 @@ from unattend_my_iso.common.args import (
     TargetArgs,
 )
 from unattend_my_iso.common.const import APP_VERSION
+from unattend_my_iso.common.logging import log_info
 
 
 @dataclass
@@ -71,6 +73,22 @@ def get_cfg_sys(work_path: str) -> SysConfig:
     )
 
 
+def _get_char_sequence(charset: str, length: int):
+    return "".join(random.choices(charset, k=length))
+
+
+def password_generate(args: TaskConfig) -> bool:
+    if args.addons.postinstall.password_generate is False:
+        return True
+    if args.target.proctype in ("build_all", "addons"):
+        log_info("Regenerate passwords")
+        length = args.addons.postinstall.password_length
+        charset = args.addons.postinstall.password_charset
+        args.addons.answerfile.user_root_pw = _get_char_sequence(charset, length)
+        args.addons.answerfile.user_other_pw = _get_char_sequence(charset, length)
+    return True
+
+
 def get_config_default(work_path: str) -> TaskConfig:
     cfg_sys = get_cfg_sys(work_path)
     args_answers = AddonArgsAnswerFile()
@@ -81,6 +99,8 @@ def get_config_default(work_path: str) -> TaskConfig:
     cfg_target = TargetArgs()
     cfg_run = RunArgs()
     cfg_env = EnvironmentArgs()
-    return TaskConfig(
+    cfg = TaskConfig(
         sys=cfg_sys, addons=cfg_addons, target=cfg_target, run=cfg_run, env=cfg_env
     )
+    password_generate(cfg)
+    return cfg

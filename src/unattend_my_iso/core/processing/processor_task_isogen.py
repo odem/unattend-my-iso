@@ -131,6 +131,9 @@ class TaskProcessorIsogen(TaskProcessorBase):
         return False
 
     def _copy_addons(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        if args.addons.postinstall.postinstall_enabled:
+            if self._integrate_addon("postinstall", args, template) is False:
+                return False
         if args.addons.answerfile.answerfile_enabled:
             if self._integrate_addon("answerfile", args, template) is False:
                 return False
@@ -139,9 +142,6 @@ class TaskProcessorIsogen(TaskProcessorBase):
                 return False
         if args.addons.ssh.ssh_enabled:
             if self._integrate_addon("ssh", args, template) is False:
-                return False
-        if args.addons.postinstall.postinstall_enabled:
-            if self._integrate_addon("postinstall", args, template) is False:
                 return False
         return True
 

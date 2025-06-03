@@ -37,7 +37,7 @@ class ArgumentBase:
                     result.append(normentry)
             else:
                 normval = self.normalize_value(val)
-                result.append(f"{key}={normval}")
+                result.append(f"export {key}={normval}")
         return result
 
     def normalize_value(self, val: Any) -> str:
@@ -68,7 +68,7 @@ class ArgumentBase:
             result = []
             for key, innerval in val.items():
                 normval = self.normalize_value(innerval)
-                result.append(f"{key}={normval}")
+                result.append(f"export {key}={normval}")
             return result
         else:
             return []
@@ -163,6 +163,8 @@ class AddonArgsPostinstall(ArgumentBase):
     enable_grub_theme: bool = True
     create_config: bool = True
     bashrc_file: str = ".bashrc"
+    auto_updates: bool = False
+    password_generate: bool = False
     password_length: int = DEFAULT_PASSWORD_LENGTH
     password_charset: str = DEFAULT_PASSWORD_CHARSET
     joblist_early: list[str] = field(default_factory=lambda: [])

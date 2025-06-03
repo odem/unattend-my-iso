@@ -2,7 +2,12 @@ from dataclasses import fields, is_dataclass
 import os
 import sys
 from typing import Any, Optional
-from unattend_my_iso.common.config import SysConfig, TaskConfig, get_cfg_sys
+from unattend_my_iso.common.config import (
+    SysConfig,
+    TaskConfig,
+    get_cfg_sys,
+    password_generate,
+)
 from unattend_my_iso.common.logging import log_debug, log_error, log_info
 from unattend_my_iso.common.templates import list_overlays
 from unattend_my_iso.common.const import (
@@ -288,6 +293,8 @@ def get_config(
         )
         return None
     cfg_addons = AddonArgs(cfg_answer, cfg_ssh, cfg_grub, cfg_post)
-    return TaskConfig(
+    cfg = TaskConfig(
         sys=cfg_sys, addons=cfg_addons, target=cfg_target, run=cfg_run, env=cfg_env
     )
+    password_generate(cfg)
+    return cfg

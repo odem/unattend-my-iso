@@ -187,6 +187,20 @@ class CommandlineReader:
             help="Enable or disable a config to be copied into the target (true or false)",
         )
         group_target.add_argument(
+            "-pau",
+            "--auto_updates",
+            type=int,
+            default=None,
+            help="Configures apt for auto updates",
+        )
+        group_target.add_argument(
+            "-ppg",
+            "--password_generate",
+            type=int,
+            default=None,
+            help="Generate new initial passwords",
+        )
+        group_target.add_argument(
             "-ppl",
             "--password_length",
             type=int,
