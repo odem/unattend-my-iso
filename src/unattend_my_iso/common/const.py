@@ -47,10 +47,10 @@ RECIPE_DISK_CONT = f"{DOUBLE_PREFIX}{'.':70}{LINE_CONT}"
 RECIPE_DISK_END = f"{DOUBLE_PREFIX}.\n"
 
 # Debugging
-DEBUG_TEMPLATE = "xrdp"
+DEBUG_TEMPLATE = "win11"
 DEBUG_OVERLAY = ""
 DEBUG_VERBOSITY = "3"
 DEBUG_PROCTYPE = "build_all"
-DEBUG_WORKDIR = "/home/jb/mps/repo/gitlab/idris-iso-config"
+DEBUG_WORKDIR = "."  # "/home/jb/mps/repo/gitlab/idris-iso-config"
 DEBUG_WORKDIR_PREFIX = "../.."
-DEFAULT_DEBUG_LEVEL = 2
+DEFAULT_DEBUG_LEVEL = 4

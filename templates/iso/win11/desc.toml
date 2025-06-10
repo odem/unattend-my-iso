@@ -14,6 +14,15 @@ file_postinstall = "postinstall.bat"
 [addon_answerfile]
 locale_string = "de_DE"
 locale_multi = "de_DE.UTF-8"
+user_other_name = "cit"
+user_other_fullname = "cit"
+user_other_pw = "Please-Change-Me!2025"
 
 [run]
 vmname = "win11-test"
+net_prepare_fw = true
+net_prepare_nics = true
+net_prepare_bridges = false
+res_cpu = 4
+res_mem = 4096
+disks = [["os-hdd0.qcow2", "256G", "hdd", "none"]]

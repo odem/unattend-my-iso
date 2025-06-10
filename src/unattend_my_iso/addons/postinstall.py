@@ -3,7 +3,7 @@ import random
 from typing_extensions import override
 from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
-from unattend_my_iso.common.logging import log_debug, log_error
+from unattend_my_iso.common.logging import log_debug, log_error, log_info
 from unattend_my_iso.common.model import Replaceable
 
 
@@ -125,7 +125,14 @@ class PostinstallAddon(UmiAddon):
                 return False
         return True
 
-    def _create_params_list(self, elements: list, prefix: str = ""):
+    def _create_params_list_bash(self, elements: list, prefix: str = ""):
+        joblist_arg = []
+        for script in elements:
+            entry = f'"{prefix}{script}"'
+            joblist_arg.append(entry)
+        return joblist_arg
+
+    def _create_params_list_batch(self, elements: list, prefix: str = ""):
         joblist_arg = []
         for script in elements:
             entry = f'"{prefix}{script}"'
@@ -134,25 +141,95 @@ class PostinstallAddon(UmiAddon):
 
     def _create_params_env(self, elements: list, name: str, prefix: str = ""):
         joblist_arg = ["("]
-        joblist_arg += self._create_params_list(elements, prefix)
+        joblist_arg += self._create_params_list_bash(elements, prefix)
         joblist_arg += [")"]
         return f"{name}={' '.join(joblist_arg)}"
 
-    def _create_params_alljobs(self, args: TaskConfig, name: str = ""):
+    def _create_params_alljobs_bash(self, args: TaskConfig, name: str = ""):
         joblist_arg = ["("]
         post = args.addons.postinstall
-        joblist_arg += self._create_params_list(post.joblist_early)
-        joblist_arg += self._create_params_list(
+        joblist_arg += self._create_params_list_bash(post.joblist_early)
+        joblist_arg += self._create_params_list_bash(
             post.exec_additional_scripts, "/opt/umi/postinstall/"
         )
-        joblist_arg += self._create_params_list(post.joblist_late)
+        joblist_arg += self._create_params_list_bash(post.joblist_late)
         joblist_arg += [")"]
         result = " ".join(joblist_arg)
         if name != "":
             result = f"{name}={result}"
         return result
 
+    def _create_params_alljobs_batch(self, args: TaskConfig, name: str = ""):
+
+        result = ""
+
+        post = args.addons.postinstall
+        joblist_arg = []
+        joblist_arg += self._create_params_list_batch(post.joblist_early)
+        joblist_arg += self._create_params_list_batch(
+            post.exec_additional_scripts, "C:/Users/umi"
+        )
+        joblist_arg += self._create_params_list_batch(post.joblist_late)
+        for i in range(len(joblist_arg)):
+            txt = f"set {name}[{i}]={joblist_arg[i]}"
+            result += f"{txt}\n"
+        return result
+
     def _create_config(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        if template.iso_type == "windows":
+            return self._create_config_batch(args, template)
+        else:
+            return self._create_config_bash(args, template)
+
+    def _create_config_batch(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        if args.addons.postinstall.create_config is False:
+            return True
+        interpath = self.files._get_path_intermediate(args)
+        dstconf = f"{interpath}/umi/config"
+        dstconffile = f"{dstconf}/env.bat"
+        os.makedirs(dstconf, exist_ok=True)
+
+        cfg_run = args.run.get_env_vars_batch()
+        cfg_target = args.target.get_env_vars_batch()
+        cfg_template = template.get_env_vars_batch()
+        cfg_grub = args.addons.grub.get_env_vars_batch()
+        cfg_ssh = args.addons.ssh.get_env_vars_batch()
+        cfg_env = args.env.get_env_vars_batch()
+        cfg_postinst = args.addons.postinstall.get_env_vars_batch()
+        cfg_answerfile = args.addons.answerfile.get_env_vars_batch()
+        if template.iso_type == "windows":
+            cfg_joblist = self._create_params_alljobs_batch(args, "CFG_JOBS_ALL")
+        else:
+            cfg_joblist = self._create_params_alljobs_bash(args, "CFG_JOBS_ALL")
+        arr = [
+            "\n; Template Config",
+            *cfg_template,
+            "\n; Run Args",
+            *cfg_run,
+            "\n; Target Args ",
+            *cfg_target,
+            "\n; Grub Addon Args ",
+            *cfg_grub,
+            "\n; SSH Addon Args ",
+            *cfg_ssh,
+            "\n; Answerfile Addon Args ",
+            *cfg_answerfile,
+            "\n; Postinstall Addon Args ",
+            *cfg_postinst,
+            "\n; Postinstall Addon Joblist ",
+            cfg_joblist,
+            "\n; Environment Args ",
+            *cfg_env,
+        ]
+
+        contents = "\n".join(arr)
+        if os.path.exists(dstconffile):
+            self.files.rm(dstconffile)
+        if self.files.append_to_file(dstconffile, contents) is False:
+            return False
+        return self.files.chmod(dstconffile, 777)
+
+    def _create_config_bash(self, args: TaskConfig, template: TemplateConfig) -> bool:
         if args.addons.postinstall.create_config is False:
             return True
         interpath = self.files._get_path_intermediate(args)
@@ -160,15 +237,15 @@ class PostinstallAddon(UmiAddon):
         dstconffile = f"{dstconf}/env.bash"
         os.makedirs(dstconf, exist_ok=True)
 
-        cfg_run = args.run.get_env_vars()
-        cfg_target = args.target.get_env_vars()
-        cfg_template = template.get_env_vars()
-        cfg_grub = args.addons.grub.get_env_vars()
-        cfg_ssh = args.addons.ssh.get_env_vars()
-        cfg_env = args.env.get_env_vars()
-        cfg_postinst = args.addons.postinstall.get_env_vars()
-        cfg_answerfile = args.addons.answerfile.get_env_vars()
-        cfg_joblist = self._create_params_alljobs(args, "CFG_JOBS_ALL")
+        cfg_run = args.run.get_env_vars_bash()
+        cfg_target = args.target.get_env_vars_bash()
+        cfg_template = template.get_env_vars_bash()
+        cfg_grub = args.addons.grub.get_env_vars_bash()
+        cfg_ssh = args.addons.ssh.get_env_vars_bash()
+        cfg_env = args.env.get_env_vars_bash()
+        cfg_postinst = args.addons.postinstall.get_env_vars_bash()
+        cfg_answerfile = args.addons.answerfile.get_env_vars_bash()
+        cfg_joblist = self._create_params_alljobs_bash(args, "CFG_JOBS_ALL")
 
         arr = [
             "#!/bin/bash",
@@ -186,6 +263,7 @@ class PostinstallAddon(UmiAddon):
             *cfg_answerfile,
             "\n# Postinstall Addon Args ",
             *cfg_postinst,
+            "\n; Postinstall Addon Joblist ",
             cfg_joblist,
             "\n# Environment Args ",
             *cfg_env,
@@ -237,10 +315,10 @@ class PostinstallAddon(UmiAddon):
     def _create_replacements_postinst(
         self, args: TaskConfig, postinst: str
     ) -> list[Replaceable]:
-        # c = args.addons.answerfile
-        cfg_joblist = self._create_params_alljobs(args)
+        c = args.addons.answerfile
+        cfg_joblist = self._create_params_alljobs_bash(args)
         return [
             Replaceable(postinst, "CFG_JOBS_ALL", cfg_joblist),
-            # Replaceable(postinst, "CFG_USER_OTHER_NAME", c.user_other_name),
-            # Replaceable(postinst, "CFG_USER_OTHER_PASSWORD", c.user_other_password),
+            Replaceable(postinst, "CFG_USER_OTHER_NAME", c.user_other_name),
+            Replaceable(postinst, "CFG_USER_OTHER_PW", c.user_other_pw),
         ]
