@@ -374,6 +374,13 @@ class CommandlineReader:
             help="Hook filename",
         )
         group_target.add_argument(
+            "-aid",
+            "--install_disk",
+            type=str,
+            default=None,
+            help="The disk to force installation to",
+        )
+        group_target.add_argument(
             "-alm",
             "--locale_multi",
             type=str,

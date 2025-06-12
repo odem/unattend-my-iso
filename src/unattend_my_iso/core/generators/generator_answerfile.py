@@ -215,7 +215,6 @@ class AnswerfilePreseed:
         result = []
         result += [
             DIOption("#", "Partman"),
-            DIOption("partman-auto/disk", "", "select"),
             DIOption("partman-partitioning/default_label", "gpt"),
             DIOption("partman-partitioning/choose_label", "gpt"),
             DIOption("partman-partitioning/confirm_write_new_label", True),
@@ -224,6 +223,11 @@ class AnswerfilePreseed:
             DIOption("partman-lvm/confirm_nooverwrite", True),
             DIOption("partman-md/device_remove_md", True),
         ]
+        if c.install_disk != "":
+            result.append(DIOption("partman-auto/disk", c.install_disk, "string"))
+        else:
+            result.append(DIOption("partman-auto/disk", "", "select"))
+
         if c.answerfile_enable_crypto:
             result += [
                 DIOption("#", "Partman (LUKS+LVM)"),

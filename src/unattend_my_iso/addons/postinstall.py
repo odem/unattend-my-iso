@@ -263,7 +263,7 @@ class PostinstallAddon(UmiAddon):
             *cfg_answerfile,
             "\n# Postinstall Addon Args ",
             *cfg_postinst,
-            "\n; Postinstall Addon Joblist ",
+            "\n# Postinstall Addon Joblist ",
             cfg_joblist,
             "\n# Environment Args ",
             *cfg_env,
