@@ -70,6 +70,8 @@ class UmiTaskProcessor(
             return self.task_vm_start(args, template)
         elif tasktype == "vm_stop":
             return self.task_vm_stop(args, template)
+        elif tasktype == "exec":
+            return self.task_vm_exec(args, template)
         return self._get_error_result("Unknown task")
 
     def _process_result(self, result: TaskResult):

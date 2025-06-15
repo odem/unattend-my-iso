@@ -9,6 +9,13 @@ class TaskProcessorVmRun(TaskProcessorBase):
     def __init__(self):
         TaskProcessorBase.__init__(self)
 
+    def task_vm_exec(self, args: TaskConfig, template: TemplateConfig) -> TaskResult:
+        hyperargs = self.hvrunner.vm_get_args(args, template)
+        if self.hvrunner.vm_exec(args, hyperargs) is False:
+            log_error(f"Error on vm_exec: {args.target.cmd}")
+            return self._get_error_result(f"Error on vm_exec: {args.target.cmd}")
+        return self._get_success_result()
+
     def task_vm_start(self, args: TaskConfig, template: TemplateConfig) -> TaskResult:
         hyperargs = self.hvrunner.vm_get_args(args, template)
         vmdir = self.files._get_path_vm(args)

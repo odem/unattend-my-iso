@@ -771,6 +771,20 @@ class CommandlineReader:
             default=None,
             help="The work_path to user",
         )
+        group_target.add_argument(
+            "-tc",
+            "--cmds",
+            type=str,
+            default=None,
+            help="Commands to be executed",
+        )
+        group_target.add_argument(
+            "-tC",
+            "--cmd",
+            type=str,
+            default=None,
+            help="Command to be executed",
+        )
         return group_target
 
     def read_cli_group(self, name: str) -> Optional[Any]:

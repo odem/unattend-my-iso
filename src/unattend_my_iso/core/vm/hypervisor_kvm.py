@@ -1,10 +1,12 @@
 import os
+import subprocess
 from unattend_my_iso.core.generators.generator_qemu import UmiQemuCommands
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.core.net.net_manager import UmiNetworkManager
 from unattend_my_iso.core.vm.hypervisor_base import HypervisorArgs, UmiHypervisorBase
 from unattend_my_iso.common.logging import log_debug, log_error, log_info
 from unattend_my_iso.core.subprocess.caller import (
+    check_call,
     run,
     run_background,
     CalledProcessError,
@@ -18,6 +20,16 @@ class UmiHypervisorKvm(UmiHypervisorBase):
     def __init__(self) -> None:
         UmiHypervisorBase.__init__(self)
         self.net = UmiNetworkManager()
+
+    def vm_exec(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:
+        cmd = args.target.cmd
+        cmds = args.target.cmds
+        if cmd in cmds:
+            exec_cmd = cmds[cmd]
+            log_info(f"EXEC: {exec_cmd}")
+            if check_call(exec_cmd.split(" ")) == 0:
+                return True
+        return False
 
     def vm_run(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:
         gen = UmiQemuCommands()
@@ -56,6 +68,16 @@ class UmiHypervisorKvm(UmiHypervisorBase):
                 self.__class__.__qualname__,
             )
             return False
+        return True
+
+    def vm_exec_blocking(self, runcmd: list[str], args_hv: HypervisorArgs) -> bool:
+        proc = run(
+            runcmd,
+            stdin=DEVNULL,
+            stdout=subprocess.STDOUT,
+            stderr=subprocess.STDERR,
+            close_fds=True,
+        )
         return True
 
     def vm_run_nonblocking(self, runcmd: list[str], args_hv: HypervisorArgs) -> bool:

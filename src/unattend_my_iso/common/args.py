@@ -282,6 +282,8 @@ class TargetArgs(ArgumentBase):
     template_overlay: str = ""
     proctype: str = "build_all"
     work_path: str = ""
+    cmd: str = ""
+    cmds: dict = field(default_factory=lambda: {})
 
 
 def get_group_arguments(name: str) -> Optional[Any]:

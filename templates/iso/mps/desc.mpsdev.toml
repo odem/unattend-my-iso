@@ -1,0 +1,21 @@
+
+[description]
+name = "mpsdev"
+
+[run]
+vmname = "mpsdev"
+net_devs = [["nat"]]
+net_ports = [["2222", "22"]]
+
+[addon_answerfile]
+host_name = "mpsdev"
+additional_users = ["user3", "user4", "user5"]
+sudo_users = ["umi", "user3", "user4", "user5"]
+
+[target]
+cmds = { "cmd1" = "ssh -p 2222 root@localhost echo hello", "cmd2" = "ssh -p 2222 root@localhost echo hello" }
+
+[[env]]
+"DEFAULT_HOST" = "mpsdev"
+"DEFAULT_DOMAIN" = "local"
+"DEFAULT_NIC_0" = "enp0s2"

@@ -9,7 +9,8 @@ file_postinstall = "postinstall.bash"
 
 [run]
 vmname = "mps-test"
-
+net_devs = [["nat"]]
+net_ports = [["2222", "22"]]
 [addon_postinstall]
 password_length = 24
 password_charset = 'A-Za-z0-9!$%$&/()=?+*#-_.:,;<>' # No quotes and backslahes

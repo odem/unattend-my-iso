@@ -19,7 +19,8 @@ NICS?=false
 BRIDGES?=true
 FIREWALL?=false
 CLEANDISK?=false
-TEMPLATEDIR?="../idris-iso-config"
+# TEMPLATEDIR?="../idris-iso-config"
+TEMPLATEDIR?="."
 # TEMPLATEDIR?="."
 
 # Help
@@ -83,6 +84,11 @@ stop-all:
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main -tp vm_stop \
 			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -to "*" -rv $(VERBOSITY)
+exec: 
+	@source $(DIR_VENV)/bin/activate ; \
+		python3 -m src.$(PROJECT_NAME).main \
+			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -to "$(OVERLAY)" -tp exec \
+			-rD $(DAEMONIZE) -rv $(VERBOSITY) -tC "cmd1"
 target: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main \

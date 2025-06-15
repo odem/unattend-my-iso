@@ -32,6 +32,10 @@ class UmiHypervisorBase(ABC):
         pass
 
     @abstractmethod
+    def vm_exec(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:
+        raise NotImplementedError("Not implemented")
+
+    @abstractmethod
     def vm_get_args(self, args: TaskConfig, template: TemplateConfig) -> HypervisorArgs:
         raise NotImplementedError("Not implemented")
 
