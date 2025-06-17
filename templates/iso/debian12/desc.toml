@@ -26,7 +26,6 @@ answerfile_enable_crypto = false
 answerfile_enable_lvm = true
 answerfile_confirm_partitioning = true
 answerfile_confirm_final_reboot = true
-install_disk = "/dev/vda"
 host_name = "debian12"
 host_domain = "local"
 net_dhcp = true
