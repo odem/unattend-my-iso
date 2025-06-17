@@ -114,19 +114,20 @@ class TaskProcessorBase:
                 if overlay.startswith("desc.") and overlay.endswith(".toml"):
                     arr = overlay.split(".")
                     name = arr[1]
-                descfile = f"{searchpath}/{template.name}/desc.{name}.toml"
-                obj_overlay = TemplateConfig(**template.__dict__)
-                reader = TomlReader()
-                overlay_toml = reader.read_toml_file(descfile)
-                if overlay_toml is not None and "description" in overlay_toml:
-                    overlay_desc = overlay_toml["description"]
-                    for fld in overlay_desc.items():
-                        fld_name = fld[0]
-                        fld_val = fld[1]
-                        setattr(obj_overlay, fld_name, fld_val)
-                    setattr(obj_overlay, "name_overlay", name)
-                    overlay_name = f"{template.name}.{name}"
-                    self.overlays[overlay_name] = obj_overlay
+                if name in template.enabled_overlays:
+                    descfile = f"{searchpath}/{template.name}/desc.{name}.toml"
+                    obj_overlay = TemplateConfig(**template.__dict__)
+                    reader = TomlReader()
+                    overlay_toml = reader.read_toml_file(descfile)
+                    if overlay_toml is not None and "description" in overlay_toml:
+                        overlay_desc = overlay_toml["description"]
+                        for fld in overlay_desc.items():
+                            fld_name = fld[0]
+                            fld_val = fld[1]
+                            setattr(obj_overlay, fld_name, fld_val)
+                        setattr(obj_overlay, "name_overlay", name)
+                        overlay_name = f"{template.name}.{name}"
+                        self.overlays[overlay_name] = obj_overlay
 
     def _get_task_template(self, args: TaskConfig) -> Optional[TemplateConfig]:
         ret = None

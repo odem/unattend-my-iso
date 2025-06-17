@@ -16,12 +16,10 @@ def run(*args, **kwargs) -> CompletedProcess:
     if args[0][0] == "sudo":
         args[0].insert(1, "-A")
     env = os.environ.copy()
-    log_info(f"EXEC: {args}")
     return subprocess.run(*args, **kwargs, env=env)
 
 
 def check_call(args: list[str]) -> int:
-    log_info(f"EXEC: {args}")
     return subprocess.call(args)
 
 

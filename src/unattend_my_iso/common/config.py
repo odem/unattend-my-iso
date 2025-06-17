@@ -58,6 +58,7 @@ class TemplateConfig(ArgumentBase):
     path_postinstall: str = ""
     file_postinstall: str = ""
     files_overlay: list[str] = field(default_factory=lambda: [])
+    enabled_overlays: list[str] = field(default_factory=lambda: [])
     optional_params: dict[str, Any] = field(default_factory=lambda: {})
 
 

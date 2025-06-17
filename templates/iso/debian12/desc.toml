@@ -12,3 +12,34 @@ file_postinstall = "postinstall.bash"
 
 [run]
 vmname = "debian12-test"
+res_cpu = 4
+res_mem = 4096
+net_ports = [[2220, 22]]
+disks = [["os-hdd0.qcow2", "256G", "hdd", "none"]]
+net_bridges = [["vmbr1", "10.10.123.1", "24", true]]
+net_devs = [["tap1-deb12", "vmbr1"]]
+
+[addon_answerfile]
+answerfile_enable_networking = false
+answerfile_enable_dhcp = false
+answerfile_enable_crypto = false
+answerfile_enable_lvm = true
+answerfile_confirm_partitioning = true
+answerfile_confirm_final_reboot = true
+install_disk = "/dev/vda"
+host_name = "debian12"
+host_domain = "local"
+net_dhcp = true
+
+[addon_postinstall]
+password_generate = false
+copy_additional_scripts = ["installer/default/finalize.bash"]
+exec_additional_scripts = [
+  "installer/default/offline_packages.bash",
+  "installer/default/hostnet_dhcp.bash",
+  "installer/default/apt.bash",
+  "installer/default/essentials.bash",
+  "installer/default/user.bash",
+  "installer/default/ssh.bash",
+  "installer/default/locale.bash",
+]
