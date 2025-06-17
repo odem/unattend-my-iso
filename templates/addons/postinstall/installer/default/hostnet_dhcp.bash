@@ -13,6 +13,9 @@ echo "-------------------------------------------------------------------------"
 echo ""
 sleep 1
 
+#default dns
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+
 # Create network config
 cat <<EOF > /etc/network/interfaces
 

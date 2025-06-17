@@ -42,3 +42,8 @@ exec_additional_scripts = [
   "installer/default/ssh.bash",
   "installer/default/locale.bash",
 ]
+
+[[env]]
+"DEFAULT_HOST" = "debian12"
+"DEFAULT_DOMAIN" = "local"
+"DEFAULT_NIC_0" = "enp6s18"
