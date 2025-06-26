@@ -119,7 +119,7 @@ class SshAddon(UmiAddon):
 
     def _generate_key(self, args: TaskConfig, keyfile: str):
         proc = run(
-            ["ssh-keygen", "-f", keyfile, "-N", ""],
+            ["ssh-keygen", "-f", keyfile, "-N", "", "-C", "digit@isobuilder"],
             input=b"\n",
             capture_output=True,
         )

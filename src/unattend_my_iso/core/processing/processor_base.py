@@ -156,7 +156,7 @@ class TaskProcessorBase:
         self, msg: str, msg_short: str = "", msg_out: str = "", msg_err: str = ""
     ):
         return TaskResult(
-            True, msg=msg, msg_short=msg_short, msg_out=msg_out, msg_err=msg_err
+            False, msg=msg, msg_short=msg_short, msg_out=msg_out, msg_err=msg_err
         )
 
     def exists(self, path: str) -> bool:

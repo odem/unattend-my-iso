@@ -47,6 +47,7 @@ class UmiTaskProcessor(
         )
         tasktype = args.target.proctype
         template = self._get_task_template(args)
+        print(f"{template}")
         if template is None:
             return self._get_error_result("No template")
         if args.run.verbosity >= 4:
@@ -78,4 +79,4 @@ class UmiTaskProcessor(
         if result.success:
             log_debug(f"Task Success : {result.success}", self.__class__.__qualname__)
         else:
-            log_debug(f"Task Error : Msg:{result.msg}", self.__class__.__qualname__)
+            log_error(f"Task Error : Msg:{result.msg}", self.__class__.__qualname__)
