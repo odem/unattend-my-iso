@@ -26,7 +26,6 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         cmds = args.target.cmds
         if cmd in cmds:
             exec_cmd = cmds[cmd]
-            log_info(f"EXEC: {exec_cmd}")
             if check_call(exec_cmd.split(" ")) == 0:
                 return True
         return False

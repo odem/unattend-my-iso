@@ -773,17 +773,17 @@ class CommandlineReader:
         )
         group_target.add_argument(
             "-tc",
-            "--cmds",
-            type=str,
-            default=None,
-            help="Commands to be executed",
-        )
-        group_target.add_argument(
-            "-tC",
             "--cmd",
             type=str,
             default=None,
             help="Command to be executed",
+        )
+        group_target.add_argument(
+            "-tC",
+            "--cmds",
+            type=str,
+            default=None,
+            help="Commands to be executed",
         )
         return group_target
 
