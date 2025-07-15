@@ -148,7 +148,7 @@ class AnswerfilePreseed:
             else:
                 ret += [
                     DIOption("netcfg/disable_dhcp", True),
-                    DIOption("netcfg/get_ipadress", c.net_ip),
+                    DIOption("netcfg/get_ipaddress", c.net_ip),
                     DIOption("netcfg/get_netmask", c.net_mask),
                     DIOption("netcfg/get_gateway", c.net_gateway),
                     DIOption("netcfg/get_nameservers", c.net_dns),

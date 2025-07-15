@@ -5,6 +5,7 @@ from unattend_my_iso.common.const import (
     DEFAULT_HOSTNAME,
     DEFAULT_KEYBOARD,
     DEFAULT_LOCALE,
+    DEFAULT_NETMASK,
     DEFAULT_PASSWORD_CHARSET,
     DEFAULT_PASSWORD_CRYPTO,
     DEFAULT_PASSWORD_LENGTH,
@@ -189,7 +190,7 @@ class AddonArgsAnswerFile(ArgumentBase):
     host_domain: str = DEFAULT_DOMAIN
     net_dhcp: bool = False
     net_ip: str = f"{DEFAULT_SUBNET}.111"
-    net_mask: str = "255.255.255.0"
+    net_mask: str = DEFAULT_NETMASK
     net_gateway: str = f"{DEFAULT_SUBNET}.1"
     net_dns: str = f"{DEFAULT_SUBNET}.1"
     disk_password: str = DEFAULT_PASSWORD_CRYPTO
