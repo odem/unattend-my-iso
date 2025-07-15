@@ -48,9 +48,9 @@ RECIPE_DISK_CONT = f"{DOUBLE_PREFIX}{'.':70}{LINE_CONT}"
 RECIPE_DISK_END = f"{DOUBLE_PREFIX}.\n"
 
 # Debugging
-DEBUG_TEMPLATE = "dronesim"
-DEBUG_OVERLAY = ""
-DEBUG_VERBOSITY = "3"
+DEBUG_TEMPLATE = "guacweb"
+DEBUG_OVERLAY = "guacdb01"
+DEBUG_VERBOSITY = "2"
 DEBUG_PROCTYPE = "build_all"
 DEBUG_WORKDIR = "/home/jb/mps/repo/gitlab/idris-iso-config"  # "."
 DEBUG_WORKDIR_PREFIX = "../.."

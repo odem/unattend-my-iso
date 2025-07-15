@@ -86,7 +86,7 @@ class FirewallManager:
             return interfaces
 
         except CalledProcessError as e:
-            print(f"Error running ip route: {e}")
+            log_error(f"Error running ip route: {e}", self.__class__.__qualname__)
             return []
 
     def set_ip_forwarding(self, enable: bool):
