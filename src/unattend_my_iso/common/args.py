@@ -228,6 +228,7 @@ class AddonArgsPostinstall(ArgumentBase):
     enable_grub_theme: bool = True
     create_config: bool = True
     bashrc_file: str = ".bashrc"
+    bash_aliases: str = ".bash_aliases"
     auto_updates: bool = False
     password_generate: bool = False
     password_length: int = DEFAULT_PASSWORD_LENGTH

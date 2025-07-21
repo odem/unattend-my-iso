@@ -187,6 +187,20 @@ class CommandlineReader:
             help="Enable or disable a config to be copied into the target (true or false)",
         )
         group_target.add_argument(
+            "-pbr",
+            "--bashrc_file",
+            type=str,
+            default=None,
+            help="Copy .bashrc file into users",
+        )
+        group_target.add_argument(
+            "-pba",
+            "--bash_aliases",
+            type=str,
+            default=None,
+            help="Copy .bash_aliases file into users",
+        )
+        group_target.add_argument(
             "-pau",
             "--auto_updates",
             type=int,

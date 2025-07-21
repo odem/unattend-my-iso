@@ -36,11 +36,11 @@ class AnswerfileRecipe:
             RecipeDescription([1024], "vfat", "/boot/efi", "", "", "ESP", "gpt"),
             RecipeDescription([1024], "ext4", "/boot", "", "", "BOOT", "gpt"),
             RecipeDescription([8192], "linux-swap", "", vg_name, "lv_swap"),
-            RecipeDescription([100000], "ext4", "/", vg_name, "lv_root"),
+            RecipeDescription([5000], "ext4", "/", vg_name, "lv_root"),
             # RecipeDescription([16384], "ext4", "/var", vg_name, "lv_var"),
-            # RecipeDescription([32768], "ext4", "/srv", vg_name, "lv_srv"),
+            RecipeDescription([20000], "ext4", "/srv", vg_name, "lv_srv"),
             # RecipeDescription([131072], "ext4", "/home", vg_name, "lv_home"),
-            RecipeDescription([128000], "ext4", "/media/disks/extra"),
+            # RecipeDescription([128000], "ext4", "/media/disks/extra"),
         ]
 
     def create_partition_fragment(self, desc: RecipeDescription) -> str:
