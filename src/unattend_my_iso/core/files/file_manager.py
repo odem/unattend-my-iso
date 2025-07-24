@@ -161,6 +161,10 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
         templatepath = args.sys.path_templates
         return f"{templatepath}/addons/{name}"
 
+    def _get_path_template_userhome(self, name: str, args: TaskConfig) -> str:
+        templatepath = args.sys.path_templates
+        return f"{templatepath}/addons/user/{name}/home"
+
     def _get_path_addon_grub_theme(self, args: TaskConfig) -> str:
         srctmpl = self._get_path_template_addon("grub", args)
         return f"{srctmpl}/themes/{args.addons.grub.grub_theme}"

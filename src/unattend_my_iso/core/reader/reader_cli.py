@@ -6,6 +6,7 @@ from unattend_my_iso.common.args import (
     AddonArgsGrub,
     AddonArgsPostinstall,
     AddonArgsSsh,
+    AddonArgsUser,
     EnvironmentArgs,
     RunArgs,
     TargetArgs,
@@ -78,6 +79,7 @@ class CommandlineReader:
         self._create_parser_args_addon_postinst(p)
         self._create_parser_args_addon_grub(p)
         self._create_parser_args_addon_ssh(p)
+        self._create_parser_args_addon_user(p)
         return p
 
     def _create_cli_parser_group(self, name: str) -> argparse.ArgumentParser:
@@ -92,6 +94,8 @@ class CommandlineReader:
             self._create_parser_args_addon_grub(p)
         elif name == "addon_ssh":
             self._create_parser_args_addon_ssh(p)
+        elif name == "addon_user":
+            self._create_parser_args_addon_user(p)
         elif name == "addon_postinstall":
             self._create_parser_args_addon_postinst(p)
         elif name == "addon_answerfile":
@@ -185,13 +189,6 @@ class CommandlineReader:
             type=str,
             default=None,
             help="Enable or disable a config to be copied into the target (true or false)",
-        )
-        group_target.add_argument(
-            "-pbr",
-            "--bashrc_file",
-            type=str,
-            default=None,
-            help="Copy .bashrc file into users",
         )
         group_target.add_argument(
             "-pba",
@@ -310,6 +307,26 @@ class CommandlineReader:
             type=str,
             default=None,
             help="Name of keyfile being copied into target",
+        )
+
+    def _create_parser_args_addon_user(self, p: argparse.ArgumentParser):
+        group_target = p.add_argument_group(
+            "AddonArgUser",
+            description="Defines the arguments for the user addon",
+        )
+        group_target.add_argument(
+            "-ue",
+            "--user_enabled",
+            type=str,
+            default=None,
+            help="Enable or disable user addon (true or false)",
+        )
+        group_target.add_argument(
+            "-udud",
+            "--default_user_dir",
+            type=str,
+            default=None,
+            help="The default username",
         )
 
     def _create_parser_args_addon_answerfile(self, p: argparse.ArgumentParser):
@@ -820,6 +837,8 @@ class CommandlineReader:
             return AddonArgsSsh(**all)
         elif name == "addon_answerfile":
             return AddonArgsAnswerFile(**all)
+        elif name == "addon_user":
+            return AddonArgsUser(**all)
         elif name == "addon_postinstall":
             return AddonArgsPostinstall(**all)
         return None

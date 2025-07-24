@@ -14,8 +14,8 @@ class SshAddon(UmiAddon):
     def integrate_addon(self, args: TaskConfig, template: TemplateConfig) -> bool:
         if self.copy_keyfiles(args, template) is False:
             return False
-        if self.copy_authorized_keys(args, template) is False:
-            return False
+        # if self.copy_authorized_keys(args, template) is False:
+        #     return False
         if self.copy_client_config(args, template) is False:
             return False
         if self.copy_daemon_config(args, template) is False:
@@ -28,19 +28,22 @@ class SshAddon(UmiAddon):
         srckeypriv = self.get_template_path_optional(
             "ssh", args.addons.ssh.config_key, args
         )
-        if keyfile != "" and srckeypriv == "":
-            dir = self.files._get_path_template(args)
-            sshdir = f"{dir}/ssh"
-            os.makedirs(sshdir, exist_ok=True)
-            srckeypriv = f"{sshdir}/{keyfile}"
-            log_debug(f"Generating key: {srckeypriv}")
+        if keyfile == "":
+            return True
+
+        if srckeypriv == "":
             if args.addons.ssh.keygen:
+                dir = self.files._get_path_template(args)
+                sshdir = f"{dir}/ssh"
+                os.makedirs(sshdir, exist_ok=True)
+                srckeypriv = f"{sshdir}/{keyfile}"
+                log_debug(f"Generating key: {srckeypriv}")
                 if self._generate_key(args, srckeypriv) is False:
                     log_error("Generate key failed")
                     return False
-        if args.addons.ssh.config_key != "" and srckeypriv == "":
-            log_error("Source key empty")
-            return False
+            if keyfile != "" and srckeypriv == "":
+                log_error("Source key empty")
+                return False
 
         srckeypub = f"{srckeypriv}.pub"
         dstssh = f"{dst}/umi/ssh"
@@ -64,25 +67,25 @@ class SshAddon(UmiAddon):
             return True
         return False
 
-    def copy_authorized_keys(self, args: TaskConfig, template: TemplateConfig) -> bool:
-        filename = args.addons.ssh.config_auth
-        appendfile = args.addons.ssh.config_auth_append
-        srcssh = self.get_template_path_optional("ssh", filename, args)
-        dst = self.files._get_path_intermediate(args)
-        dstssh = f"{dst}/umi/ssh/{filename}"
-        if os.path.exists(srcssh):
-            if filename != "" and os.path.exists(srcssh):
-                log_debug(
-                    f"File Copy : {os.path.basename(srcssh)}",
-                    self.__class__.__qualname__,
-                )
-                if self.files.cp(srcssh, dstssh) is False:
-                    return False
-                if appendfile != "" and os.path.exists(appendfile):
-                    contents = self.files.read_file(appendfile)
-                    return self.files.append_to_file(dstssh, contents)
-            return True
-        return False
+    # def copy_authorized_keys(self, args: TaskConfig, template: TemplateConfig) -> bool:
+    #     filename = args.addons.ssh.config_auth
+    #     appendfile = args.addons.ssh.config_auth_append
+    #     srcssh = self.get_template_path_optional("ssh", filename, args)
+    #     dst = self.files._get_path_intermediate(args)
+    #     dstssh = f"{dst}/umi/ssh/{filename}"
+    #     if os.path.exists(srcssh):
+    #         if filename != "" and os.path.exists(srcssh):
+    #             log_debug(
+    #                 f"File Copy : {os.path.basename(srcssh)}",
+    #                 self.__class__.__qualname__,
+    #             )
+    #             if self.files.cp(srcssh, dstssh) is False:
+    #                 return False
+    #             if appendfile != "" and os.path.exists(appendfile):
+    #                 contents = self.files.read_file(appendfile)
+    #                 return self.files.append_to_file(dstssh, contents)
+    #         return True
+    #     return False
 
     def copy_client_config(self, args: TaskConfig, template: TemplateConfig) -> bool:
         dst = self.files._get_path_intermediate(args)

@@ -214,12 +214,12 @@ class AddonArgsAnswerFile(ArgumentBase):
 @dataclass
 class AddonArgsSsh(ArgumentBase):
     ssh_enabled: bool = True
-    keygen: bool = True
-    config_client: str = ""
+    keygen: bool = False
+    config_client: str = "ssh_config"
     config_daemon: str = "sshd_config"
     config_auth: str = "authorized_keys"
-    config_auth_append: str = f"{HOME}/.ssh/id_rsa.pub"
-    config_key: str = "id_rsa"
+    config_auth_append: str = ""
+    config_key: str = ""
 
 
 @dataclass
@@ -227,7 +227,6 @@ class AddonArgsPostinstall(ArgumentBase):
     postinstall_enabled: bool = True
     enable_grub_theme: bool = True
     create_config: bool = True
-    bashrc_file: str = ".bashrc"
     bash_aliases: str = ".bash_aliases"
     auto_updates: bool = False
     password_generate: bool = False
@@ -259,10 +258,17 @@ class AddonArgsGrub(ArgumentBase):
 
 
 @dataclass
+class AddonArgsUser(ArgumentBase):
+    user_enabled: bool = True
+    default_user_dir: str = DEFAULT_USERNAME
+
+
+@dataclass
 class AddonArgs:
     answerfile: AddonArgsAnswerFile
     ssh: AddonArgsSsh
     grub: AddonArgsGrub
+    user: AddonArgsUser
     postinstall: AddonArgsPostinstall
 
     def get_env_vars(self) -> list[str]:
@@ -299,6 +305,8 @@ def get_group_arguments(name: str) -> Optional[Any]:
         return AddonArgsSsh()
     elif name == "addon_grub":
         return AddonArgsGrub()
+    elif name == "addon_user":
+        return AddonArgsUser()
     elif name == "addon_postinstall":
         return AddonArgsPostinstall()
     elif name == "addon_answerfile":

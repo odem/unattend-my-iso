@@ -143,6 +143,9 @@ class TaskProcessorIsogen(TaskProcessorBase):
         if args.addons.ssh.ssh_enabled:
             if self._integrate_addon("ssh", args, template) is False:
                 return False
+        if args.addons.user.user_enabled:
+            if self._integrate_addon("user", args, template) is False:
+                return False
         return True
 
     def _prepare_bootloader(self, args: TaskConfig, template: TemplateConfig) -> bool:

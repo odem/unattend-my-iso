@@ -17,8 +17,8 @@ class PostinstallAddon(UmiAddon):
             return False
         if self.copy_postinstaller_additional_scripts(args, template) is False:
             return False
-        if self._copy_bashrc(args) is False:
-            return False
+        # if self._copy_bashrc(args) is False:
+        #     return False
         if self._copy_bash_aliases(args) is False:
             return False
         if self.copy_theme(args, template) is False:
@@ -278,29 +278,29 @@ class PostinstallAddon(UmiAddon):
             return False
         return self.files.chmod(dstconffile, 777)
 
-    def _copy_bashrc(self, args: TaskConfig) -> bool:
-        if args.addons.postinstall.bashrc_file == "":
-            log_debug("Skipping File bashrc", "PostinstallAddon")
-            return True
-        srcfile = self.get_template_path_optional(
-            "postinstall", args.addons.postinstall.bashrc_file, args
-        )
-        if os.path.exists(srcfile):
-            log_debug(
-                f"Copy File {args.addons.postinstall.bashrc_file}",
-                "PostinstallAddon",
-            )
-            interpath = self.files._get_path_intermediate(args)
-            dstconf = f"{interpath}/umi/config"
-            dstconffile = f"{dstconf}/{args.addons.postinstall.bashrc_file}"
-            os.makedirs(dstconf, exist_ok=True)
-            return self.files.cp(srcfile, dstconffile)
-        else:
-            log_error(
-                f"File not found: {args.addons.postinstall.bashrc_file}",
-                "PostinstallAddon",
-            )
-        return False
+    # def _copy_bashrc(self, args: TaskConfig) -> bool:
+    #     if args.addons.postinstall.bashrc_file == "":
+    #         log_debug("Skipping File bashrc", "PostinstallAddon")
+    #         return True
+    #     srcfile = self.get_template_path_optional(
+    #         "postinstall", args.addons.postinstall.bashrc_file, args
+    #     )
+    #     if os.path.exists(srcfile):
+    #         log_debug(
+    #             f"Copy File {args.addons.postinstall.bashrc_file}",
+    #             "PostinstallAddon",
+    #         )
+    #         interpath = self.files._get_path_intermediate(args)
+    #         dstconf = f"{interpath}/umi/config"
+    #         dstconffile = f"{dstconf}/{args.addons.postinstall.bashrc_file}"
+    #         os.makedirs(dstconf, exist_ok=True)
+    #         return self.files.cp(srcfile, dstconffile)
+    #     else:
+    #         log_error(
+    #             f"File not found: {args.addons.postinstall.bashrc_file}",
+    #             "PostinstallAddon",
+    #         )
+    #     return False
 
     def _copy_bash_aliases(self, args: TaskConfig) -> bool:
         if args.addons.postinstall.bash_aliases == "":

@@ -21,6 +21,7 @@ from unattend_my_iso.common.args import (
     AddonArgsGrub,
     AddonArgsPostinstall,
     AddonArgsSsh,
+    AddonArgsUser,
     EnvironmentArgs,
     RunArgs,
     TargetArgs,
@@ -276,6 +277,12 @@ def get_config(
     if cfg_grub is None or isinstance(cfg_grub, AddonArgsGrub) is False:
         log_error(f"Matched addon_grub config invalid: {cfg_grub}", "ConfigReader")
         return None
+    cfg_user = _match_group(
+        "addon_user", template_name, cfg_sys.path_templates, template_overlay
+    )
+    if cfg_user is None or isinstance(cfg_user, AddonArgsUser) is False:
+        log_error(f"Matched addon_user config invalid: {cfg_user}", "ConfigReader")
+        return None
     cfg_post = _match_group(
         "addon_postinstall", template_name, cfg_sys.path_templates, template_overlay
     )
@@ -292,7 +299,7 @@ def get_config(
             f"Matched addon_answerfile config invalid: {cfg_answer}", "ConfigReader"
         )
         return None
-    cfg_addons = AddonArgs(cfg_answer, cfg_ssh, cfg_grub, cfg_post)
+    cfg_addons = AddonArgs(cfg_answer, cfg_ssh, cfg_grub, cfg_user, cfg_post)
     cfg = TaskConfig(
         sys=cfg_sys, addons=cfg_addons, target=cfg_target, run=cfg_run, env=cfg_env
     )

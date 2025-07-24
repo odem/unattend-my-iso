@@ -7,6 +7,7 @@ from unattend_my_iso.common.args import (
     AddonArgsGrub,
     AddonArgsPostinstall,
     AddonArgsSsh,
+    AddonArgsUser,
     ArgumentBase,
     EnvironmentArgs,
     RunArgs,
@@ -96,7 +97,10 @@ def get_config_default(work_path: str) -> TaskConfig:
     args_ssh = AddonArgsSsh()
     args_grub = AddonArgsGrub()
     args_postinstall = AddonArgsPostinstall()
-    cfg_addons = AddonArgs(args_answers, args_ssh, args_grub, args_postinstall)
+    args_user = AddonArgsUser()
+    cfg_addons = AddonArgs(
+        args_answers, args_ssh, args_grub, args_user, args_postinstall
+    )
     cfg_target = TargetArgs()
     cfg_run = RunArgs()
     cfg_env = EnvironmentArgs()

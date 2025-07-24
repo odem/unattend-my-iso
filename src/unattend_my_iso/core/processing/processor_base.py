@@ -5,6 +5,7 @@ from unattend_my_iso.addons.grub import GrubAddon
 from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.addons.postinstall import PostinstallAddon
 from unattend_my_iso.addons.ssh import SshAddon
+from unattend_my_iso.addons.user import UserAddon
 from unattend_my_iso.common.templates import read_templates_isos
 from unattend_my_iso.core.files.file_manager import UmiFileManager
 from unattend_my_iso.core.generators.generator_iso import UmiIsoGenerator
@@ -90,6 +91,7 @@ class TaskProcessorBase:
         return success
 
     def _get_addons(self):
+        user = UserAddon()
         grub = GrubAddon()
         ssh = SshAddon()
         postinst = PostinstallAddon()
@@ -99,6 +101,7 @@ class TaskProcessorBase:
             grub.addon_name: grub,
             ssh.addon_name: ssh,
             postinst.addon_name: postinst,
+            user.addon_name: user,
         }
 
     def _get_templates(self, cfg: TaskConfig):
