@@ -18,7 +18,6 @@ from unattend_my_iso.common.const import (
     HOME,
     USER,
 )
-from unattend_my_iso.common.logging import log_info
 
 
 class ArgumentBase:
