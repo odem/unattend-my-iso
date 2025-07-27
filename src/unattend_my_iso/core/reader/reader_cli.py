@@ -566,7 +566,7 @@ class CommandlineReader:
             help="The packages to install",
         )
         group_target.add_argument(
-            "-aau",
+            "-aAu",
             "--additional_users",
             type=str,
             default=None,
@@ -578,6 +578,20 @@ class CommandlineReader:
             type=str,
             default=None,
             help="Additional users to add",
+        )
+        group_target.add_argument(
+            "-aau",
+            "--admin_users",
+            type=str,
+            default=None,
+            help="Additional users to add as admins",
+        )
+        group_target.add_argument(
+            "-aagn",
+            "--admin_group_name",
+            type=str,
+            default=None,
+            help="name of the admin group",
         )
         group_target.add_argument(
             "-ag",

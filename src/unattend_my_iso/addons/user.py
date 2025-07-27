@@ -22,15 +22,22 @@ class UserAddon(UmiAddon):
         usersdir = f"{interpath}/umi/users"
         os.makedirs(usersdir, exist_ok=True)
 
-        userlist = [
-            "root",
-            args.addons.answerfile.user_other_name,
-            *args.addons.answerfile.additional_users,
-        ]
+        if template.iso_type != "windows":
+            userlist = [
+                "root",
+                args.addons.answerfile.user_other_name,
+                *args.addons.answerfile.additional_users,
+            ]
+        else:
+            userlist = [
+                args.addons.answerfile.user_other_name,
+                *args.addons.answerfile.additional_users,
+            ]
+
         user_default = args.addons.user.default_user_dir
         userdir_default = self.files._get_path_template_userhome(user_default, args)
         if os.path.exists(userdir_default) is False:
-            log_error(f"Default user folder does not exist: {user_default}")
+            log_error(f"Default user folder does not exist: {userdir_default}")
             return False
 
         for user in userlist:

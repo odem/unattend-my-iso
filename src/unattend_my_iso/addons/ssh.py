@@ -1,5 +1,5 @@
 import os
-from unattend_my_iso.core.subprocess.caller import run, PIPE, run_background
+from unattend_my_iso.core.subprocess.caller import run
 from typing_extensions import override
 from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
@@ -12,17 +12,17 @@ class SshAddon(UmiAddon):
 
     @override
     def integrate_addon(self, args: TaskConfig, template: TemplateConfig) -> bool:
-        if self.copy_keyfiles(args, template) is False:
+        if self.copy_keyfiles(args) is False:
             return False
         # if self.copy_authorized_keys(args, template) is False:
         #     return False
-        if self.copy_client_config(args, template) is False:
+        if self.copy_client_config(args) is False:
             return False
-        if self.copy_daemon_config(args, template) is False:
+        if self.copy_daemon_config(args) is False:
             return False
         return True
 
-    def copy_keyfiles(self, args: TaskConfig, template: TemplateConfig) -> bool:
+    def copy_keyfiles(self, args: TaskConfig) -> bool:
         dst = self.files._get_path_intermediate(args)
         keyfile = args.addons.ssh.config_key
         srckeypriv = self.get_template_path_optional(
@@ -67,33 +67,14 @@ class SshAddon(UmiAddon):
             return True
         return False
 
-    # def copy_authorized_keys(self, args: TaskConfig, template: TemplateConfig) -> bool:
-    #     filename = args.addons.ssh.config_auth
-    #     appendfile = args.addons.ssh.config_auth_append
-    #     srcssh = self.get_template_path_optional("ssh", filename, args)
-    #     dst = self.files._get_path_intermediate(args)
-    #     dstssh = f"{dst}/umi/ssh/{filename}"
-    #     if os.path.exists(srcssh):
-    #         if filename != "" and os.path.exists(srcssh):
-    #             log_debug(
-    #                 f"File Copy : {os.path.basename(srcssh)}",
-    #                 self.__class__.__qualname__,
-    #             )
-    #             if self.files.cp(srcssh, dstssh) is False:
-    #                 return False
-    #             if appendfile != "" and os.path.exists(appendfile):
-    #                 contents = self.files.read_file(appendfile)
-    #                 return self.files.append_to_file(dstssh, contents)
-    #         return True
-    #     return False
-
-    def copy_client_config(self, args: TaskConfig, template: TemplateConfig) -> bool:
+    def copy_client_config(self, args: TaskConfig) -> bool:
         dst = self.files._get_path_intermediate(args)
         filename = args.addons.ssh.config_client
         srcssh = self.get_template_path_optional("ssh", filename, args)
         dstssh = f"{dst}/umi/ssh/{filename}"
+        dstbase = os.path.dirname(dstssh)
         if os.path.exists(srcssh):
-            os.makedirs(dstssh, exist_ok=True)
+            os.makedirs(dstbase, exist_ok=True)
             if filename != "" and os.path.exists(f"{srcssh}"):
                 log_debug(
                     f"File Copy : {os.path.basename(srcssh)}",
@@ -104,12 +85,14 @@ class SshAddon(UmiAddon):
             return True
         return False
 
-    def copy_daemon_config(self, args: TaskConfig, template: TemplateConfig) -> bool:
+    def copy_daemon_config(self, args: TaskConfig) -> bool:
         dst = self.files._get_path_intermediate(args)
         filename = args.addons.ssh.config_daemon
         srcssh = self.get_template_path_optional("ssh", filename, args)
         dstssh = f"{dst}/umi/ssh/{filename}"
+        dstbase = os.path.dirname(dstssh)
         if os.path.exists(srcssh):
+            os.makedirs(dstbase, exist_ok=True)
             if filename != "" and os.path.exists(srcssh):
                 log_debug(
                     f"File Copy : {os.path.basename(srcssh)}",

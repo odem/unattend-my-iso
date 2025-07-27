@@ -194,10 +194,13 @@ class AnswerfilePreseed:
         cdrom_dir = cfg.answerfile_hook_dir_cdrom
         target_dir = cfg.answerfile_hook_dir_target
         filename = cfg.answerfile_hook_filename
+        admin_group = cfg.admin_group_name
+
         cmdlist = [
             f"mkdir -p /target{target_dir}/",
             f"cp -r /cdrom{cdrom_dir}/* /target{target_dir}/",
         ]
+        cmdlist += [f"in-target /usr/sbin/groupadd {admin_group}"]
         if len(args.addons.answerfile.additional_users) > 0:
             for user in args.addons.answerfile.additional_users:
                 cmdlist += [
@@ -205,6 +208,8 @@ class AnswerfilePreseed:
                 ]
         if args.addons.postinstall.postinstall_enabled:
             cmdlist += [
+                f"in-target chown root:{admin_group} -R {target_dir}",
+                "in-target chmod 770 /target/opt",
                 f"in-target chmod 700 {target_dir}/{filename}",
                 f"in-target /bin/bash {target_dir}/{filename}",
             ]

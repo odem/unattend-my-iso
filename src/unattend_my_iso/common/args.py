@@ -206,6 +206,8 @@ class AddonArgsAnswerFile(ArgumentBase):
     user_other_pw: str = DEFAULT_PASSWORD_USER
     additional_users: list[str] = field(default_factory=lambda: [])
     sudo_users: list[str] = field(default_factory=lambda: [])
+    admin_users: list[str] = field(default_factory=lambda: [])
+    admin_group_name: str = "admin"
     packages_install: list[str] = field(default_factory=lambda: [])
     grub_install_device: str = "default"
     include_offline_packages: list[str] = field(default_factory=lambda: [])

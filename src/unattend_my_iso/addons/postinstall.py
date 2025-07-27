@@ -19,7 +19,7 @@ class PostinstallAddon(UmiAddon):
             return False
         # if self._copy_bashrc(args) is False:
         #     return False
-        if self._copy_bash_aliases(args) is False:
+        if self._copy_bash_aliases(args, template) is False:
             return False
         if self.copy_theme(args, template) is False:
             return False
@@ -204,23 +204,23 @@ class PostinstallAddon(UmiAddon):
         else:
             cfg_joblist = self._create_params_alljobs_bash(args, "CFG_JOBS_ALL")
         arr = [
-            "\n; Template Config",
+            "\n:: Template Config",
             *cfg_template,
-            "\n; Run Args",
+            "\n:: Run Args",
             *cfg_run,
-            "\n; Target Args ",
+            "\n:: Target Args ",
             *cfg_target,
-            "\n; Grub Addon Args ",
+            "\n:: Grub Addon Args ",
             *cfg_grub,
-            "\n; SSH Addon Args ",
+            "\n:: SSH Addon Args ",
             *cfg_ssh,
-            "\n; Answerfile Addon Args ",
+            "\n:: Answerfile Addon Args ",
             *cfg_answerfile,
-            "\n; Postinstall Addon Args ",
+            "\n:: Postinstall Addon Args ",
             *cfg_postinst,
-            "\n; Postinstall Addon Joblist ",
+            "\n:: Postinstall Addon Joblist ",
             cfg_joblist,
-            "\n; Environment Args ",
+            "\n:: Environment Args ",
             *cfg_env,
         ]
 
@@ -302,7 +302,9 @@ class PostinstallAddon(UmiAddon):
     #         )
     #     return False
 
-    def _copy_bash_aliases(self, args: TaskConfig) -> bool:
+    def _copy_bash_aliases(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        if template.iso_type == "windows":
+            return True
         if args.addons.postinstall.bash_aliases == "":
             log_debug("Skipping File bash_aliases", "PostinstallAddon")
             return True
