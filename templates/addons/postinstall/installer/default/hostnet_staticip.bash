@@ -25,7 +25,7 @@ cat <<EOF > /etc/network/interfaces
 auto $DEFAULT_NIC_0
 iface $DEFAULT_NIC_0 inet static
     address $DEFAULT_IP
-    netmask 255.255.255.0
+    netmask $DEFAULT_NETMASK
     dns-nameservers $DEFAULT_NS1 $DEFAULT_NS2
     gateway $DEFAULT_GW
 #Default Uplink

@@ -24,15 +24,16 @@ setpw() {
     theuser="$1"
     length="$2"
     if [[ "$theuser" != "" ]]; then
+        # Change pw
         newpass=$(genpw "$length")
-        printf "Prepare password for %10s => %s\n" "$theuser" "$newpass"
         echo "${theuser}:${newpass}" | chpasswd
+        printf "Changing password for %18s => %s\n" "$theuser" "$newpass"
+        
     fi
 }
 
 # Set password root user
 setpw root "$PWSIZE"
-
 # Set password default user
 if [[ "$CFG_USER_OTHER_NAME" != "" ]]; then
     setpw "$CFG_USER_OTHER_NAME" "$PWSIZE"
@@ -54,11 +55,15 @@ read -r
 
 # Remove umi config
 echo "Removing umi config"
-rm -rf /opt/umi/config/env.bash
+rm -rf "$CFG_ANSWERFILE_HOOK_DIR_TARGET"/config/env.bash
 
 # Remove ssh folder
 echo "Removing ssh config"
-rm -rf /opt/umi/ssh
+rm -rf "$CFG_ANSWERFILE_HOOK_DIR_TARGET"/ssh
+
+# Remove user folder
+echo "Removing user config"
+rm -rf "$CFG_ANSWERFILE_HOOK_DIR_TARGET"/users
 
 # Remove logs
 echo "Removing installer logs"

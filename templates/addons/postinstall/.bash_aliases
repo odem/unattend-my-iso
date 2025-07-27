@@ -1,5 +1,4 @@
 #!/bin/bash
-# shellcheck disable=SC1090,SC1091,SC2139
 
 # Alias bash
 alias sb="source ~/.bashrc ; echo '~/.bashrc sourced!'"
