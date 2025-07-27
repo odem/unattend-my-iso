@@ -1,0 +1,52 @@
+
+[description]
+name = "kali"
+iso_name = "kali-linux-2025.2-installer-amd64.iso"
+iso_url = "https://kali.download/base-images/kali-2025.2/kali-linux-2025.2-installer-amd64.iso"
+iso_type = "linux"
+path_postinstall = "postinstall"
+file_postinstall = "postinstall.bash"
+
+[run]
+vmname = "kali"
+net_devs = [["nat"]]
+net_ports = [["2222", "22"]]
+
+[addon_postinstall]
+password_generate = false
+password_length = 24
+password_charset = 'A-Za-z0-9!$%$&/()=?+*#-_.:,;<>' # No quotes and backslahes
+joblist_late = ["/opt/umi/postinstall/installer/apt_kali.bash"]
+copy_additional_scripts = ["installer/default/finalize.bash"]
+exec_additional_scripts = [
+  "installer/default/offline_packages.bash",
+  "installer/default/hostnet_dhcp.bash",
+  # "installer/default/apt.bash",
+  # "installer/default/essentials.bash",
+  "installer/default/user.bash",
+  "installer/default/ssh.bash",
+  "installer/default/locale.bash",
+  # "installer/default/finalize.bash",
+]
+enable_grub_theme = true
+
+[addon_grub]
+grub_theme = "anon"
+timeout = 0
+
+[addon_answerfile]
+answerfile_enable_networking = false
+answerfile_enable_dhcp = false
+answerfile_enable_crypto = false
+answerfile_enable_lvm = true
+answerfile_confirm_partitioning = true
+answerfile_confirm_final_reboot = true
+net_dhcp = false
+host_name = "kali"
+additional_users = []
+sudo_users = ["umi"]
+
+[[env]]
+"DEFAULT_HOST" = "kali"
+"DEFAULT_DOMAIN" = "local"
+"DEFAULT_NIC_0" = "eth0"

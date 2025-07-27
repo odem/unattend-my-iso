@@ -4,7 +4,7 @@ name = "mps"
 iso_name = "debian-12.10.0-amd64-netinst.iso"
 iso_url = "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.10.0-amd64-netinst.iso"
 iso_type = "linux"
-path_postinstall = ""
+path_postinstall = "postinstall"
 file_postinstall = "postinstall.bash"
 enabled_overlays = ["mpsdev"]
 
@@ -20,10 +20,10 @@ password_length = 24
 bash_aliases = ".bash_aliases"
 password_charset = 'A-Za-z0-9!%$&=?+*#-_.:,;<>' # No quotes and backslahes
 joblist_early = []
-joblist_late = []
+joblist_late = ["/opt/umi/postinstall/installer/postinstall_mps.bash"]
 copy_additional_scripts = ["installer/default/finalize.bash"]
 exec_additional_scripts = [
-  "installer/default/hostnet_staticip.bash",
+  "installer/default/hostnet_dhcp.bash",
   "installer/default/hostnames.bash",
   "installer/default/apt.bash",
   "installer/default/essentials.bash",
@@ -45,9 +45,9 @@ grub_theme = "anon"
 timeout = 0
 
 [addon_answerfile]
-answerfile_enable_networking = true
+answerfile_enable_networking = false
 answerfile_enable_dhcp = false
-answerfile_enable_crypto = false
+answerfile_enable_crypto = true
 answerfile_enable_lvm = true
 answerfile_confirm_partitioning = true
 answerfile_confirm_final_reboot = false

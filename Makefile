@@ -18,7 +18,6 @@ DAEMONIZE?=true
 NICS?=false
 BRIDGES?=true
 FIREWALL?=false
-CLEANDISK?=false
 # TEMPLATEDIR?="../idris-iso-config"
 TEMPLATEDIR?="."
 # TEMPLATEDIR?="."
@@ -70,7 +69,7 @@ install:
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main  -tp vm_start -rbC true \
 			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -to "$(OVERLAY)" \
-			-rD $(DAEMONIZE) -rv $(VERBOSITY) -rov $(CLEANDISK)
+			-rD $(DAEMONIZE) -rv $(VERBOSITY) -rov true
 stop:
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main -tp vm_stop \
