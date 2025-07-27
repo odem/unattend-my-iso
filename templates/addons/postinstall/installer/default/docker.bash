@@ -52,7 +52,7 @@ systemctl restart docker
 for i in $(seq 0 $(("${#CFG_ADMIN_USERS[*]}" - 1))); do
     ADMIN_NAME="${CFG_ADMIN_USERS[$i]}"
     echo "-> Prepare docker user '$ADMIN_NAME'"
-    /sbin/usermod -aG "$CFG_ADMIN_GROUP_NAME" "$ADMIN_NAME"
+    /sbin/usermod -aG docker "$ADMIN_NAME"
 done
 
 # Remove Job From Jobfile

@@ -607,6 +607,13 @@ class CommandlineReader:
             default=None,
             help="The packages to include",
         )
+        group_target.add_argument(
+            "-aigr",
+            "--include_git_repositories",
+            type=str,
+            default=None,
+            help="The packages to include",
+        )
 
     def _create_parser_args_run(self, p: argparse.ArgumentParser):
         group_target = p.add_argument_group(

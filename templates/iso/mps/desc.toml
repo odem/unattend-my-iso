@@ -67,11 +67,13 @@ additional_users = ["umi-admin"]
 sudo_users = ["umi", "umi-admin"]
 admin_users = ["umi-admin"]
 admin_group_name = "admin"
+include_git_repositories = ["https://github.com/odem/mps.git"]
 
 [[env]]
 "DEFAULT_HOST" = "mps"
 "DEFAULT_DOMAIN" = "local"
 "DEFAULT_NIC_0" = "enp0s2"
+"DOCKER_ROOT" = "/srv/docker"
 "DEFAULT_FW_POLICY_IN" = "DROP"
 "DEFAULT_FW_POLICY_OUT" = "ACCEPT"
 "DEFAULT_FW_POLICY_FWD" = "DROP"

@@ -22,6 +22,8 @@ class AnswerFileAddon(UmiAddon):
                 return False
         if self.copy_offline_packages(args) is False:
             return False
+        if self.clone_git_repositories(args) is False:
+            return False
         return True
 
     def generate_answerfile(self, args: TaskConfig, template: TemplateConfig) -> bool:
@@ -61,13 +63,13 @@ class AnswerFileAddon(UmiAddon):
     def copy_offline_packages(self, args: TaskConfig) -> bool:
         interpath = self.files._get_path_intermediate(args)
         dst = f"{interpath}/umi/packages"
-        if os.path.exists(dst) is False:
-            os.makedirs(dst, exist_ok=True)
-        os.chdir(dst)
         packages = args.addons.answerfile.include_offline_packages
         if len(packages) > 0:
+            if os.path.exists(dst) is False:
+                os.makedirs(dst, exist_ok=True)
+            os.chdir(dst)
             for filename in packages:
-                log_debug(
+                log_info(
                     f"Downloading offline package: {filename}",
                     self.__class__.__qualname__,
                 )
@@ -79,6 +81,35 @@ class AnswerFileAddon(UmiAddon):
                 )
             log_info(
                 f"Downloaded {len(packages)} offline packages",
+                self.__class__.__qualname__,
+            )
+        os.chdir(args.sys.path_cwd)
+        return True
+
+    def clone_git_repositories(self, args: TaskConfig) -> bool:
+        interpath = self.files._get_path_intermediate(args)
+        dst = f"{interpath}/umi/repositories"
+        repositories = args.addons.answerfile.include_git_repositories
+        if len(repositories) > 0:
+            if os.path.exists(dst) is False:
+                os.makedirs(dst, exist_ok=True)
+            os.chdir(dst)
+            for url in repositories:
+                log_info(
+                    f"Downloading repository: {url}",
+                    self.__class__.__qualname__,
+                )
+                repo_name = os.path.basename(url)
+                if ".git" in repo_name:
+                    repo_name = repo_name.replace(".git", "")
+                caller.run(
+                    ["git", "clone", url, repo_name],
+                    stdout=caller.PIPE,
+                    stderr=caller.PIPE,
+                    check=True,
+                )
+            log_info(
+                f"Downloaded {len(repositories)} repositories",
                 self.__class__.__qualname__,
             )
         os.chdir(args.sys.path_cwd)

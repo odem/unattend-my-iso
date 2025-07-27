@@ -7,9 +7,7 @@ echo "- Unattend-My-Iso: POSTINSTALL MPS"
 echo "-------------------------------------------------------------------------"
 sleep 3
 
-cd /opt || exit 1
-git clone https://github.com/odem/mps.git
-cd mps || exit 2
+cd "$CFG_ANSWERFILE_HOOK_DIR_TARGET" || exit 1
 
 # user
 # sudo ./bootstrap.bash -u "$CFG_USER_OTHER_NAME" -p "$CFG_USER_OTHER_PASSWORD"
