@@ -18,6 +18,7 @@ DAEMONIZE?=true
 NICS?=false
 BRIDGES?=true
 FIREWALL?=false
+CMD?=cmd1
 # TEMPLATEDIR?="../idris-iso-config"
 TEMPLATEDIR?="."
 # TEMPLATEDIR?="."
@@ -87,7 +88,7 @@ exec:
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main \
 			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -to "$(OVERLAY)" -tp exec \
-			-rD $(DAEMONIZE) -rv $(VERBOSITY) -cc "bash"
+			-rD $(DAEMONIZE) -rv $(VERBOSITY) -cc "$(CMD)"
 target: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main \

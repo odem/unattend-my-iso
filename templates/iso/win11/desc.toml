@@ -7,17 +7,9 @@ iso_name = "Win11_24H2_German_x64.iso"
 iso_url = ""
 iso_type = "windows"
 answerfile = "autounattend.xml"
-path_postinstall = "postinstall"
+path_postinstall = ""
 file_postinstall = "postinstall.bat"
 config_version = "0.0.3"
-
-
-[addon_answerfile]
-locale_string = "de_DE"
-locale_multi = "de_DE.UTF-8"
-user_other_name = "umi-win"
-user_other_fullname = "umi-win"
-user_other_pw = "umi-winpass"
 
 [run]
 vmname = "win11-test"
@@ -27,3 +19,41 @@ net_prepare_bridges = false
 res_cpu = 4
 res_mem = 4096
 disks = [["os-hdd0.qcow2", "256G", "hdd", "none"]]
+net_devs = [["nat"]]
+net_ports = [["2223", "22"]]
+
+[addon_answerfile]
+locale_string = "de_DE"
+locale_multi = "de_DE.UTF-8"
+user_other_name = "umi-win"
+user_other_fullname = "umi-win"
+user_other_pw = "umi-winpass"
+
+[addon_postinstall]
+auto_updates = true
+password_generate = false
+password_length = 24
+bash_aliases = ""
+password_charset = 'A-Za-z0-9!%$&=?+*#-_.:,;<>' # No quotes and backslahes
+joblist_early = []
+joblist_late = []
+copy_additional_scripts = []
+exec_additional_scripts = [
+  "installer/win/user.bat",
+  "installer/win/essentials.bat",
+  "installer/win/ssh.bat",
+  "installer/win/debug.bat",
+  "installer/win/cloudbase.bat",
+  "installer/win/finalize.bat",
+]
+
+[addon_ssh]
+ssh_enabled = true
+config_auth_append = "~/.ssh/id_rsa_dummy.pub"
+
+[addon_cmd]
+cmd_enabled = true
+cmds = [
+  { "name" = "cmd1", "scope" = "", "con" = "nat", "cmd" = "dir" },
+  { "name" = "bash", "scope" = "", "con" = "nat", "cmd" = "cmd.exe" },
+]

@@ -18,7 +18,7 @@ res_cpu = 4
 res_mem = 4096
 disks = [["os-hdd0.qcow2", "256G", "hdd", "none"]]
 net_devs = [["nat"]]
-net_ports = [["2222", "22"]]
+net_ports = [["2224", "22"]]
 
 [addon_answerfile]
 answerfile_enable_networking = false
@@ -58,9 +58,16 @@ default_user_dir = "umi"
 [addon_grub]
 timeout = 0
 
+[addon_ssh]
+ssh_enabled = true
+config_auth_append = "~/.ssh/id_rsa_dummy.pub"
+
 [addon_cmd]
 cmd_enabled = true
-cmds = { "cmd1" = "ssh -p 2222 root@localhost echo hello", "cmd2" = "ssh -p 2222 root@localhost echo hello" }
+cmds = [
+  { "name" = "cmd1", "scope" = "", "con" = "nat", "cmd" = "echo hello" },
+  { "name" = "bash", "scope" = "", "con" = "nat", "cmd" = "bash -i" },
+]
 
 [[env]]
 "DEFAULT_HOST" = "debian12"
