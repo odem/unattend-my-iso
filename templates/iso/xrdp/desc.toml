@@ -6,33 +6,85 @@ virtio_url = ""
 iso_name = "debian-12.11.0-amd64-netinst.iso"
 iso_url = "https://chuangtzu.ftp.acc.umu.se/debian-cd/current/amd64/iso-cd/debian-12.11.0-amd64-netinst.iso"
 iso_type = "linux"
-answerfile = "preseed_on_lvm_dhcp.cfg"
+answerfile = ""
 path_postinstall = "postinstall"
 file_postinstall = "postinstall.bash"
+config_version = "0.0.3"
 
 [run]
 vmname = "xrdp-test"
-net_ports = [[3389, 3389], [2222, 22]]
+net_ports = [[3389, 3389], [2221, 22]]
 
 
 [addon_postinstall]
 auto_updates = true
-password_generate = true
+password_generate = false
 password_length = 24
+bash_aliases = ".bash_aliases"
 password_charset = 'A-Za-z0-9!%$&=?+*#-_.:,;<>' # No quotes and backslahes
 joblist_early = []
 joblist_late = ["/opt/umi/postinstall/installer/postinstall_xrdp.bash"]
-copy_additional_scripts = [
-  "installer/default/offline_packages.bash",
+copy_additional_scripts = ["installer/default/finalize.bash"]
+exec_additional_scripts = [
   "installer/default/hostnet_dhcp.bash",
   "installer/default/hostnames.bash",
   "installer/default/apt.bash",
   "installer/default/essentials.bash",
+  "installer/default/shell.bash",
+  "installer/default/user.bash",
   "installer/default/ssh.bash",
   "installer/default/locale.bash",
+  "installer/default/firewall.bash",
 ]
 
 [addon_answerfile]
-host_name = "xrdp"
+answerfile_enable_networking = false
+answerfile_enable_dhcp = false
+answerfile_enable_crypto = false
+answerfile_enable_lvm = true
+answerfile_confirm_partitioning = true
+answerfile_confirm_final_reboot = false
+user_root_pw = "rootpass"
+user_other_name = "umi"
+user_other_fullname = "umi"
+user_other_pw = "umipass"
+host_name = "mps"
 host_domain = "local"
-packages_install = ["openssh-server", "vim", "sudo", "net-tools"]
+net_dhcp = false
+net_ip = "10.10.123.7"
+net_mask = "255.255.255.0"
+net_gateway = "10.10.123.1"
+net_dns = "8.8.8.8"
+packages_install = ["openssh-server"]
+additional_users = ["umi-admin"]
+sudo_users = ["umi", "umi-admin"]
+admin_users = ["umi-admin"]
+admin_group_name = "admin"
+
+[addon_grub]
+timeout = 0
+
+[addon_user]
+user_enabled = true
+default_user_dir = "umi"
+
+[addon_cmd]
+cmd_enabled = true
+cmds = [
+  { "name" = "cmd1", "scope" = "", "con" = "nat", "cmd" = "echo hello" },
+  { "name" = "bash", "scope" = "", "con" = "nat", "cmd" = "bash -i" },
+]
+
+[addon_ssh]
+ssh_enabled = true
+config_auth_append = "~/.ssh/id_rsa_dummy.pub"
+
+[[env]]
+"DEFAULT_HOST" = "xrdp"
+"DEFAULT_DOMAIN" = "local"
+"DEFAULT_NIC_0" = "enp0s2"
+"DEFAULT_FW_POLICY_IN" = "DROP"
+"DEFAULT_FW_POLICY_OUT" = "ACCEPT"
+"DEFAULT_FW_POLICY_FWD" = "DROP"
+"DEFAULT_FW_PORTS_TCP" = "22 3389"
+"DEFAULT_FW_PORTS_UDP" = ""
