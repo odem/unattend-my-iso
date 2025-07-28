@@ -6,6 +6,7 @@ iso_url = "https://kali.download/base-images/kali-2025.2/kali-linux-2025.2-insta
 iso_type = "linux"
 path_postinstall = "postinstall"
 file_postinstall = "postinstall.bash"
+config_version = "0.0.2"
 
 [run]
 vmname = "kali"

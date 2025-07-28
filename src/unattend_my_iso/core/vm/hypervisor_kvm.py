@@ -1,5 +1,7 @@
+from dataclasses import dataclass
 import os
 import subprocess
+from typing import Optional
 from unattend_my_iso.core.generators.generator_qemu import UmiQemuCommands
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.core.net.net_manager import UmiNetworkManager
@@ -16,17 +18,68 @@ from unattend_my_iso.core.subprocess.caller import (
 )
 
 
+@dataclass
+class ExecCommandInfo:
+    name: str
+    scope: str
+    con: str
+    cmd: str
+
+
 class UmiHypervisorKvm(UmiHypervisorBase):
     def __init__(self) -> None:
         UmiHypervisorBase.__init__(self)
         self.net = UmiNetworkManager()
 
+    def vm_exec_find_target_command(
+        self, args: TaskConfig, args_hv: HypervisorArgs
+    ) -> Optional[ExecCommandInfo]:
+        target = args.addons.cmd.cmd
+        cmds = args.addons.cmd.cmds
+        for cmd in cmds:
+            if isinstance(cmd, dict):
+                info = ExecCommandInfo(**cmd)
+                log_info(f"Parsed CMD: {info.name}")
+                if info.name == target:
+                    log_info(f"Found CMD: {info}")
+                    return info
+        return None
+
+    def vm_exec_build_shell_cmd(
+        self, info: ExecCommandInfo, args: TaskConfig
+    ) -> list[str]:
+        result = []
+        if info.scope == "":
+            # target = "mps"
+            if info.con == "nat":
+                host = "localhost"
+                ports = args.run.net_ports
+                ports_ssh = [port[0] for port in ports if port[1] == "22"]
+                if len(ports_ssh) >= 0:
+                    port = ports_ssh[0]
+                    con = f"ssh -p {port} root@{host} {info.cmd}"
+                    result.append(con)
+            elif ":" in info.con:
+                parts = info.con.split(":")
+                host = parts[0]
+                port = parts[1]
+                con = f"ssh -p {port} root@{host} {info.cmd}"
+                result.append(con)
+            else:
+                host = info.con
+                port = 22
+                con = f"ssh -p {port} root@{host} {info.cmd}"
+                result.append(con)
+
+        return result
+
     def vm_exec(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:
-        cmd = args.target.cmd
-        cmds = args.target.cmds
-        if cmd in cmds:
-            exec_cmd = cmds[cmd]
-            if check_call(exec_cmd.split(" ")) == 0:
+        info = self.vm_exec_find_target_command(args, args_hv)
+        if info is None:
+            return False
+        cmdlist = self.vm_exec_build_shell_cmd(info, args)
+        for cmd in cmdlist:
+            if check_call(cmd.split(" ")) == 0:
                 return True
         return False
 
@@ -69,12 +122,12 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             return False
         return True
 
-    def vm_exec_blocking(self, runcmd: list[str], args_hv: HypervisorArgs) -> bool:
-        proc = run(
+    def vm_exec_blocking(self, runcmd: list[str]) -> bool:
+        run(
             runcmd,
             stdin=DEVNULL,
             stdout=subprocess.STDOUT,
-            stderr=subprocess.STDERR,
+            stderr=subprocess.DEVNULL,
             close_fds=True,
         )
         return True

@@ -1,6 +1,7 @@
 
 [description]
 name = "mpsdev"
+config_version = "0.0.2"
 
 [run]
 vmname = "mpsdev"

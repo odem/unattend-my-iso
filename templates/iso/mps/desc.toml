@@ -7,6 +7,7 @@ iso_type = "linux"
 path_postinstall = "postinstall"
 file_postinstall = "postinstall.bash"
 enabled_overlays = ["mpsdev"]
+config_version = "0.0.3"
 
 [run]
 vmname = "mps-test"
@@ -69,6 +70,17 @@ admin_users = ["umi-admin"]
 admin_group_name = "admin"
 include_git_repositories = ["https://github.com/odem/mps.git"]
 
+[addon_cmd]
+cmd_enabled = true
+cmds = [
+  { "name" = "cmd1", "scope" = "", "con" = "nat", "cmd" = "echo hello" },
+  { "name" = "bash", "scope" = "", "con" = "nat", "cmd" = "bash -i" },
+]
+
+[addon_ssh]
+ssh_enabled = true
+config_auth_append = "~/.ssh/id_rsa_dummy.pub"
+
 [[env]]
 "DEFAULT_HOST" = "mps"
 "DEFAULT_DOMAIN" = "local"
@@ -79,8 +91,3 @@ include_git_repositories = ["https://github.com/odem/mps.git"]
 "DEFAULT_FW_POLICY_FWD" = "DROP"
 "DEFAULT_FW_PORTS_TCP" = "22 8080"
 "DEFAULT_FW_PORTS_UDP" = ""
-"DEFAULT_IP" = "10.10.123.7"
-"DEFAULT_NETMASK" = "255.255.255.0"
-"DEFAULT_NS1" = "8.8.8.8"
-"DEFAULT_NS2" = "8.8.4.4"
-"DEFAULT_GW" = "10.10.123.1"

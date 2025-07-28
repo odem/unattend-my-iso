@@ -14,13 +14,27 @@ class SshAddon(UmiAddon):
     def integrate_addon(self, args: TaskConfig, template: TemplateConfig) -> bool:
         if self.copy_keyfiles(args) is False:
             return False
-        # if self.copy_authorized_keys(args, template) is False:
-        #     return False
+        if self.copy_authorized_keys(args) is False:
+            return False
         if self.copy_client_config(args) is False:
             return False
         if self.copy_daemon_config(args) is False:
             return False
         return True
+
+    def copy_authorized_keys(self, args: TaskConfig) -> bool:
+        dst = self.files._get_path_intermediate(args)
+        dstssh = f"{dst}{args.addons.answerfile.answerfile_hook_dir_cdrom}/ssh"
+        dstauth = f"{dstssh}/authorized_keys"
+        srcpath = args.addons.ssh.config_auth_append
+        if srcpath == "":
+            return True
+        srcpath = srcpath.replace("~", args.run.build_homedir)
+        if os.path.exists(srcpath):
+            log_debug(f"Appending auth key: {srcpath}", self.__class__.__qualname__)
+            os.makedirs(dstssh, exist_ok=True)
+            return self.files.cp(srcpath, dstauth)
+        return False
 
     def copy_keyfiles(self, args: TaskConfig) -> bool:
         dst = self.files._get_path_intermediate(args)
@@ -37,9 +51,9 @@ class SshAddon(UmiAddon):
                 sshdir = f"{dir}/ssh"
                 os.makedirs(sshdir, exist_ok=True)
                 srckeypriv = f"{sshdir}/{keyfile}"
-                log_debug(f"Generating key: {srckeypriv}")
+                log_debug(f"Generating key: {srckeypriv}", self.__class__.__qualname__)
                 if self._generate_key(args, srckeypriv) is False:
-                    log_error("Generate key failed")
+                    log_error("Generate key failed", self.__class__.__qualname__)
                     return False
             if keyfile != "" and srckeypriv == "":
                 log_error("Source key empty")

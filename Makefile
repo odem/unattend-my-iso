@@ -87,7 +87,7 @@ exec:
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main \
 			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -to "$(OVERLAY)" -tp exec \
-			-rD $(DAEMONIZE) -rv $(VERBOSITY) -tC "cmd1"
+			-rD $(DAEMONIZE) -rv $(VERBOSITY) -cc "bash"
 target: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main \

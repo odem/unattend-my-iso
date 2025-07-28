@@ -9,15 +9,16 @@ iso_type = "linux"
 answerfile = ""
 path_postinstall = ""
 file_postinstall = "postinstall.bash"
+enabled_overlays = []
+config_version = "0.0.3"
 
 [run]
 vmname = "debian12-test"
 res_cpu = 4
 res_mem = 4096
-net_ports = [[2220, 22]]
 disks = [["os-hdd0.qcow2", "256G", "hdd", "none"]]
-net_bridges = [["vmbr1", "10.10.123.1", "24", true]]
-net_devs = [["tap1-deb12", "vmbr1"]]
+net_devs = [["nat"]]
+net_ports = [["2222", "22"]]
 
 [addon_answerfile]
 answerfile_enable_networking = false
@@ -29,21 +30,44 @@ answerfile_confirm_final_reboot = true
 host_name = "debian12"
 host_domain = "local"
 net_dhcp = true
+packages_install = ["openssh-server"]
+additional_users = ["umi-admin"]
+sudo_users = ["umi", "umi-admin"]
+admin_users = ["umi-admin"]
+admin_group_name = "admin"
 
 [addon_postinstall]
 password_generate = false
 copy_additional_scripts = ["installer/default/finalize.bash"]
 exec_additional_scripts = [
-  "installer/default/offline_packages.bash",
   "installer/default/hostnet_dhcp.bash",
+  "installer/default/hostnames.bash",
   "installer/default/apt.bash",
   "installer/default/essentials.bash",
+  "installer/default/shell.bash",
   "installer/default/user.bash",
   "installer/default/ssh.bash",
   "installer/default/locale.bash",
+  "installer/default/firewall.bash",
 ]
+
+[addon_user]
+user_enabled = true
+default_user_dir = "umi"
+
+[addon_grub]
+timeout = 0
+
+[addon_cmd]
+cmd_enabled = true
+cmds = { "cmd1" = "ssh -p 2222 root@localhost echo hello", "cmd2" = "ssh -p 2222 root@localhost echo hello" }
 
 [[env]]
 "DEFAULT_HOST" = "debian12"
 "DEFAULT_DOMAIN" = "local"
-"DEFAULT_NIC_0" = "enp6s18"
+"DEFAULT_NIC_0" = "enp0s2"
+"DEFAULT_FW_POLICY_IN" = "DROP"
+"DEFAULT_FW_POLICY_OUT" = "ACCEPT"
+"DEFAULT_FW_POLICY_FWD" = "DROP"
+"DEFAULT_FW_PORTS_TCP" = "22 8080"
+"DEFAULT_FW_PORTS_UDP" = ""

@@ -6,7 +6,7 @@ def init_logger(level: int):
     global LOGGER
     logging.basicConfig(
         level=level,
-        format="[%(levelname)6s]%(message)s",
+        format="[%(levelname)7s]%(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
     LOGGER = logging.getLogger()

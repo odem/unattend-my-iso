@@ -3,8 +3,13 @@ from pathlib import Path
 from typing import Any, Optional
 from unattend_my_iso.core.reader.reader_toml import TomlReader
 from unattend_my_iso.common.config import TemplateConfig
-from unattend_my_iso.common.logging import log_error
-from unattend_my_iso.common.const import TEMPLATE_NAME, TEMPLATE_PREFIX, TEMPLATE_SUFFIX
+from unattend_my_iso.common.logging import log_error, log_info, log_warn
+from unattend_my_iso.common.const import (
+    APP_VERSION,
+    TEMPLATE_NAME,
+    TEMPLATE_PREFIX,
+    TEMPLATE_SUFFIX,
+)
 
 CLSNAME = "TemplateReader"
 
@@ -55,9 +60,20 @@ def read_template_iso(file: str, overlays: list[str]) -> Optional[TemplateConfig
     reader = TomlReader()
     toml = reader.read_toml_file(file)
     if toml is not None:
-        return TemplateConfig(
+        cfg = TemplateConfig(
             **toml["description"], name_overlay="", files_overlay=overlays
         )
+        if cfg.config_version == APP_VERSION:
+            return cfg
+        else:
+            log_warn(
+                (
+                    f"Template config version does not match for {cfg.name:10}: "
+                    f"{APP_VERSION} vs {cfg.config_version}"
+                ),
+                CLSNAME,
+            )
+            return None
     else:
         log_error("Template config is not valid", CLSNAME)
     return None

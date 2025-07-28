@@ -1,14 +1,15 @@
 from dataclasses import dataclass, field
 import random
 from typing import Any
+from unattend_my_iso.common.arg_base import ArgumentBase
 from unattend_my_iso.common.args import (
     AddonArgs,
     AddonArgsAnswerFile,
+    AddonArgsCmd,
     AddonArgsGrub,
     AddonArgsPostinstall,
     AddonArgsSsh,
     AddonArgsUser,
-    ArgumentBase,
     EnvironmentArgs,
     RunArgs,
     TargetArgs,
@@ -53,6 +54,7 @@ class TemplateConfig(ArgumentBase):
     iso_name: str
     iso_url: str
     iso_type: str
+    config_version: str
     virtio_name: str = ""
     virtio_url: str = ""
     answerfile: str = ""
@@ -97,9 +99,15 @@ def get_config_default(work_path: str) -> TaskConfig:
     args_ssh = AddonArgsSsh()
     args_grub = AddonArgsGrub()
     args_postinstall = AddonArgsPostinstall()
+    args_cmd = AddonArgsCmd()
     args_user = AddonArgsUser()
     cfg_addons = AddonArgs(
-        args_answers, args_ssh, args_grub, args_user, args_postinstall
+        args_answers,
+        args_ssh,
+        args_grub,
+        args_user,
+        args_postinstall,
+        args_cmd,
     )
     cfg_target = TargetArgs()
     cfg_run = RunArgs()

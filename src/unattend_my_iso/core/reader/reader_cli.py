@@ -3,6 +3,7 @@ import textwrap
 from typing import Any, Optional
 from unattend_my_iso.common.args import (
     AddonArgsAnswerFile,
+    AddonArgsCmd,
     AddonArgsGrub,
     AddonArgsPostinstall,
     AddonArgsSsh,
@@ -80,6 +81,7 @@ class CommandlineReader:
         self._create_parser_args_addon_grub(p)
         self._create_parser_args_addon_ssh(p)
         self._create_parser_args_addon_user(p)
+        self._create_parser_args_addon_cmd(p)
         return p
 
     def _create_cli_parser_group(self, name: str) -> argparse.ArgumentParser:
@@ -96,6 +98,8 @@ class CommandlineReader:
             self._create_parser_args_addon_ssh(p)
         elif name == "addon_user":
             self._create_parser_args_addon_user(p)
+        elif name == "addon_cmd":
+            self._create_parser_args_addon_cmd(p)
         elif name == "addon_postinstall":
             self._create_parser_args_addon_postinst(p)
         elif name == "addon_answerfile":
@@ -327,6 +331,33 @@ class CommandlineReader:
             type=str,
             default=None,
             help="The default username",
+        )
+
+    def _create_parser_args_addon_cmd(self, p: argparse.ArgumentParser):
+        group_target = p.add_argument_group(
+            "AddonArgsCmd",
+            description="Defines the arguments for the cmd addon",
+        )
+        group_target.add_argument(
+            "-ce",
+            "--cmd_enabled",
+            type=str,
+            default=None,
+            help="Enable or disable cmd addon (true or false)",
+        )
+        group_target.add_argument(
+            "-cc",
+            "--cmd",
+            type=str,
+            default=None,
+            help="Command to be executed",
+        )
+        group_target.add_argument(
+            "-cC",
+            "--cmds",
+            type=list,
+            default=None,
+            help="Commands to be executed",
         )
 
     def _create_parser_args_addon_answerfile(self, p: argparse.ArgumentParser):
@@ -823,20 +854,6 @@ class CommandlineReader:
             default=None,
             help="The work_path to user",
         )
-        group_target.add_argument(
-            "-tc",
-            "--cmd",
-            type=str,
-            default=None,
-            help="Command to be executed",
-        )
-        group_target.add_argument(
-            "-tC",
-            "--cmds",
-            type=str,
-            default=None,
-            help="Commands to be executed",
-        )
         return group_target
 
     def read_cli_group(self, name: str) -> Optional[Any]:
@@ -860,6 +877,8 @@ class CommandlineReader:
             return AddonArgsAnswerFile(**all)
         elif name == "addon_user":
             return AddonArgsUser(**all)
+        elif name == "addon_cmd":
+            return AddonArgsCmd(**all)
         elif name == "addon_postinstall":
             return AddonArgsPostinstall(**all)
         return None

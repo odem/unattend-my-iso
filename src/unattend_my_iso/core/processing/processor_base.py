@@ -1,6 +1,7 @@
 import os
 from typing import Optional
 from unattend_my_iso.addons.answerfile import AnswerFileAddon
+from unattend_my_iso.addons.cmd import CmdAddon
 from unattend_my_iso.addons.grub import GrubAddon
 from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.addons.postinstall import PostinstallAddon
@@ -94,12 +95,14 @@ class TaskProcessorBase:
         user = UserAddon()
         grub = GrubAddon()
         ssh = SshAddon()
+        cmd = CmdAddon()
         postinst = PostinstallAddon()
         answer = AnswerFileAddon()
         self.addons = {
             answer.addon_name: answer,
             grub.addon_name: grub,
             ssh.addon_name: ssh,
+            cmd.addon_name: cmd,
             postinst.addon_name: postinst,
             user.addon_name: user,
         }

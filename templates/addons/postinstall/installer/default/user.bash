@@ -25,11 +25,13 @@ genpw() {
 # Configure root user
 echo "-> Prepare user 'root'"
 if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET"/users/root/ ]] ; then
-    if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET"/users/root/ ]] ; then
-        cp -r "$CFG_ANSWERFILE_HOOK_DIR_TARGET"/users/root/. /root/
-        chmod 600 -R /root/
-        chown "$CFG_USER_OTHER_NAME:$CFG_USER_OTHER_NAME" -R /root
+    cp -r "$CFG_ANSWERFILE_HOOK_DIR_TARGET"/users/root/. /root/
+    if [[ -f "$CFG_ANSWERFILE_HOOK_DIR_TARGET/ssh/authorized_keys" ]] ; then
+        cat "$CFG_ANSWERFILE_HOOK_DIR_TARGET/ssh/authorized_keys" \
+            > /root/.ssh/authorized_keys
     fi
+    chmod 700 -R /root/
+    chown "root:root" -R /root
 fi
 
 # Configure default user
@@ -37,9 +39,13 @@ if [[ "$CFG_USER_OTHER_NAME" != "" ]]; then
     echo "-> Prepare default user '$CFG_USER_OTHER_NAME'"
     if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET/users/$CFG_USER_OTHER_NAME/" ]] ; then
         cp -r "$CFG_ANSWERFILE_HOOK_DIR_TARGET/users/$CFG_USER_OTHER_NAME/". "/home/$CFG_USER_OTHER_NAME"
-        chmod 600 -R "/home/$CFG_USER_OTHER_NAME/"
-        chown "$CFG_USER_OTHER_NAME:$CFG_USER_OTHER_NAME" -R "/home/$CFG_USER_OTHER_NAME/"
     fi
+    if [[ -f "$CFG_ANSWERFILE_HOOK_DIR_TARGET/ssh/authorized_keys" ]] ; then
+        cat "$CFG_ANSWERFILE_HOOK_DIR_TARGET/ssh/authorized_keys" \
+            > "/home/$CFG_USER_OTHER_NAME"/.ssh/authorized_keys
+    fi
+    chmod 700 -R "/home/$CFG_USER_OTHER_NAME/"
+    chown "$CFG_USER_OTHER_NAME:$CFG_USER_OTHER_NAME" -R "/home/$CFG_USER_OTHER_NAME/"
 fi
 
 # Configure additional users
@@ -55,9 +61,13 @@ for i in $(seq 0 $(("${#CFG_ADDITIONAL_USERS[*]}" - 1))); do
     echo "${ADDITIONAL_NAME}:${newpass}" | chpasswd
     if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET/users/$ADDITIONAL_NAME/" ]] ; then
        cp -r "$CFG_ANSWERFILE_HOOK_DIR_TARGET/users/$ADDITIONAL_NAME/". "/home/$ADDITIONAL_NAME"
-        chmod 600 -R "/home/$CFG_USER_OTHER_NAME/"
-        chown "$ADDITIONAL_NAME:$ADDITIONAL_NAME" -R "/home/$ADDITIONAL_NAME/"
     fi
+    if [[ -f "$CFG_ANSWERFILE_HOOK_DIR_TARGET/ssh/authorized_keys" ]] ; then
+        cat "$CFG_ANSWERFILE_HOOK_DIR_TARGET/ssh/authorized_keys" \
+            > "/home/$ADDITIONAL_NAME"/.ssh/authorized_keys
+    fi
+    chmod 700 -R "/home/$ADDITIONAL_NAME/"
+    chown "$ADDITIONAL_NAME:$ADDITIONAL_NAME" -R "/home/$ADDITIONAL_NAME/"
 done
 
 # Configure sudo users
@@ -74,9 +84,9 @@ echo ""
 
 # Configure admin users
 for i in $(seq 0 $(("${#CFG_ADMIN_USERS[*]}" - 1))); do
-    ADMIN_NAME="${CFG_ADMIN_USERS[$i]}"
-    echo "-> Prepare admin user '$ADMIN_NAME'"
-    /sbin/usermod -aG "$CFG_ADMIN_GROUP_NAME" "$ADMIN_NAME"
+    ADDITIONAL_USER="${CFG_ADMIN_USERS[$i]}"
+    echo "-> Prepare admin user '$ADDITIONAL_USER'"
+    /sbin/usermod -aG "$CFG_ADMIN_GROUP_NAME" "$ADDITIONAL_USER"
 done
 echo ""
 
