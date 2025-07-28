@@ -210,7 +210,7 @@ class AnswerfilePreseed:
             cmdlist += [
                 f"in-target chown root:{admin_group} -R {target_dir}",
                 "in-target chmod 770 /target/opt",
-                f"in-target chmod 700 {target_dir}/{filename}",
+                f"in-target chmod 770 {target_dir}/{filename}",
                 f"in-target /bin/bash {target_dir}/{filename}",
             ]
         return cmdlist
