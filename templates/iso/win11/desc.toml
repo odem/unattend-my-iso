@@ -1,8 +1,8 @@
 
 [description]
 name = "win11"
-virtio_name = "virtio-win-0.1.271.iso"
-virtio_url = "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.271-1/virtio-win-0.1.271.iso"
+virtio_name = "virtio-win-0.1.173.iso"
+virtio_url = "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.173-9/virtio-win-0.1.173.iso"
 iso_name = "Win11_24H2_German_x64.iso"
 iso_url = ""
 iso_type = "windows"
