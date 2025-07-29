@@ -35,10 +35,10 @@ class AnswerfileRecipe:
         return [
             RecipeDescription([1024], "vfat", "/boot/efi", "", "", "ESP", "gpt"),
             RecipeDescription([1024], "ext4", "/boot", "", "", "BOOT", "gpt"),
-            RecipeDescription([8192], "linux-swap", "", vg_name, "lv_swap"),
-            RecipeDescription([5000], "ext4", "/", vg_name, "lv_root"),
+            RecipeDescription([4096], "linux-swap", "", vg_name, "lv_swap"),
+            RecipeDescription([15000], "ext4", "/", vg_name, "lv_root"),
             # RecipeDescription([16384], "ext4", "/var", vg_name, "lv_var"),
-            RecipeDescription([20000], "ext4", "/srv", vg_name, "lv_srv"),
+            RecipeDescription([10000], "ext4", "/srv", vg_name, "lv_srv"),
             # RecipeDescription([131072], "ext4", "/home", vg_name, "lv_home"),
             # RecipeDescription([128000], "ext4", "/media/disks/extra"),
         ]
