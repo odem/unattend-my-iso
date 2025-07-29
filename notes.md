@@ -11,8 +11,6 @@
 - run docker-compose as correct userid
 - Remove root pw for database from guacamoleapp env file
 - Update plugin for test environment
-- Add config versions
--
 
 # Notes 28.07.25
 
