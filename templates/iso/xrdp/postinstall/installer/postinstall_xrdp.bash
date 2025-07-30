@@ -15,10 +15,6 @@ sleep 3
 # Update
 apt update && apt upgrade -y
 
-# Desktop environment
-apt install -y xfce4 xfce4-goodies
-echo "startxfce4" > /etc/skel/.xsession
-
 # xrdp
 apt install -y xrdp
 cp -r "$RDP_DIR"/* /etc/xrdp/

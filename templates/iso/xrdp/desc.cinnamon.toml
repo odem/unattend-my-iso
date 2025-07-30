@@ -1,0 +1,33 @@
+
+[description]
+name = "xrdp"
+
+[run]
+vmname = "cinnamon-test"
+net_ports = [[3389, 3389], [2221, 22]]
+
+[addon_postinstall]
+joblist_early = []
+joblist_late = []
+copy_additional_scripts = ["installer/default/finalize.bash"]
+exec_additional_scripts = [
+  "installer/default/hostnet_dhcp.bash",
+  "installer/default/hostnames.bash",
+  "installer/default/apt.bash",
+  "installer/default/essentials.bash",
+  "installer/default/shell.bash",
+  "installer/default/user.bash",
+  "installer/default/ssh.bash",
+  "installer/default/locale.bash",
+  "installer/default/firewall.bash",
+  "installer/postinstall_cinnamon.bash",
+  "installer/postinstall_xrdp.bash",
+]
+
+[addon_answerfile]
+host_name = "cinnamon"
+host_domain = "local"
+
+[[env]]
+"DEFAULT_HOST" = "cinnamon"
+"DEFAULT_DOMAIN" = "local"
