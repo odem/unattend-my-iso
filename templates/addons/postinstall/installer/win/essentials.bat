@@ -14,7 +14,7 @@ D:\umi\virtio\virtio_win_guest_tools.exe /install /passive /quite /norestart
 echo Guest utils installed successfully
 
 :: Install 7zip
-curl -o %INSTALLER_7ZIP% %URL_7ZIP%
+curl -L -o %INSTALLER_7ZIP% %URL_7ZIP%
 msiexec /package %INSTALLER_7ZIP% /passive
 del "%INSTALLER_7ZIP%"
 echo 7-Zip installed successfully
