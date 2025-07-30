@@ -191,6 +191,7 @@ class UmiIsoGenerator:
             "-full-iso9660-filenames",
             "-volid",
             "win11",
+            "-joliet",
             "-eltorito-boot",
             "boot/etfsboot.com",
             "-eltorito-catalog",

@@ -78,11 +78,11 @@ class ArgumentBase:
         if isinstance(val, bool):
             return "1" if val is True else "0"
         elif isinstance(val, str):
-            return f'"{val}"'
+            return f"{val}"
         elif isinstance(val, int):
             return str(val)
         elif isinstance(val, tuple):
-            return f'"{val[0]},{val[1]}"'
+            return f"{val[0]},{val[1]}"
         else:
             return str(val)
 

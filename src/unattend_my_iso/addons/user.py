@@ -12,7 +12,6 @@ class UserAddon(UmiAddon):
 
     @override
     def integrate_addon(self, args: TaskConfig, template: TemplateConfig) -> bool:
-
         if self._copy_user_dir(args, template) is False:
             return False
         return True

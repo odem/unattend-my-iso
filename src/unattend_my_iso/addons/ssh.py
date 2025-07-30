@@ -3,7 +3,7 @@ from unattend_my_iso.core.subprocess.caller import run
 from typing_extensions import override
 from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
-from unattend_my_iso.common.logging import log_debug, log_error
+from unattend_my_iso.common.logging import log_debug, log_error, log_info
 
 
 class SshAddon(UmiAddon):
@@ -34,6 +34,8 @@ class SshAddon(UmiAddon):
             log_debug(f"Appending auth key: {srcpath}", self.__class__.__qualname__)
             os.makedirs(dstssh, exist_ok=True)
             return self.files.cp(srcpath, dstauth)
+        else:
+            log_error(f"Invalid authorization file: {srcpath}")
         return False
 
     def copy_keyfiles(self, args: TaskConfig) -> bool:

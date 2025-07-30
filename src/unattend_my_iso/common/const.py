@@ -32,7 +32,7 @@ DEFAULT_PASSWORD = "defaultpass"
 DEFAULT_TEMPLATE = "mps"
 DEFAULT_TEMPLATE_OVERLAY = "*"
 DEFAULT_PASSWORD_LENGTH = 16
-DEFAULT_PASSWORD_CHARSET = "A-Za-z0-9!$%$&/()=?+*#-_.:,;<>"
+DEFAULT_PASSWORD_CHARSET = "A-Za-z0-9!$%$&/()=?+*#-_.:,;"
 
 # Logger
 LOGGER = None
