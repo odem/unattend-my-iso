@@ -14,6 +14,22 @@
 
 # Notes 28.07.25
 
+- Add default scripts to win11
 - Remove 7zip from windows 11 installation
+- Fix authorized keys for ssh in windows 11
 - Add configurable desktop background
 - Fix environment config in windows vm
+
+# Notes 31.07.25
+
+- Rename environment variables
+- Remove userid from docker-compose file
+- Fix deprecated MYSQL_USERNAME variable
+- Add autologin to cinnamon and xfce
+- Remove screensaver from cinnamon and xrdp
+- Remove screensaver from windows
+
+# TODO
+
+- Remove Desktop session lock in cinnamon and xrdp
+- Wallpaper not shown until reboot (win11)
