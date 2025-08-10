@@ -1,8 +1,8 @@
 
 [description]
 name = "mps"
-iso_name = "debian-12.10.0-amd64-netinst.iso"
-iso_url = "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.10.0-amd64-netinst.iso"
+iso_name = "debian-12.11.0-amd64-netinst.iso"
+iso_url = "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.11.0-amd64-netinst.iso"
 iso_type = "linux"
 path_postinstall = "postinstall"
 file_postinstall = "postinstall.bash"
@@ -12,7 +12,8 @@ config_version = "0.0.3"
 [run]
 vmname = "mps-test"
 net_devs = [["nat"]]
-net_ports = [["2222", "22"]]
+net_ports = [["2224", "22"]]
+disks = [["disk1.qcow2", "256G", "hdd"], ["disk2.qcow2", "256G", "hdd"]]
 
 [addon_postinstall]
 auto_updates = true
@@ -43,7 +44,7 @@ default_user_dir = "umi"
 
 [addon_grub]
 grub_theme = "anon"
-timeout = 0
+timeout = 30
 
 [addon_answerfile]
 answerfile_enable_networking = false
@@ -52,22 +53,24 @@ answerfile_enable_crypto = true
 answerfile_enable_lvm = true
 answerfile_confirm_partitioning = true
 answerfile_confirm_final_reboot = false
+install_disk = ""
 user_root_pw = "rootpass"
-user_other_name = "umi"
-user_other_fullname = "umi"
-user_other_pw = "umipass"
+user_other_name = "mps"
+user_other_fullname = "mps"
+user_other_pw = "mpspass"
 host_name = "mps"
 host_domain = "local"
 net_dhcp = false
-net_ip = "10.10.123.7"
+net_ip = "10.23.42.9"
 net_mask = "255.255.255.0"
-net_gateway = "10.10.123.1"
+net_gateway = "10.23.42.1"
 net_dns = "8.8.8.8"
 packages_install = ["openssh-server"]
 additional_users = ["umi-admin"]
 sudo_users = ["umi", "umi-admin"]
 admin_users = ["umi-admin"]
 admin_group_name = "admin"
+disk_password = "diskpass"
 include_git_repositories = ["https://github.com/odem/mps.git"]
 
 [addon_cmd]
@@ -89,5 +92,5 @@ config_auth_append = "~/.ssh/id_rsa_dummy.pub"
 "DEFAULT_FW_POLICY_IN" = "DROP"
 "DEFAULT_FW_POLICY_OUT" = "ACCEPT"
 "DEFAULT_FW_POLICY_FWD" = "DROP"
-"DEFAULT_FW_PORTS_TCP" = "22 8080"
+"DEFAULT_FW_PORTS_TCP" = "22"
 "DEFAULT_FW_PORTS_UDP" = ""

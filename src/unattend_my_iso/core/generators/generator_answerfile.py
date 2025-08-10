@@ -238,8 +238,8 @@ class AnswerfilePreseed:
             result += [
                 DIOption("#", "Partman (LUKS+LVM)"),
                 DIOption("partman-auto/method", "crypto"),
-                DIOption("partman-auto/choose_recipe", "autocrypt-recipe", "select"),
-                DIOption("partman-auto/expert_recipe_file", "/autocrypt-recipe"),
+                # DIOption("partman-auto/choose_recipe", "autocrypt-recipe", "select"),
+                # DIOption("partman-auto/expert_recipe_file", "/autocrypt-recipe"),
                 DIOption("partman-crypto/encrypt", "luks"),
                 DIOption("partman-crypto/guided_size", "max"),
                 DIOption("partman-crypto/passphrase", c.disk_password),

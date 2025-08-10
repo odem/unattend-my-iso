@@ -3,8 +3,8 @@
 name = "debian12"
 virtio_name = ""
 virtio_url = ""
-iso_name = "debian-12.10.0-amd64-netinst.iso"
-iso_url = "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.10.0-amd64-netinst.iso"
+iso_name = "debian-12.11.0-amd64-netinst.iso"
+iso_url = "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.11.0-amd64-netinst.iso"
 iso_type = "linux"
 answerfile = ""
 path_postinstall = ""
@@ -23,16 +23,21 @@ net_ports = [["2224", "22"]]
 [addon_answerfile]
 answerfile_enable_networking = false
 answerfile_enable_dhcp = false
-answerfile_enable_crypto = false
+answerfile_enable_crypto = true
 answerfile_enable_lvm = true
 answerfile_confirm_partitioning = true
 answerfile_confirm_final_reboot = true
+user_root_pw = "rootpass"
+user_other_name = "umi"
+user_other_fullname = "umi"
+user_other_pw = "umipass"
 host_name = "debian12"
 host_domain = "local"
 net_dhcp = true
 packages_install = ["openssh-server"]
 additional_users = ["umi-admin"]
-sudo_users = ["umi", "umi-admin"]
+sudo_users = ["mps", "umi-admin", "deploy"]
+deploy_users = ["mps", "deploy"]
 admin_users = ["umi-admin"]
 admin_group_name = "admin"
 
