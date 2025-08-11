@@ -216,6 +216,13 @@ class CommandlineReader:
             help="Generate new initial passwords",
         )
         group_target.add_argument(
+            "-pcj",
+            "--cronjobs",
+            type=int,
+            default=None,
+            help="Length of generated password",
+        )
+        group_target.add_argument(
             "-ppl",
             "--password_length",
             type=int,
@@ -606,6 +613,13 @@ class CommandlineReader:
         group_target.add_argument(
             "-asu",
             "--sudo_users",
+            type=str,
+            default=None,
+            help="Additional users to add",
+        )
+        group_target.add_argument(
+            "-adu",
+            "--deployment_users",
             type=str,
             default=None,
             help="Additional users to add",

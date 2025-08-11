@@ -1,9 +1,8 @@
 import os
-import random
 from typing_extensions import override
 from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
-from unattend_my_iso.common.logging import log_debug, log_error, log_info
+from unattend_my_iso.common.logging import log_debug, log_error
 from unattend_my_iso.common.model import Replaceable
 
 
@@ -86,6 +85,29 @@ class PostinstallAddon(UmiAddon):
             log_debug(f"Copy File {filename}", self.__class__.__qualname__)
             srcpath = self.get_template_path_optional("postinstall", filename, args)
             dstfile = f"{interpath}/umi/postinstall/{filename}"
+            dstpath = os.path.dirname(dstfile)
+            if os.path.exists(srcpath):
+                os.makedirs(dstpath, exist_ok=True)
+                if self.files.cp(srcpath, dstfile) is False:
+                    log_error("Postinstall copy failed", self.__class__.__qualname__)
+                    return False
+            else:
+                log_error(
+                    "Postinstall file does not exist", self.__class__.__qualname__
+                )
+                return False
+        return True
+
+    def copy_postinstaller_cronjobs(
+        self, args: TaskConfig, template: TemplateConfig
+    ) -> bool:
+        interpath = self.files._get_path_intermediate(args)
+
+        allscripts = args.addons.postinstall.cronjobs
+        for filename in allscripts:
+            log_debug(f"Copy File {filename}", self.__class__.__qualname__)
+            srcpath = self.get_template_path_optional("postinstall", filename, args)
+            dstfile = f"{interpath}/umi/postinstall/cronjobs/{filename}"
             dstpath = os.path.dirname(dstfile)
             if os.path.exists(srcpath):
                 os.makedirs(dstpath, exist_ok=True)

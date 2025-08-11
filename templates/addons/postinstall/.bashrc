@@ -22,8 +22,8 @@ alias sb="source ~/.bashrc ; echo '~/.bashrc sourced!'"
 export LS_OPTIONS='--color=auto'
 eval "$(dircolors)"
 alias ls='ls $LS_OPTIONS'
-alias ll='ls -lh $LS_OPTIONS'
-alias l='ls -lah $LS_OPTIONS'
+alias ll='ls -lah $LS_OPTIONS'
+alias l='ls -lh $LS_OPTIONS'
 
 # Alias config: File manipulation
 alias rm='rm -i'

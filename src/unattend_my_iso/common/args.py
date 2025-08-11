@@ -89,6 +89,7 @@ class AddonArgsAnswerFile(ArgumentBase):
     user_other_pw: str = DEFAULT_PASSWORD_USER
     additional_users: list[str] = field(default_factory=lambda: [])
     sudo_users: list[str] = field(default_factory=lambda: [])
+    deployment_users: list[str] = field(default_factory=lambda: [])
     admin_users: list[str] = field(default_factory=lambda: [])
     admin_group_name: str = "admin"
     packages_install: list[str] = field(default_factory=lambda: [])
@@ -118,6 +119,7 @@ class AddonArgsPostinstall(ArgumentBase):
     password_generate: bool = False
     password_length: int = DEFAULT_PASSWORD_LENGTH
     password_charset: str = DEFAULT_PASSWORD_CHARSET
+    cronjobs: list[str] = field(default_factory=lambda: [])
     joblist_early: list[str] = field(default_factory=lambda: [])
     joblist_late: list[str] = field(default_factory=lambda: [])
     copy_additional_scripts: list[str] = field(default_factory=lambda: [])

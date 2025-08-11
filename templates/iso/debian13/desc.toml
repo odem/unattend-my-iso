@@ -1,0 +1,85 @@
+
+[description]
+name = "debian13"
+virtio_name = ""
+virtio_url = ""
+iso_name = "debian-13.0.0-amd64-netinst.iso"
+iso_url = "https://saimei.ftp.acc.umu.se/debian-cd/current/amd64/iso-cd/debian-13.0.0-amd64-netinst.iso"
+iso_type = "linux"
+answerfile = ""
+path_postinstall = ""
+file_postinstall = "postinstall.bash"
+enabled_overlays = []
+config_version = "0.0.3"
+
+[run]
+vmname = "debian13-test"
+res_cpu = 4
+res_mem = 4096
+disks = [["os-hdd0.qcow2", "256G", "hdd", "none"]]
+net_devs = [["nat"]]
+net_ports = [["2224", "22"]]
+
+[addon_answerfile]
+answerfile_enable_networking = false
+answerfile_enable_dhcp = false
+answerfile_enable_crypto = false
+answerfile_enable_lvm = true
+answerfile_confirm_partitioning = true
+answerfile_confirm_final_reboot = true
+user_root_pw = "rootpass"
+user_other_name = "umi"
+user_other_fullname = "umi"
+user_other_pw = "umipass"
+host_name = "debian13"
+host_domain = "local"
+net_dhcp = true
+packages_install = ["openssh-server"]
+additional_users = ["umi-admin"]
+sudo_users = ["mps", "umi-admin", "deploy"]
+deploy_users = ["mps", "deploy"]
+admin_users = ["umi-admin"]
+admin_group_name = "admin"
+
+[addon_postinstall]
+password_generate = false
+copy_additional_scripts = ["installer/default/finalize.bash"]
+exec_additional_scripts = [
+  "installer/default/hostnet_dhcp.bash",
+  "installer/default/hostnames.bash",
+  "installer/default/apt.bash",
+  "installer/default/essentials.bash",
+  "installer/default/shell.bash",
+  "installer/default/user.bash",
+  "installer/default/ssh.bash",
+  "installer/default/locale.bash",
+  "installer/default/firewall.bash",
+]
+
+[addon_user]
+user_enabled = true
+default_user_dir = "umi"
+
+[addon_grub]
+timeout = 0
+
+[addon_ssh]
+ssh_enabled = true
+config_auth_append = "~/.ssh/id_rsa_dummy.pub"
+
+[addon_cmd]
+cmd_enabled = true
+cmds = [
+  { "name" = "cmd1", "scope" = "", "con" = "nat", "cmd" = "echo hello" },
+  { "name" = "bash", "scope" = "", "con" = "nat", "cmd" = "bash -i" },
+]
+
+[[env]]
+"DEFAULT_HOST" = "debian13"
+"DEFAULT_DOMAIN" = "local"
+"DEFAULT_NIC_0" = "enp0s2"
+"DEFAULT_FW_POLICY_IN" = "DROP"
+"DEFAULT_FW_POLICY_OUT" = "ACCEPT"
+"DEFAULT_FW_POLICY_FWD" = "DROP"
+"DEFAULT_FW_PORTS_TCP" = "22 8080"
+"DEFAULT_FW_PORTS_UDP" = ""

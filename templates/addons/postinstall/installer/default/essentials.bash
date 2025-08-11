@@ -18,7 +18,7 @@ apt update -y
 apt install -f -y
 apt upgrade -y
 apt install -y openssh-server attr jq wget curl bc git vim make \
-    sudo qemu-guest-agent bat exa chrony lsb-release gnupg
+    sudo qemu-guest-agent bat chrony lsb-release gnupg
 apt install -y \
     kitty psmisc \
     net-tools tcpdump traceroute bridge-utils uml-utilities \
