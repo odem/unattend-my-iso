@@ -49,7 +49,10 @@ class PostinstallAddon(UmiAddon):
         if os.path.exists(dst) is False:
             os.makedirs(dst)
         if template.file_postinstall != "" and os.path.exists(postfile) is False:
-            log_error("Postinstall file does not exist", self.__class__.__qualname__)
+            log_error(
+                f"Postinstall file does not exist: {postfile}",
+                self.__class__.__qualname__,
+            )
             return ""
         if self.files.cp(postfile, dstfile) is False:
             return ""
@@ -93,7 +96,8 @@ class PostinstallAddon(UmiAddon):
                     return False
             else:
                 log_error(
-                    "Postinstall file does not exist", self.__class__.__qualname__
+                    f"Postinstall file does not exist: {filename}",
+                    self.__class__.__qualname__,
                 )
                 return False
         return True
@@ -116,7 +120,8 @@ class PostinstallAddon(UmiAddon):
                     return False
             else:
                 log_error(
-                    "Postinstall file does not exist", self.__class__.__qualname__
+                    f"Postinstall file does not exist: {srcpath}",
+                    self.__class__.__qualname__,
                 )
                 return False
         return True
