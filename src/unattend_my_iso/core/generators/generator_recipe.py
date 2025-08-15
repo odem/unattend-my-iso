@@ -35,15 +35,15 @@ class AnswerfileRecipe:
         return [
             RecipeDescription([1024], "vfat", "/boot/efi", "", "", "ESP", "gpt"),
             RecipeDescription([1024], "ext4", "/boot", "", "", "BOOT", "gpt"),
-            RecipeDescription([4096], "linux-swap", "", "", "", "SWAP", "gpt"),
-            # RecipeDescription([4096], "linux-swap", "", vg_name, "lv_swap"),
-            RecipeDescription([30000, 30000, "100%"], "ext4", "/", vg_name, "lv_root"),
+            # RecipeDescription([4096], "linux-swap", "", "", "", "SWAP", "gpt"),
+            RecipeDescription([4096], "linux-swap", "", vg_name, "lv_swap"),
+            RecipeDescription([50000, 50000, 50000], "ext4", "/", vg_name, "lv_root"),
             # RecipeDescription([16384], "ext4", "/var", vg_name, "lv_var"),
-            # RecipeDescription(
-            #     [20000, 25000, "100%"], "ext4", "/srv", vg_name, "lv_srv"
-            # ),
-            # RecipeDescription([131072], "ext4", "/home", vg_name, "lv_home"),
-            # RecipeDescription([128000], "ext4", "/media/disks/extra"),
+            RecipeDescription(
+                [50000, 50000, "100%"], "ext4", "/srv", vg_name, "lv_srv"
+            ),
+            RecipeDescription([100000], "ext4", "/home", vg_name, "lv_home"),
+            RecipeDescription([10000, 100000, "100%"], "ext4", "/media/disks/extra"),
         ]
 
     def create_partition_fragment(self, desc: RecipeDescription) -> str:

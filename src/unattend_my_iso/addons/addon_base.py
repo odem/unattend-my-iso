@@ -35,9 +35,9 @@ class UmiAddon(ABC):
 
     def _extract_kernel_version_image(self, path: str) -> str:
         searchfolder = f"{path}/pool/main/l/linux-signed-amd64"
-        pattern = f"{searchfolder}/linux-image-*-amd64_*.deb"
+        pattern = f"{searchfolder}/linux-image-amd64_*_amd64.deb"
         files = glob.glob(pattern)
-        version_regex = re.compile(r"linux-image-(\d+\.\d+\.\d+-\d+)-amd*")
+        version_regex = re.compile(r"linux-image-amd64_(\d+\.\d+\.\d+-\d+)_amd64.deb")
         for file in files:
             match = version_regex.search(file)
             if match:
