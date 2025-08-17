@@ -40,10 +40,12 @@ class AnswerfileRecipe:
             RecipeDescription([50000, 50000, 50000], "ext4", "/", vg_name, "lv_root"),
             # RecipeDescription([16384], "ext4", "/var", vg_name, "lv_var"),
             RecipeDescription(
-                [50000, 50000, "100%"], "ext4", "/srv", vg_name, "lv_srv"
+                [100000, 100000, 100000], "ext4", "/srv", vg_name, "lv_srv"
             ),
-            RecipeDescription([100000], "ext4", "/home", vg_name, "lv_home"),
-            RecipeDescription([10000, 100000, "100%"], "ext4", "/media/disks/extra"),
+            RecipeDescription(
+                [1400000, 1400000, 1400000], "ext4", "/home", vg_name, "lv_home"
+            ),
+            RecipeDescription([10000, 100000, 100000], "ext4", "/media/disks/extra"),
         ]
 
     def create_partition_fragment(self, desc: RecipeDescription) -> str:

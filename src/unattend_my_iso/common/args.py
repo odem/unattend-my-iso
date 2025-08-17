@@ -36,8 +36,8 @@ class RunArgs(ArgumentBase):
     uefi_boot: bool = True
     cdrom_boot: bool = True
     daemonize: bool = True
-    uefi_ovmf_vars: str = "/usr/share/OVMF/OVMF_VARS.fd"
-    uefi_ovmf_code: str = "/usr/share/OVMF/OVMF_CODE.fd"
+    uefi_ovmf_vars: str = "/usr/share/OVMF/OVMF_VARS_4M.fd"
+    uefi_ovmf_code: str = "/usr/share/OVMF/OVMF_CODE_4M.fd"
     uplink_dev: str = ""
     net_ports: list[list[int]] = field(default_factory=lambda: [[]])
     net_devs: list[list[str]] = field(default_factory=lambda: [["nat"]])
