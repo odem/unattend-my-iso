@@ -33,20 +33,27 @@ class AnswerfileRecipe:
 
     def get_default_partitions(self, vg_name: str):
         return [
+            # wiese
             RecipeDescription([1024], "vfat", "/boot/efi", "", "", "ESP", "gpt"),
             RecipeDescription([1024], "ext4", "/boot", "", "", "BOOT", "gpt"),
-            # RecipeDescription([4096], "linux-swap", "", "", "", "SWAP", "gpt"),
-            RecipeDescription([4096], "linux-swap", "", vg_name, "lv_swap"),
+            RecipeDescription([4096], "linux-swap", "", "", "", "SWAP", "gpt"),
             RecipeDescription([50000, 50000, 50000], "ext4", "/", vg_name, "lv_root"),
-            # RecipeDescription([16384], "ext4", "/var", vg_name, "lv_var"),
-            RecipeDescription(
-                [100000, 100000, 100000], "ext4", "/srv", vg_name, "lv_srv"
-            ),
-            RecipeDescription(
-                [1400000, 1400000, 1400000], "ext4", "/home", vg_name, "lv_home"
-            ),
-            RecipeDescription([10000, 100000, 100000], "ext4", "/media/disks/extra"),
         ]
+
+        # return [
+        #     # mps
+        #     RecipeDescription([1024], "vfat", "/boot/efi", "", "", "ESP", "gpt"),
+        #     RecipeDescription([1024], "ext4", "/boot", "", "", "BOOT", "gpt"),
+        #     RecipeDescription([4096], "linux-swap", "", vg_name, "lv_swap"),
+        #     RecipeDescription([50000, 50000, 50000], "ext4", "/", vg_name, "lv_root"),
+        #     RecipeDescription(
+        #         [100000, 100000, 100000], "ext4", "/srv", vg_name, "lv_srv"
+        #     ),
+        #     RecipeDescription(
+        #         [1400000, 1400000, 1400000], "ext4", "/home", vg_name, "lv_home"
+        #     ),
+        #     RecipeDescription([10000, 100000, 100000], "ext4", "/media/disks/extra"),
+        # ]
 
     def create_partition_fragment(self, desc: RecipeDescription) -> str:
         body = ""
