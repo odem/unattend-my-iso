@@ -14,23 +14,40 @@ echo ""
 sleep 1
 
 # Bail if requirements are not met
-if  [ "$DEFAULT_IP" = "" ] || [ "$DEFAULT_HOST" = "" ] \
+if  [ "$DEFAULT_NIC_0_IP" = "" ] || [ "$DEFAULT_HOST" = "" ] \
     || [ "$DEFAULT_DOMAIN" = "" ] ; then
     exit 1
 fi
 
 # Create network config
-cat <<EOF > /etc/network/interfaces
+if [[ "$DEFAULT_NIC_0" != "" ]] ; then
+    if ip link show "$DEFAULT_NIC_0" > /dev/null 2>&1; then
+        cat <<EOF > /etc/network/interfaces
 
 auto $DEFAULT_NIC_0
 iface $DEFAULT_NIC_0 inet static
-    address $DEFAULT_IP
-    netmask $DEFAULT_NETMASK
+    address $DEFAULT_NIC_0_IP
+    netmask $DEFAULT_NIC_0_NETMASK
     dns-nameservers $DEFAULT_NS1 $DEFAULT_NS2
-    gateway $DEFAULT_GW
-#Default Uplink
-
+    gateway $DEFAULT_NIC_0_GW
+#Uplink nic0
 EOF
+    fi
+fi
+
+if [[ "$DEFAULT_NIC_1" != "" ]] ; then
+    if ip link show "$DEFAULT_NIC_1" > /dev/null 2>&1; then
+        cat <<EOF >> /etc/network/interfaces
+
+auto $DEFAULT_NIC_1
+iface $DEFAULT_NIC_1 inet static
+    address $DEFAULT_NIC_1_IP
+    netmask $DEFAULT_NIC_1_NETMASK
+    # gateway $DEFAULT_NIC_1_GW
+#Uplink nic1
+EOF
+    fi
+fi
 
 # Restart networking
 service networking restart

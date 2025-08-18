@@ -40,12 +40,12 @@ apt-get -y autoremove
 # Define overlay folder
 cat <<EOF > /etc/docker/daemon.json
 {
-  "data-root": "$DOCKER_ROOT/overlays"
+  "data-root": "$DEFAULT_DOCKER_DATA_ROOT/overlays"
 }
 EOF
-mkdir -p "$DOCKER_ROOT/volumes"
-mkdir -p "$DOCKER_ROOT/overlays"
-chown -R "root:docker" "$DOCKER_ROOT"
+mkdir -p "$DEFAULT_DOCKER_DATA_ROOT/volumes"
+mkdir -p "$DEFAULT_DOCKER_DATA_ROOT/overlays"
+chown -R "root:docker" "$DEFAULT_DOCKER_DATA_ROOT"
 systemctl restart docker
 
 # Configure admin users

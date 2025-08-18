@@ -1,11 +1,10 @@
 #!/bin/bash
 
-
 # Globals
 export DEBIAN_FRONTEND=noninteractive
 set -e
 
-# shellcheck disable=SC1090,SC1091
+# shellcheck disable=SC1090,1091
 [[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
 
 echo "-------------------------------------------------------------------------"

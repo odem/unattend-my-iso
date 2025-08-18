@@ -17,7 +17,7 @@ VERBOSITY?=2
 DAEMONIZE?=true
 NICS?=false
 BRIDGES?=true
-FIREWALL?=false
+FIREWALL?=true
 CMD?=cmd1
 # TEMPLATEDIR?="../idris-iso-config"
 TEMPLATEDIR?="."
@@ -65,16 +65,20 @@ boot:
 		python3 -m src.$(PROJECT_NAME).main  -tp vm_start \
 			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -to "$(OVERLAY)" \
 			-rD $(DAEMONIZE) -rv $(VERBOSITY) \
+			-rnpf false -rnpb false -rnpn true \
 			-rov false -rbC false
 install: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main  -tp vm_start -rbC true \
 			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -to "$(OVERLAY)" \
+			-rnpf false -rnpb false -rnpn true \
 			-rD $(DAEMONIZE) -rv $(VERBOSITY) -rov true
 stop:
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main -tp vm_stop \
-			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -to "$(OVERLAY)" -rv $(VERBOSITY)
+			-tw $(TEMPLATEDIR) -tt $(TEMPLATE) -to "$(OVERLAY)" -rv $(VERBOSITY) \
+			-rnpf false -rnpb false -rnpn true
+
 install-all: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main -tp vm_start \

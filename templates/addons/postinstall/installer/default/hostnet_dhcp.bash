@@ -4,9 +4,6 @@
 export DEBIAN_FRONTEND=noninteractive
 set -e
 
-DEFAULT_NIC_0=""
-DEFAULT_NIC_1=""
-
 # shellcheck disable=SC1090,1091
 [[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
 
@@ -16,24 +13,14 @@ echo "-------------------------------------------------------------------------"
 echo ""
 sleep 1
 
-if [[ "$DEFAULT_NIC_0" != "" ]] ; then
-    # Create network config
-    cat <<EOF > /etc/network/interfaces
+# Create network config
+cat <<EOF > /etc/network/interfaces
+
 auto $DEFAULT_NIC_0
 iface $DEFAULT_NIC_0 inet dhcp
-# Default uplink nic 0
-EOF
-fi
+#Default Uplink
 
-if [[ "$DEFAULT_NIC_1" != "" ]] ; then
-    # Create network config
-    cat <<EOF >> /etc/network/interfaces
-
-auto $DEFAULT_NIC_1
-iface $DEFAULT_NIC_1 inet dhcp
-# Uplink nic 1
 EOF
-fi
 
 systemctl daemon-reload
 systemctl restart networking

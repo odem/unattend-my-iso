@@ -44,6 +44,8 @@ if [[ "$CFG_USER_OTHER_NAME" != "" ]]; then
         cat "$CFG_ANSWERFILE_HOOK_DIR_TARGET/ssh/authorized_keys" \
             > "/home/$CFG_USER_OTHER_NAME"/.ssh/authorized_keys
     fi
+    mkdir -p "/home/$CFG_USER_OTHER_NAME/manage"
+    cp -r "$CFG_ANSWERFILE_HOOK_DIR_TARGET/postinstall/manage"/* "/home/$CFG_USER_OTHER_NAME/manage/"
     chmod 700 -R "/home/$CFG_USER_OTHER_NAME/"
     chown "$CFG_USER_OTHER_NAME:$CFG_USER_OTHER_NAME" -R "/home/$CFG_USER_OTHER_NAME/"
 fi
@@ -52,7 +54,6 @@ fi
 for i in $(seq 0 $(("${#CFG_ADDITIONAL_USERS[*]}" - 1))); do
     ADDITIONAL_NAME="${CFG_ADDITIONAL_USERS[$i]}"
     echo "-> Prepare additional user '$ADDITIONAL_NAME'"
-    # /sbin/adduser --disabled-password --gecos '' "$ADDITIONAL_NAME"
     if [[ $PWGEN -eq 1 ]] ; then
         newpass=$(genpw "$PWSIZE")
     else
@@ -70,23 +71,29 @@ for i in $(seq 0 $(("${#CFG_ADDITIONAL_USERS[*]}" - 1))); do
     chown "$ADDITIONAL_NAME:$ADDITIONAL_NAME" -R "/home/$ADDITIONAL_NAME/"
 done
 
-# Configure sudo users
-for i in $(seq 0 $(("${#CFG_SUDO_USERS[*]}" - 1))); do
-    SUDO_NAME="${CFG_SUDO_USERS[$i]}"
-    echo "-> Prepare sudo user '$SUDO_NAME'"
-    /sbin/usermod -aG sudo "$SUDO_NAME"
-    echo "-> Grant NOPASSWD privileges to '$SUDO_NAME'"
-    cat <<EOF > /etc/sudoers.d/"$SUDO_NAME"
-$SUDO_NAME ALL=(ALL) NOPASSWD: ALL
-EOF
-done
-echo ""
-
 # Configure admin users
 for i in $(seq 0 $(("${#CFG_ADMIN_USERS[*]}" - 1))); do
     ADDITIONAL_USER="${CFG_ADMIN_USERS[$i]}"
     echo "-> Prepare admin user '$ADDITIONAL_USER'"
     /sbin/usermod -aG "$CFG_ADMIN_GROUP_NAME" "$ADDITIONAL_USER"
+done
+echo ""
+
+# Configure sudo users
+for i in $(seq 0 $(("${#CFG_SUDO_USERS[*]}" - 1))); do
+    SUDO_NAME="${CFG_SUDO_USERS[$i]}"
+    echo "-> Prepare sudo user '$SUDO_NAME'"
+    /sbin/usermod -aG sudo "$SUDO_NAME"
+done
+echo ""
+
+# Configure deployment users
+for i in $(seq 0 $(("${#CFG_DEPLOYMENT_USERS[*]}" - 1))); do
+    DEPLOY_NAME="${CFG_DEPLOYMENT_USERS[$i]}"
+    echo "-> Grant NOPASSWD privileges to '$DEPLOY_NAME'"
+    cat <<EOF > /etc/sudoers.d/"$DEPLOY_NAME"
+$DEPLOY_NAME ALL=(ALL) NOPASSWD: ALL
+EOF
 done
 echo ""
 

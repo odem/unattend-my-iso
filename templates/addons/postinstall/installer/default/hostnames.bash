@@ -13,6 +13,11 @@ echo "-------------------------------------------------------------------------"
 echo ""
 sleep 1
 
+# Adjust test name
+if [[ "$DEFAULT_DEPLOYMENT_MODE" != "live" ]] ; then
+    DEFAULT_HOST="tst-$DEFAULT_HOST"
+fi
+
 # Hostname
 echo "$DEFAULT_HOST" > /etc/hostname
 hostname -b "$DEFAULT_HOST"

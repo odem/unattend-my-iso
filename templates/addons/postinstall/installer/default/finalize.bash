@@ -23,27 +23,50 @@ genpw() {
 setpw() {
     theuser="$1"
     length="$2"
+    announce="$3"
     if [[ "$theuser" != "" ]]; then
-        # Change pw
         newpass=$(genpw "$length")
         echo "${theuser}:${newpass}" | chpasswd
-        printf "Changing password for %18s => %s\n" "$theuser" "$newpass"
-        
+        if [[ "$announce" == "true" ]] ; then
+            printf "Changing password for %18s => %s\n" "$theuser" "$newpass"
+        else
+            printf "Changing password for %18s => NOT SHOWN!\n" "$theuser"
+        fi
     fi
 }
 
+echo ""
+echo "The script will from now on proceed with deleting config files. "
+echo "The script will also change passwords from all accounts including root"
+echo "Please confirm before proceeding"
+echo ""
+read -r -p "Do you want to continue? (y/n): " answer
+if [[ "$answer" != "y" ]]; then
+    echo "Aborted by user."
+    exit 1
+fi
+
 # Set password root user
-setpw root "$PWSIZE"
+setpw root "$PWSIZE" "true"
+
 # Set password default user
 if [[ "$CFG_USER_OTHER_NAME" != "" ]]; then
-    setpw "$CFG_USER_OTHER_NAME" "$PWSIZE"
+    setpw "$CFG_USER_OTHER_NAME" "$PWSIZE" "true"
     sudo -u "$CFG_USER_OTHER_NAME" /bin/bash -c "history -c"
 fi
+
+# Remove deployment privileges
+for i in $(seq 0 $(("${#CFG_DEPLOYMENT_USERS[*]}" - 1))); do
+    DEPLOY_NAME="${CFG_DEPLOYMENT_USERS[$i]}"
+    echo "-> Grant NOPASSWD privileges to '$DEPLOY_NAME'"
+    rm -rf /etc/sudoers.d/"$DEPLOY_NAME"
+done
+echo ""
 
 # Set passwords additional users
 for i in $(seq 0 $(("${#CFG_ADDITIONAL_USERS[*]}" - 1))); do
     ADDITIONAL_NAME="${CFG_ADDITIONAL_USERS[$i]}"
-    setpw "$ADDITIONAL_NAME" "$PWSIZE"
+    setpw "$ADDITIONAL_NAME" "$PWSIZE" "false"
     sudo -u "$ADDITIONAL_NAME" /bin/bash -c "history -c"
 done
 echo ""
@@ -52,6 +75,15 @@ echo "They will only be printed once!"
 echo ""
 echo  "Press ENTER to continue..."
 read -r 
+
+
+# Remove deploymentr users
+for i in $(seq 0 $(("${#CFG_DEPLOY_USERS[*]}" - 1))); do
+    ADDITIONAL_NAME="${CFG_DEPLOY_USERS[$i]}"
+    userdel "$ADDITIONAL_NAME"
+    sudo rm -rf /home/"$ADDITIONAL_NAME"
+    sudo rm -rf /etc/sudoers.d/"$ADDITIONAL_NAME"
+done
 
 # Remove umi config
 echo "Removing umi config"
