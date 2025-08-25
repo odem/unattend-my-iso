@@ -44,10 +44,12 @@ if [[ "$CFG_USER_OTHER_NAME" != "" ]]; then
         cat "$CFG_ANSWERFILE_HOOK_DIR_TARGET/ssh/authorized_keys" \
             > "/home/$CFG_USER_OTHER_NAME"/.ssh/authorized_keys
     fi
-    mkdir -p "/home/$CFG_USER_OTHER_NAME/manage"
-    cp -r "$CFG_ANSWERFILE_HOOK_DIR_TARGET/postinstall/manage"/* "/home/$CFG_USER_OTHER_NAME/manage/"
-    chmod 700 -R "/home/$CFG_USER_OTHER_NAME/"
-    chown "$CFG_USER_OTHER_NAME:$CFG_USER_OTHER_NAME" -R "/home/$CFG_USER_OTHER_NAME/"
+    if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET/postinstall/manage" ]] ; then
+        mkdir -p "/home/$CFG_USER_OTHER_NAME/manage"
+        cp -r "$CFG_ANSWERFILE_HOOK_DIR_TARGET/postinstall/manage"/* "/home/$CFG_USER_OTHER_NAME/manage/"
+        chmod 700 -R "/home/$CFG_USER_OTHER_NAME/"
+        chown "$CFG_USER_OTHER_NAME:$CFG_USER_OTHER_NAME" -R "/home/$CFG_USER_OTHER_NAME/"
+    fi
 fi
 
 # Configure additional users
