@@ -55,13 +55,6 @@ if [[ "$CFG_USER_OTHER_NAME" != "" ]]; then
     sudo -u "$CFG_USER_OTHER_NAME" /bin/bash -c "history -c"
 fi
 
-# Remove deployment privileges
-for i in $(seq 0 $(("${#CFG_DEPLOYMENT_USERS[*]}" - 1))); do
-    DEPLOY_NAME="${CFG_DEPLOYMENT_USERS[$i]}"
-    echo "-> Grant NOPASSWD privileges to '$DEPLOY_NAME'"
-    rm -rf /etc/sudoers.d/"$DEPLOY_NAME"
-done
-echo ""
 
 # Set passwords additional users
 for i in $(seq 0 $(("${#CFG_ADDITIONAL_USERS[*]}" - 1))); do
@@ -77,17 +70,18 @@ echo  "Press ENTER to continue..."
 read -r 
 
 
-# Remove deploymentr users
-for i in $(seq 0 $(("${#CFG_DEPLOY_USERS[*]}" - 1))); do
-    ADDITIONAL_NAME="${CFG_DEPLOY_USERS[$i]}"
-    userdel "$ADDITIONAL_NAME"
+# Remove deployment users
+echo "Removing ${#CFG_DEPLOYMENT_USERS[*]} deploy users"
+for i in $(seq 0 $(("${#CFG_DEPLOYMENT_USERS[*]}" - 1))); do
+    ADDITIONAL_NAME="${CFG_DEPLOYMENT_USERS[$i]}"
+    sudo deluser "$ADDITIONAL_NAME"
     sudo rm -rf /home/"$ADDITIONAL_NAME"
     sudo rm -rf /etc/sudoers.d/"$ADDITIONAL_NAME"
 done
 
 # Remove umi config
 echo "Removing umi config"
-rm -rf "$CFG_ANSWERFILE_HOOK_DIR_TARGET"/config/env.bash
+rm -rf "$CFG_ANSWERFILE_HOOK_DIR_TARGET"/config
 
 # Remove ssh folder
 echo "Removing ssh config"

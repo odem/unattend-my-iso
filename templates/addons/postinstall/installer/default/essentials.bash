@@ -17,13 +17,15 @@ sleep 1
 apt update -y
 apt install -f -y
 apt upgrade -y
-apt install -y openssh-server attr jq wget curl bc git vim make xxd \
-    sudo qemu-guest-agent bat chrony lsb-release gnupg iptables zip unzip
+apt install -y openssh-server rsyslog attr jq wget curl bc git vim make xxd \
+    sudo qemu-guest-agent eza bat chrony lsb-release gnupg iptables zip unzip
 apt install -y \
-    kitty psmisc \
+    kitty psmisc\
     net-tools tcpdump traceroute bridge-utils uml-utilities \
     iftop sysstat
 echo ""
+apt remove -y exim4-base
+apt autoremove
 
 # Remove Job From Jobfile
 echo "Sucessfully invoked all actions"

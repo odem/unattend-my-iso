@@ -46,10 +46,11 @@ if [[ "$CFG_USER_OTHER_NAME" != "" ]]; then
     fi
     if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET/postinstall/manage" ]] ; then
         mkdir -p "/home/$CFG_USER_OTHER_NAME/manage"
-        cp -r "$CFG_ANSWERFILE_HOOK_DIR_TARGET/postinstall/manage"/* "/home/$CFG_USER_OTHER_NAME/manage/"
-        chmod 700 -R "/home/$CFG_USER_OTHER_NAME/"
-        chown "$CFG_USER_OTHER_NAME:$CFG_USER_OTHER_NAME" -R "/home/$CFG_USER_OTHER_NAME/"
+        cp -r "$CFG_ANSWERFILE_HOOK_DIR_TARGET/postinstall/manage"/* \
+            "/home/$CFG_USER_OTHER_NAME/manage/"
     fi
+    chmod 700 -R "/home/$CFG_USER_OTHER_NAME/"
+    chown "$CFG_USER_OTHER_NAME:$CFG_USER_OTHER_NAME" -R "/home/$CFG_USER_OTHER_NAME/"
 fi
 
 # Configure additional users
@@ -78,6 +79,11 @@ for i in $(seq 0 $(("${#CFG_ADMIN_USERS[*]}" - 1))); do
     ADDITIONAL_USER="${CFG_ADMIN_USERS[$i]}"
     echo "-> Prepare admin user '$ADDITIONAL_USER'"
     /sbin/usermod -aG "$CFG_ADMIN_GROUP_NAME" "$ADDITIONAL_USER"
+    if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET/postinstall/manage" ]] ; then
+        mkdir -p "/home/$ADDITIONAL_USER/manage"
+        cp -r "$CFG_ANSWERFILE_HOOK_DIR_TARGET/postinstall/manage"/* \
+            "/home/$ADDITIONAL_USER/manage/"
+    fi
 done
 echo ""
 
@@ -93,6 +99,11 @@ echo ""
 for i in $(seq 0 $(("${#CFG_DEPLOYMENT_USERS[*]}" - 1))); do
     DEPLOY_NAME="${CFG_DEPLOYMENT_USERS[$i]}"
     echo "-> Grant NOPASSWD privileges to '$DEPLOY_NAME'"
+    if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET/postinstall/manage" ]] ; then
+        mkdir -p "/home/$DEPLOY_NAME/manage"
+        cp -r "$CFG_ANSWERFILE_HOOK_DIR_TARGET/postinstall/manage"/* \
+            "/home/$DEPLOY_NAME/manage/"
+    fi
     cat <<EOF > /etc/sudoers.d/"$DEPLOY_NAME"
 $DEPLOY_NAME ALL=(ALL) NOPASSWD: ALL
 EOF

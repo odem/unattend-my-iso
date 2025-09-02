@@ -19,10 +19,15 @@ iptables -F
 iptables -X
 systemctl restart docker
 
+
 echo "Configuring policies"
 iptables -P INPUT "$DEFAULT_FW_POLICY_IN"
 iptables -P OUTPUT "$DEFAULT_FW_POLICY_OUT"
 iptables -P FORWARD "$DEFAULT_FW_POLICY_FWD"
+
+echo "Configuring localhost access"
+sudo iptables -A INPUT -i lo -j ACCEPT
+sudo iptables -A OUTPUT -o lo -j ACCEPT
 
 echo "Configuring default input rules"
 iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
@@ -40,7 +45,7 @@ done
 
 # Store rules
 [[ -d /etc/iptables ]] || mkdir -p /etc/iptables
-iptables-save > /etc/iptables/rulesv4.iptables
+iptables-save > /etc/iptables/rules.v4
 cat <<EOF > "/etc/systemd/system/iptables.service"
 [Unit]
 Description=iptables starter
@@ -50,7 +55,7 @@ After=docker.service
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=/etc/iptables
-ExecStart=/usr/sbin/iptables-restore rulesv4.iptables
+ExecStart=/usr/sbin/iptables-restore rules.v4
 ExecStop=/usr/bin/iptables -F
 TimeoutStartSec=0
 [Install]

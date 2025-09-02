@@ -13,6 +13,14 @@ echo "-------------------------------------------------------------------------"
 echo ""
 sleep 1
 
+# Timezone
+echo "Europe/Berlin" > /etc/timezone
+timedatectl set-timezone Europe/Berlin
+mkdir -p /etc/chrony/chrony.d
+echo "bindaddress 127.0.0.1" > /etc/chrony/chrony.d/localhost-only.conf
+echo "DAEMON_OPTS='-F 1 -4'" > /etc/default/chrony
+systemctl restart chrony
+
 # Locale
 LOCALESTR=$CFG_LOCALE_MULTI
 cat <<EOF > /etc/default/locale

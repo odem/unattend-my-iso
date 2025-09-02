@@ -28,7 +28,7 @@ if [[ -d "$SRCDIR" ]] ; then
         cp "$f" "$DSTFILE"
         chmod +x "$DSTFILE"
         chown "$CFG_USER_OTHER_NAME":"$CFG_USER_OTHER_NAME" "$DSTFILE"
-        job="$CRONSCHEDULE $DSTFILE $CRONARGS >> /var/log/cron 2>&1"
+        job="$CRONSCHEDULE $DSTFILE $CRONARGS  2>&1 >>$DSTDIR/cron"
         CONFIGURED=$(crontab -u "$CFG_USER_OTHER_NAME" -l | grep -F "$DSTFILE")
         if [ "$CONFIGURED" == "" ]; then
             (echo "$job") | crontab  -u "$CFG_USER_OTHER_NAME" -
