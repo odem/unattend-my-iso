@@ -21,6 +21,7 @@ class UmiQemuCommands:
 
     def create_run_command(self, args: TaskConfig, args_hv: HypervisorArgs) -> list:
         command = self._create_invoke_args(args)
+        command += self._create_sound_args(args)
         command += self._create_monitor_args(args, args_hv)
         command += self._create_log_args(args, args_hv)
         command += self._create_cpu_args(args, args_hv)
@@ -44,6 +45,17 @@ class UmiQemuCommands:
         generated = ["sudo", "qemu-system-x86_64"]
         return self.bashformat(args, generated)
 
+    def _create_sound_args(self, args: TaskConfig) -> list[str]:
+        generated = [
+            "-device",
+            "intel-hda,id=sound0",
+            "-device",
+            "hda-output,audiodev=snd0",
+            "-audiodev",
+            "pa,id=snd0,server=unix:/run/user/1000/pulse/native,out.frequency=44100,out.channels=2",
+        ]
+        return self.bashformat(args, generated)
+
     def _create_monitor_args(
         self, args: TaskConfig, args_hv: HypervisorArgs
     ) -> list[str]:
@@ -62,7 +74,7 @@ class UmiQemuCommands:
         if args.run.enable_monitor_socket:
             generated = [
                 "-d",
-                "op,exec,int,cpu,fpu,mmu,pcall,cpu_reset,unimp,strace,tid",
+                "sound,op,exec,int,cpu,fpu,mmu,pcall,cpu_reset,unimp,strace,tid",
                 "-D",
                 full_name,
             ]
@@ -73,7 +85,15 @@ class UmiQemuCommands:
         smpinfo = f"{args_hv.sys_cpu},sockets=1,cores={args_hv.sys_cpu},threads=1"
         if args_hv.vmtype in ["win", "windows"]:
             cpuflags = "host,hv_relaxed,hv_spinlocks=0x1fff,hv_vapic,hv_time"
-        generated = ["-cpu", cpuflags, "-smp", smpinfo, "--enable-kvm"]
+        generated = [
+            "-cpu",
+            cpuflags,
+            "-global",
+            "kvm-pit.lost_tick_policy=delay",
+            "-smp",
+            smpinfo,
+            "--enable-kvm",
+        ]
         return self.bashformat(args, generated)
 
     def _create_display_args(
@@ -85,7 +105,7 @@ class UmiQemuCommands:
                 "-vga",
                 "qxl",
                 "-spice",
-                f"port={args.run.spice_port},addr=127.0.0.1,disable-ticketing",
+                f"port={args.run.spice_port},addr=127.0.0.1,disable-ticketing=on",
                 "-device",
                 "virtio-serial-pci",
                 "-device",
