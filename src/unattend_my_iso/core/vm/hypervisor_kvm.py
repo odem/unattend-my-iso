@@ -83,6 +83,23 @@ class UmiHypervisorKvm(UmiHypervisorBase):
                 return True
         return False
 
+    def vm_runscript(self, runstring: str, args: TaskConfig) -> bool:
+        if args.run.generate_run_script:
+            vmdir = self.files._get_path_vm(args)
+            runner_name = "run.bash"
+            full_name = f"{vmdir}/{runner_name}"
+            allstring = f"#!/bin/bash\n\n{runstring}"
+            log_info(
+                f"Running VM   : Create runscript at {full_name}",
+                self.__class__.__qualname__,
+            )
+            if os.path.exists(full_name):
+                os.remove(full_name)
+            self.files.append_to_file(full_name, allstring)
+            if os.path.exists(full_name):
+                self.files.chmod(full_name, 755)
+        return True
+
     def vm_run(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:
         gen = UmiQemuCommands()
         runcmd = gen.create_run_command(args, args_hv)
@@ -90,8 +107,14 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             f"Running VM   : {args_hv.name} (Daemonize: {args.run.daemonize})",
             self.__class__.__qualname__,
         )
+        runstring = " ".join(runcmd)
+        self.vm_runscript(runstring, args)
+        final_cmd = []
+        for cmd in runcmd:
+            if cmd != gen.extender:
+                final_cmd.append(cmd)
         if args.run.verbosity >= 4:
-            log_debug(f"Run command  : {' '.join(runcmd)}", self.__class__.__qualname__)
+            log_debug(f"Run command  : {runstring}", self.__class__.__qualname__)
         if self.net.net_start(args_hv) is False:
             log_error(
                 "Networking   : Could not setup network", self.__class__.__qualname__
@@ -99,8 +122,8 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             return False
 
         if args.run.daemonize:
-            return self.vm_run_nonblocking(runcmd, args_hv)
-        return self.vm_run_blocking(runcmd, args_hv)
+            return self.vm_run_nonblocking(final_cmd, args_hv)
+        return self.vm_run_blocking(final_cmd, args_hv)
 
     def vm_stop(self, args: TaskConfig, args_hv: HypervisorArgs) -> bool:
         if os.path.exists(args_hv.pidfile):
@@ -140,6 +163,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         return True
 
     def vm_run_blocking(self, runcmd: list[str], args_hv: HypervisorArgs) -> bool:
+
         proc = run_background(runcmd, stdout=PIPE, stderr=PIPE, text=True)
         self.vm_run_postsetup(proc, args_hv, True)
         log_info("\n\nRunning VM   : Press Ctrl+C to stop", self.__class__.__qualname__)

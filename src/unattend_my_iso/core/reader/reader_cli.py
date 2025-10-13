@@ -666,6 +666,20 @@ class CommandlineReader:
             description="Defines the arguments for running a vm",
         )
         group_target.add_argument(
+            "-rel",
+            "--enable_logging",
+            type=str,
+            default=None,
+            help="Enables logging to vm folder",
+        )
+        group_target.add_argument(
+            "-rems",
+            "--enable_monitor_socket",
+            type=str,
+            default=None,
+            help="Enables monitor on socket",
+        )
+        group_target.add_argument(
             "-rn",
             "--vmname",
             type=str,
@@ -678,6 +692,13 @@ class CommandlineReader:
             type=int,
             default=None,
             help="Port for spice connection",
+        )
+        group_target.add_argument(
+            "-rgrs",
+            "--generate_run_script",
+            type=bool,
+            default=None,
+            help="Create run_script",
         )
         group_target.add_argument(
             "-rv",

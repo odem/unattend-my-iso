@@ -16,11 +16,10 @@ vmname = "win11-test"
 net_prepare_fw = true
 net_prepare_nics = true
 net_prepare_bridges = false
-res_cpu = 4
-spice_port = -1                                    # 5900
+res_cpu = 8
+spice_port = -1                                         # 5900
 res_mem = 4096
-secure_boot = false
-disks = [["os-hdd0.qcow2", "256G", "hdd", "none"]]
+disks = [["os-hdd0.qcow2", "256G", "hdd", "writeback"]]
 net_devs = [["nat"]]
 net_ports = [["2223", "22"], ["3389", "3389"]]
 
