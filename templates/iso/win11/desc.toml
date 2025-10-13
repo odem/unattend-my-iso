@@ -3,7 +3,7 @@
 name = "win11"
 virtio_name = "virtio-win-0.1.229.iso"
 virtio_url = "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.229-1/virtio-win-0.1.229.iso"
-iso_name = "Win11_24H2_German_x64.iso"
+iso_name = "Win11_25H2_German_x64.iso"
 iso_url = ""
 iso_type = "windows"
 answerfile = "autounattend.xml"
@@ -17,10 +17,12 @@ net_prepare_fw = true
 net_prepare_nics = true
 net_prepare_bridges = false
 res_cpu = 4
+spice_port = -1                                    # 5900
 res_mem = 4096
+secure_boot = false
 disks = [["os-hdd0.qcow2", "256G", "hdd", "none"]]
 net_devs = [["nat"]]
-net_ports = [["2223", "22"]]
+net_ports = [["2223", "22"], ["3389", "3389"]]
 
 [addon_answerfile]
 locale_string = "de_DE"

@@ -13,6 +13,7 @@ class UmiQemuCommands:
     def create_run_command(self, args: TaskConfig, args_hv: HypervisorArgs) -> list:
         command = self._create_invoke_args()
         command += self._create_cpu_args(args_hv)
+        command += self._create_display_args(args, args_hv)
         command += self._create_pidfile_args(args)
         command += self._create_machine_args()
         command += self._create_memory_args(args_hv)
@@ -20,6 +21,7 @@ class UmiQemuCommands:
         command += self._create_rng_args()
         command += self._create_legacy_args()
         command += self._create_uefi_args(args, args_hv)
+        command += self._create_secureboot_args(args, args_hv)
         command += self._create_tpm_args(args, args_hv)
         command += self._create_net_args(args_hv)
         command += self._create_disk_args(args_hv)
@@ -32,6 +34,19 @@ class UmiQemuCommands:
     def _create_cpu_args(self, args_hv: HypervisorArgs) -> list[str]:
         smpinfo = f"{args_hv.sys_cpu},sockets=1,cores={args_hv.sys_cpu},threads=1"
         return ["--enable-kvm", "-cpu", "host", "-smp", smpinfo]
+
+    def _create_display_args(
+        self, args: TaskConfig, args_hv: HypervisorArgs
+    ) -> list[str]:
+        display_args = []
+        if args.run.spice_port > 0:
+            display_args = [
+                "-vga",
+                "qxl",
+                "-spice",
+                f"port={args.run.spice_port},addr=127.0.0.1,disable-ticketing",
+            ]
+        return display_args
 
     def _create_pidfile_args(self, args: TaskConfig) -> list[str]:
         vmdir = f"{args.sys.path_vm}/{args.run.vmname}"
@@ -55,16 +70,30 @@ class UmiQemuCommands:
         arr += ["-object", "rng-random,id=rng0,filename=/dev/urandom"]
         return arr
 
+    def _create_secureboot_args(
+        self, args: TaskConfig, args_hv: HypervisorArgs
+    ) -> list[str]:
+        sb_args = []
+        if args.run.secure_boot:
+            sb_args = [
+                "-global",
+                "driver=cfi.pflash01,property=secure,value=on",
+            ]
+        return sb_args
+
     def _create_uefi_args(self, args: TaskConfig, args_hv: HypervisorArgs) -> list[str]:
         vmdir = f"{args.sys.path_vm}/{args.run.vmname}"
-        varsname = os.path.basename(args.run.uefi_ovmf_vars)
+        uefi_vars = args.run.uefi_ovmf_vars
+        uefi_code = args.run.uefi_ovmf_code
+        if args.run.secure_boot:
+            uefi_vars = args.run.uefi_ovmf_vars_ms
+            uefi_code = args.run.uefi_ovmf_code_ms
+
+        varsname = os.path.basename(uefi_vars)
         efidisk = f"{vmdir}/{varsname}"
         if args_hv.uefi is True:
             pflash = "if=pflash,format=raw"
-            arr_uefi = [
-                "-drive",
-                f"{pflash},file={args.run.uefi_ovmf_code},readonly=on",
-            ]
+            arr_uefi = ["-drive", f"{pflash},file={uefi_code},readonly=on"]
             arr_uefi += ["-drive", f"{pflash},file={efidisk}"]
             return arr_uefi
         return []

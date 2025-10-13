@@ -33,11 +33,15 @@ class RunArgs(ArgumentBase):
     disks: list[list[str]] = field(
         default_factory=lambda: [["disk1.qcow2", "256G", "hdd"]]
     )
+    spice_port: int = -1
+    secure_boot: bool = True
     uefi_boot: bool = True
     cdrom_boot: bool = True
     daemonize: bool = True
     uefi_ovmf_vars: str = "/usr/share/OVMF/OVMF_VARS_4M.fd"
     uefi_ovmf_code: str = "/usr/share/OVMF/OVMF_CODE_4M.fd"
+    uefi_ovmf_vars_ms: str = "/usr/share/OVMF/OVMF_VARS_4M.ms.fd"
+    uefi_ovmf_code_ms: str = "/usr/share/OVMF/OVMF_CODE_4M.ms.fd"
     uplink_dev: str = ""
     net_ports: list[list[int]] = field(default_factory=lambda: [[]])
     net_devs: list[list[str]] = field(default_factory=lambda: [["nat"]])

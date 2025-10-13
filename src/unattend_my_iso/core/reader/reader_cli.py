@@ -673,6 +673,13 @@ class CommandlineReader:
             help="Name of the vm",
         )
         group_target.add_argument(
+            "-rsp",
+            "--spice_port",
+            type=int,
+            default=None,
+            help="Port for spice connection",
+        )
+        group_target.add_argument(
             "-rv",
             "--verbosity",
             type=int,
@@ -706,6 +713,13 @@ class CommandlineReader:
             type=str,
             default=None,
             help="Use uefi boot to run the iso (true or false)",
+        )
+        group_target.add_argument(
+            "-rbS",
+            "--secure_boot",
+            type=str,
+            default=None,
+            help="Enable Secureboot",
         )
         group_target.add_argument(
             "-rbC",
