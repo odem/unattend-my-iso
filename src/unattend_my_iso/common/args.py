@@ -15,6 +15,7 @@ from unattend_my_iso.common.const import (
     DEFAULT_SUBNET,
     DEFAULT_TIMEZONE,
     DEFAULT_USERNAME,
+    DEFAULT_USERNAME_ROOT,
     DEFAULT_VGNAME,
     HOME,
     USER,
@@ -58,6 +59,8 @@ class RunArgs(ArgumentBase):
     build_homedir: str = HOME
     build_user: str = USER
     file_pid: str = "vm.pid"
+    ci_enabled: bool = False
+    ci_uuid: str = "12345-abcde-67890-fghij"
 
 
 @dataclass
@@ -89,6 +92,8 @@ class AddonArgsAnswerFile(ArgumentBase):
     time_zone: str = DEFAULT_TIMEZONE
     time_ntp: bool = True
     user_root_enabled: bool = True
+    user_root_name: str = DEFAULT_USERNAME_ROOT
+    user_root_fullname: str = DEFAULT_USERNAME_ROOT
     user_root_pw: str = DEFAULT_PASSWORD_ROOT
     user_other_enabled: bool = True
     user_other_name: str = DEFAULT_USERNAME
@@ -99,6 +104,7 @@ class AddonArgsAnswerFile(ArgumentBase):
     deployment_users: list[str] = field(default_factory=lambda: [])
     admin_users: list[str] = field(default_factory=lambda: [])
     admin_group_name: str = "admin"
+    user_group_name: str = "users"
     packages_install: list[str] = field(default_factory=lambda: [])
     grub_install_device: str = "default"
     include_offline_packages: list[str] = field(default_factory=lambda: [])

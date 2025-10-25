@@ -7,7 +7,7 @@ iso_name = "Win11_25H2_German_x64.iso"
 iso_url = ""
 iso_type = "windows"
 answerfile = "autounattend.xml"
-path_postinstall = ""
+path_postinstall = "postinstall"
 file_postinstall = "postinstall.bat"
 config_version = "0.0.3"
 
@@ -17,40 +17,50 @@ net_prepare_fw = true
 net_prepare_nics = true
 net_prepare_bridges = false
 res_cpu = 8
+secure_boot = true
 spice_port = 5900                                       # 5900
 res_mem = 4096
 disks = [["os-hdd0.qcow2", "256G", "hdd", "writeback"]]
 net_devs = [["nat"]]
 net_ports = [["2223", "22"], ["3389", "3389"]]
+ci_enabled = true
+ci_uuid = "12345-abcde-67890-fghij"
 
 [addon_answerfile]
 locale_string = "de_DE"
 locale_multi = "de_DE.UTF-8"
+user_root_name = "umi-admin"
+user_root_fullname = "umi-admin"
+user_root_pw = "rootpass"
 user_other_name = "umi-win"
 user_other_fullname = "umi-win"
 user_other_pw = "umi-winpass"
+admin_group_name = "Administratoren"
+user_group_name = "Benutzer"
 
 [addon_postinstall]
 auto_updates = true
 password_generate = false
 password_length = 24
 bash_aliases = ""
-password_charset = 'A-Za-z0-9!%$&=?+*#-_.:,;<>' # No quotes and backslahes
+password_charset = 'A-Za-z0-9!%$&=?+*#-_.:,;' # No quotes and backslahes
 joblist_early = []
 joblist_late = []
-copy_additional_scripts = []
-exec_additional_scripts = [
+exec_additional_scripts = ["postinstall.bat"]
+copy_additional_scripts = [
   "installer/win/user.bat",
   "installer/win/essentials.bat",
   "installer/win/ssh.bat",
   "installer/win/debug.bat",
   "installer/win/cloudbase.bat",
+  "installer/win/spice.bat",
+  "installer/win/titus.bat",
   "installer/win/finalize.bat",
 ]
 
 [addon_ssh]
 ssh_enabled = true
-config_auth_append = "~/.ssh/id_rsa_dummy.pub"
+config_auth_append = "/home/jb/.ssh/id_rsa_dummy.pub"
 
 [addon_cmd]
 cmd_enabled = true

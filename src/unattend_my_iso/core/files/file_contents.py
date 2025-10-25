@@ -7,6 +7,14 @@ class UmiFileContents:
     def __init__(self):
         pass
 
+    def makedirs(self, dirname: str) -> str:
+        try:
+            if os.path.exists(dirname) is False:
+                os.makedirs(dirname)
+        except Exception as e:
+            log_error(f"Exception on file append: {e}")
+        return ""
+
     def read_file(self, filename: str) -> str:
         try:
             with open(filename, "r") as file:

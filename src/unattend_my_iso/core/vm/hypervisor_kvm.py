@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import os
 import subprocess
 from typing import Optional
+from unattend_my_iso.core.generators.generator_cloudbase import CloudBaseConfig
 from unattend_my_iso.core.generators.generator_qemu import UmiQemuCommands
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.core.net.net_manager import UmiNetworkManager
@@ -252,8 +253,12 @@ class UmiHypervisorKvm(UmiHypervisorBase):
     def prepare_disk_efi(self, args: TaskConfig) -> bool:
         vmdir = f"{args.sys.path_vm}/{args.run.vmname}"
         varsname = os.path.basename(args.run.uefi_ovmf_vars)
-        efidisk = f"{vmdir}/{varsname}"
         diskname = args.run.uefi_ovmf_vars
+        if args.run.secure_boot:
+            varsname = os.path.basename(args.run.uefi_ovmf_vars_ms)
+            diskname = args.run.uefi_ovmf_vars_ms
+
+        efidisk = f"{vmdir}/{varsname}"
         if os.path.exists(vmdir) is False:
             os.makedirs(vmdir)
         if os.path.exists(efidisk) is False:
@@ -272,6 +277,17 @@ class UmiHypervisorKvm(UmiHypervisorBase):
     def vm_get_args(self, args: TaskConfig, template: TemplateConfig) -> HypervisorArgs:
         vmdir = self.files._get_path_vm(args)
         pidfile = self.files._get_path_vmpid(args)
+        cloudbase_config = CloudBaseConfig(
+            ci_adminname=args.addons.answerfile.user_root_name,
+            ci_group_admin=args.addons.answerfile.admin_group_name,
+            ci_adminpass=args.addons.answerfile.user_root_pw,
+            ci_username=args.addons.answerfile.user_other_name,
+            ci_userpass=args.addons.answerfile.user_other_pw,
+            ci_group_users=args.addons.answerfile.user_group_name,
+            ci_uuid=args.run.ci_uuid,
+            ci_hostname=args.addons.answerfile.host_name,
+            ci_dir=vmdir,
+        )
         disks = []
         for disk in args.run.disks:
             innerlist = disk
@@ -279,6 +295,9 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             disks.append(innerlist)
 
         cdrom = ""
+        if args.run.ci_enabled is True:
+            self.ci_gen.create_openstack_dir(cloudbase_config)
+            self.ci_gen.create_openstack_iso(cloudbase_config)
         if args.run.cdrom_boot is True:
             cdrom = self.files._get_path_isofile(args)
         return HypervisorArgs(
@@ -298,6 +317,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             args.run.net_prepare_bridges,
             pidfile,
             args.run.clean_old_vm,
+            cloudbase_config,
         )
 
     def vm_prepare_disk_qcow(self, diskpath: str, size: str) -> list[str]:

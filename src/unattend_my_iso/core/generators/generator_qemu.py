@@ -286,6 +286,11 @@ class UmiQemuCommands:
         self, args: TaskConfig, args_hv: HypervisorArgs
     ) -> list[str]:
         generated = []
+        if args.run.ci_enabled:
+            vm_dir = self.files._get_path_vm(args)
+            iso_name = args_hv.ci_config.ci_isoname
+            cd_file = f"{vm_dir}/{iso_name}"
+            generated += ["-cdrom", f"{cd_file}", "-boot", "order=cd"]
         if args_hv.cdrom != "":
             generated += ["-cdrom", f"{args_hv.cdrom}", "-boot", "order=cd"]
         return self.bashformat(args, generated)

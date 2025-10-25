@@ -562,6 +562,20 @@ class CommandlineReader:
             help="Enable root user (true or false)",
         )
         group_target.add_argument(
+            "-aurn",
+            "--user_root_name",
+            type=str,
+            default=None,
+            help="The root name to use",
+        )
+        group_target.add_argument(
+            "-aurf",
+            "--user_root_fullname",
+            type=str,
+            default=None,
+            help="The root fullname to use",
+        )
+        group_target.add_argument(
             "-aurp",
             "--user_root_pw",
             type=str,
@@ -639,6 +653,13 @@ class CommandlineReader:
             help="name of the admin group",
         )
         group_target.add_argument(
+            "-augn",
+            "--user_group_name",
+            type=str,
+            default=None,
+            help="name of the admin group",
+        )
+        group_target.add_argument(
             "-ag",
             "--grub_install_device",
             type=str,
@@ -685,6 +706,13 @@ class CommandlineReader:
             type=str,
             default=None,
             help="Name of the vm",
+        )
+        group_target.add_argument(
+            "-rce",
+            "--ci_enabled",
+            type=str,
+            default=None,
+            help="Enable Cloudinit",
         )
         group_target.add_argument(
             "-rsp",

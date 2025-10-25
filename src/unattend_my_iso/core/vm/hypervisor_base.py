@@ -3,6 +3,10 @@ from dataclasses import dataclass
 
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.core.files.file_manager import UmiFileManager
+from unattend_my_iso.core.generators.generator_cloudbase import (
+    CloudBaseConfig,
+    UmiCloudBaseGenerator,
+)
 
 
 @dataclass
@@ -23,10 +27,12 @@ class HypervisorArgs:
     net_prepare_bridges: bool
     pidfile: str
     clean_old_vm: bool
+    ci_config: CloudBaseConfig
 
 
 class UmiHypervisorBase(ABC):
     files: UmiFileManager = UmiFileManager()
+    ci_gen: UmiCloudBaseGenerator = UmiCloudBaseGenerator()
 
     def __init__(self) -> None:
         pass

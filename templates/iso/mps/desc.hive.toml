@@ -1,0 +1,94 @@
+
+[description]
+name = "hive"
+config_version = "0.0.3"
+
+[run]
+vmname = "hive"
+net_devs = [["nat"]]
+net_ports = [["2224", "22"]]
+disks = [["disk1.qcow2", "256G", "hdd"]]
+res_cpu = 4
+res_mem = 4096
+
+[addon_postinstall]
+joblist_early = []
+joblist_late = [""]
+copy_additional_scripts = [
+  "installer/default/finalize.bash",
+  "installer/postinstall_mps.bash",
+]
+exec_additional_scripts = [
+  "installer/default/hostnet_dhcp.bash",
+  "installer/default/hostnames.bash",
+  "installer/default/apt.bash",
+  "installer/default/essentials.bash",
+  "installer/default/shell.bash",
+  "installer/default/user.bash",
+  "installer/default/ssh.bash",
+  "installer/default/locale.bash",
+  "installer/default/docker.bash",
+  "installer/default/firewall.bash",
+]
+enable_grub_theme = true
+
+[addon_user]
+user_enabled = true
+default_user_dir = "umi"
+
+[addon_grub]
+grub_theme = "anon"
+timeout = 30
+sleeptime = 10
+
+[addon_answerfile]
+answerfile_enable_networking = false
+answerfile_enable_dhcp = false
+answerfile_enable_crypto = true
+answerfile_enable_lvm = true
+answerfile_confirm_partitioning = false
+answerfile_confirm_final_reboot = false
+install_disk = ""
+user_root_pw = "rootpass"
+user_other_name = "jb"
+user_other_fullname = "jb"
+user_other_pw = "jbpass"
+host_name = "hive"
+host_domain = "local"
+net_dhcp = false
+net_ip = "10.23.42.9"
+net_mask = "255.255.255.0"
+net_gateway = "10.23.42.1"
+net_dns = "8.8.8.8"
+packages_install = ["openssh-server"]
+additional_users = ["deploy"]
+sudo_users = ["deploy", "jb"]
+admin_users = ["jb"]
+deployment_users = ["deploy"]
+admin_group_name = "admin"
+disk_password = "diskpass"
+include_git_repositories = ["https://github.com/mpsffap/mps.git"]
+
+[addon_cmd]
+cmd_enabled = true
+cmds = [
+  { "name" = "cmd1", "scope" = "", "con" = "nat", "cmd" = "echo hello" },
+  { "name" = "bash", "scope" = "", "con" = "nat", "cmd" = "bash -i" },
+]
+
+[addon_ssh]
+ssh_enabled = true
+config_auth_append = "~/.ssh/id_rsa.pub"
+
+[[env]]
+"DEFAULT_HOST" = "hive"
+"DEFAULT_DOMAIN" = "local"
+"DEFAULT_NIC_0" = "enp0s2"
+# "DEFAULT_NIC_0" = "enp6s0"
+# "DEFAULT_NIC_1" = "enp7s0"
+"DOCKER_ROOT" = "/srv/docker"
+"DEFAULT_FW_POLICY_IN" = "DROP"
+"DEFAULT_FW_POLICY_OUT" = "ACCEPT"
+"DEFAULT_FW_POLICY_FWD" = "DROP"
+"DEFAULT_FW_PORTS_TCP" = "22"
+"DEFAULT_FW_PORTS_UDP" = ""
