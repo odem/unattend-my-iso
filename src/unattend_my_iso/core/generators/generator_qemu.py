@@ -46,14 +46,16 @@ class UmiQemuCommands:
         return self.bashformat(args, generated)
 
     def _create_sound_args(self, args: TaskConfig) -> list[str]:
-        generated = [
-            "-device",
-            "intel-hda,id=sound0",
-            "-device",
-            "hda-output,audiodev=snd0",
-            "-audiodev",
-            "pa,id=snd0,server=unix:/run/user/1000/pulse/native,out.frequency=44100,out.channels=2",
-        ]
+        generated = []
+        if args.run.enable_audiodev:
+            generated = [
+                "-device",
+                "intel-hda,id=sound0",
+                "-device",
+                "hda-output,audiodev=snd0",
+                "-audiodev",
+                "pa,id=snd0,server=unix:/run/user/1000/pulse/native,out.frequency=44100,out.channels=2",
+            ]
         return self.bashformat(args, generated)
 
     def _create_monitor_args(

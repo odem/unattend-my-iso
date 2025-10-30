@@ -36,10 +36,12 @@ class RunArgs(ArgumentBase):
     )
     enable_logging: bool = True
     enable_monitor_socket: bool = False
+    enable_audiodev: bool = False
     spice_port: int = -1
     secure_boot: bool = True
     uefi_boot: bool = True
     cdrom_boot: bool = True
+
     daemonize: bool = True
     generate_run_script: bool = True
     uefi_ovmf_vars: str = "/usr/share/OVMF/OVMF_VARS_4M.fd"

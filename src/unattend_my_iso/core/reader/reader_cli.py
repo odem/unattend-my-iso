@@ -694,6 +694,13 @@ class CommandlineReader:
             help="Enables logging to vm folder",
         )
         group_target.add_argument(
+            "-rea",
+            "--enable_audiodev",
+            type=str,
+            default=None,
+            help="Enables audiodev inside vm",
+        )
+        group_target.add_argument(
             "-rems",
             "--enable_monitor_socket",
             type=str,
