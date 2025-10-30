@@ -227,8 +227,6 @@ def get_configs_overlay_list(
             log_debug(f"Using single overlay: {template_overlay}")
             cfg = get_config(cfg_sys, template_name, template_overlay)
             result.append(cfg)
-    else:
-        log_error("Overlay is None")
     return result
 
 

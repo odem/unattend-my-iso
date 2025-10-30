@@ -1,8 +1,6 @@
 import os
 import subprocess
 
-from unattend_my_iso.common.logging import log_info
-
 PIPE = subprocess.PIPE
 STDOUT = subprocess.STDOUT
 DEVNULL = subprocess.DEVNULL
@@ -19,8 +17,8 @@ def run(*args, **kwargs) -> CompletedProcess:
     return subprocess.run(*args, **kwargs, env=env)
 
 
-def check_call(args: list[str]) -> int:
-    return subprocess.call(args)
+def check_call(args: list[str], **kwargs) -> int:
+    return subprocess.call(args, **kwargs)
 
 
 def run_background(*args, **kwargs) -> subprocess.Popen[str]:

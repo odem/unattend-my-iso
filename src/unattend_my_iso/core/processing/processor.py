@@ -1,6 +1,6 @@
 import sys
-from unattend_my_iso.common.config import TaskResult
-from unattend_my_iso.common.logging import log_debug, log_error, log_info
+from unattend_my_iso.common.config import TaskResult, TemplateConfig
+from unattend_my_iso.common.logging import log_debug, log_error, log_info, log_warn
 from unattend_my_iso.core.reader.reader_config import TaskConfig, get_configs
 from unattend_my_iso.core.processing.processor_task_isogen import TaskProcessorIsogen
 from unattend_my_iso.core.processing.processor_task_vmrun import TaskProcessorVmRun
@@ -19,15 +19,17 @@ class UmiTaskProcessor(
 
     def do_process(self):
         taskconfigs = get_configs()
-        log_debug(f"TaskConfigs : {len(taskconfigs)}", self.__class__.__qualname__)
+        log_info(f"TaskConfigs : {len(taskconfigs)}", self.__class__.__qualname__)
         if len(taskconfigs) > 0:
             for cfg in taskconfigs:
                 if isinstance(cfg, TaskConfig):
                     self._get_addons()
                     self._get_templates(cfg)
                     self._get_overlays(cfg)
-                    result = self._process_task(cfg)
-                    self._process_result(result)
+                    template = self._get_task_template(cfg)
+                    if template is not None:
+                        result = self._process_task(cfg, template)
+                        self._process_result(result)
                 else:
                     log_error(
                         f"TaskConfig invalid: {taskconfigs}",
@@ -40,15 +42,12 @@ class UmiTaskProcessor(
             )
             sys.exit(1)
 
-    def _process_task(self, args: TaskConfig) -> TaskResult:
+    def _process_task(self, args: TaskConfig, template: TemplateConfig) -> TaskResult:
         log_info(
             f"Template: {args.target.template} ({args.target.template_overlay})",
             self.__class__.__qualname__,
         )
         tasktype = args.target.proctype
-        template = self._get_task_template(args)
-        if template is None:
-            return self._get_error_result(f"No template: {template}")
         if args.run.verbosity >= 4:
             log_debug(f"TaskConfig : {template}", self.__class__.__qualname__)
             log_debug(f"TemplateConfig : {args}", self.__class__.__qualname__)

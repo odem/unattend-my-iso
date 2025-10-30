@@ -40,37 +40,77 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         for cmd in cmds:
             if isinstance(cmd, dict):
                 info = ExecCommandInfo(**cmd)
-                log_info(f"Parsed CMD: {info.name}")
                 if info.name == target:
-                    log_info(f"Found CMD: {info}")
+                    log_debug(f"Executing command '{info.name}'")
                     return info
+        log_error(f"No CMD found: {target}")
         return None
 
     def vm_exec_build_shell_cmd(
+        self,
+        info: ExecCommandInfo,
+        args: TaskConfig,
+    ) -> list[str]:
+        result = []
+        if info.scope == "env":
+            result = self.vm_exec_build_shell_cmd_envscope(info, args)
+        elif info.scope == "net":
+            result = self.vm_exec_build_shell_cmd_netscope(info, args)
+        else:
+            result = self.vm_exec_build_shell_cmd_netscope(info, args)
+        return result
+
+    def vm_exec_build_shell_cmd_envscope(
+        self,
+        info: ExecCommandInfo,
+        args: TaskConfig,
+    ) -> list[str]:
+        result = []
+        if info.scope == "env":
+            if ":" in info.con:
+                parts = info.con.split(":")
+                envname = parts[0]
+                port = parts[1]
+            else:
+                envname = info.con
+                port = 22
+
+            if envname in args.env.env_args:
+                host = args.env.env_args[envname]
+                cmd = f"ssh -p {port} root@{host} {info.cmd}"
+                log_info(cmd)
+                result = [cmd]
+            else:
+                log_error(
+                    f"The statement can not be evaluted: {info.con}",
+                    self.__class__.__qualname__,
+                )
+
+        return result
+
+    def vm_exec_build_shell_cmd_netscope(
         self, info: ExecCommandInfo, args: TaskConfig
     ) -> list[str]:
         result = []
-        if info.scope == "":
-            # target = "mps"
-            if info.con == "nat":
-                host = "localhost"
-                ports = args.run.net_ports
-                ports_ssh = [port[0] for port in ports if port[1] == "22"]
-                if len(ports_ssh) >= 0:
-                    port = ports_ssh[0]
-                    con = f"ssh -p {port} root@{host} {info.cmd}"
-                    result.append(con)
-            elif ":" in info.con:
-                parts = info.con.split(":")
-                host = parts[0]
-                port = parts[1]
+        if info.con == "nat":
+            host = "localhost"
+            ports = args.run.net_ports
+            ports_ssh = [port[0] for port in ports if port[1] == "22"]
+            if len(ports_ssh) >= 0:
+                port = ports_ssh[0]
                 con = f"ssh -p {port} root@{host} {info.cmd}"
                 result.append(con)
-            else:
-                host = info.con
-                port = 22
-                con = f"ssh -p {port} root@{host} {info.cmd}"
-                result.append(con)
+        elif ":" in info.con:
+            parts = info.con.split(":")
+            host = parts[0]
+            port = parts[1]
+            con = f"ssh -p {port} root@{host} {info.cmd}"
+            result.append(con)
+        else:
+            host = info.con
+            port = 22
+            con = f"ssh -p {port} root@{host} {info.cmd}"
+            result.append(con)
 
         return result
 
