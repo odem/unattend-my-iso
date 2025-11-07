@@ -1,8 +1,12 @@
 from dataclasses import dataclass
+from datetime import date
 import os
 import subprocess
 from typing import Optional
-from unattend_my_iso.core.generators.generator_cloudbase import CloudBaseConfig
+from unattend_my_iso.core.generators.generator_cloudbase import (
+    CIBaseConfig,
+    CIBaseUser,
+)
 from unattend_my_iso.core.generators.generator_qemu import UmiQemuCommands
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.core.net.net_manager import UmiNetworkManager
@@ -242,6 +246,10 @@ class UmiHypervisorKvm(UmiHypervisorBase):
                 if os.path.exists(filename) is False:
                     if self.vm_prepare_disk(args, filename, size) is False:
                         return False
+                if filename.endswith(args.addons.cloudinit.ci_diskname):
+                    if args.addons.cloudinit.ci_enabled:
+                        self.vm_prepare_disk_cloudinit(args)
+
             else:
                 return False
         return True
@@ -254,6 +262,13 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             rmcmd = self.vm_prepare_disk_qcow(diskpath, size)
         elif diskpath.endswith(".raw"):
             rmcmd = self.vm_prepare_disk_raw(diskpath, size)
+        elif diskpath.endswith(".iso"):
+            return True
+        else:
+            log_error(
+                f"Invalid file extension in diskpath: {diskpath}",
+                self.__class__.__qualname__,
+            )
         if len(rmcmd) > 0:
             ret = run(rmcmd, capture_output=True, text=True)
             if ret.returncode == 0:
@@ -268,7 +283,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             )
         else:
             log_error(
-                f"Invalid extension in diskpath: {diskpath}",
+                f"Invalid cmd for disk generator: {rmcmd}",
                 self.__class__.__qualname__,
             )
         return False
@@ -314,30 +329,37 @@ class UmiHypervisorKvm(UmiHypervisorBase):
                 return False
         return True
 
+    def vm_get_args_cloudbase(self, args: TaskConfig) -> CIBaseConfig:
+        vmdir = self.files._get_path_vm(args)
+        users = [
+            CIBaseUser(
+                user[0], user[0], user[1], user[1], user[2], False, date(2099, 5, 5)
+            )
+            for user in args.addons.cloudinit.ci_users
+        ]
+        return CIBaseConfig(
+            ci_users=users,
+            ci_uuid=args.addons.cloudinit.ci_uuid,
+            ci_hostname=args.addons.answerfile.host_name,
+            ci_dir=vmdir,
+            ci_runcmd=args.addons.cloudinit.ci_runcmd,
+            ci_isoname=args.addons.cloudinit.ci_diskname,
+            ci_writefiles=args.addons.cloudinit.ci_writefiles,
+        )
+
     def vm_get_args(self, args: TaskConfig, template: TemplateConfig) -> HypervisorArgs:
         vmdir = self.files._get_path_vm(args)
         pidfile = self.files._get_path_vmpid(args)
-        cloudbase_config = CloudBaseConfig(
-            ci_adminname=args.addons.answerfile.user_root_name,
-            ci_group_admin=args.addons.answerfile.admin_group_name,
-            ci_adminpass=args.addons.answerfile.user_root_pw,
-            ci_username=args.addons.answerfile.user_other_name,
-            ci_userpass=args.addons.answerfile.user_other_pw,
-            ci_group_users=args.addons.answerfile.user_group_name,
-            ci_uuid=args.run.ci_uuid,
-            ci_hostname=args.addons.answerfile.host_name,
-            ci_dir=vmdir,
-        )
         disks = []
         for disk in args.run.disks:
             innerlist = disk
             innerlist[0] = f"{vmdir}/{innerlist[0]}"
             disks.append(innerlist)
-
+        if args.addons.cloudinit.ci_enabled is True:
+            diskfile = f"{vmdir}/{args.addons.cloudinit.ci_diskname}"
+            disks.append([diskfile, "1M", "cloudinit", "none"])
         cdrom = ""
-        if args.run.ci_enabled is True:
-            self.ci_gen.create_openstack_dir(cloudbase_config)
-            self.ci_gen.create_openstack_iso(cloudbase_config)
+        cloudbase_config = self.vm_get_args_cloudbase(args)
         if args.run.cdrom_boot is True:
             cdrom = self.files._get_path_isofile(args)
         return HypervisorArgs(
@@ -383,6 +405,13 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             diskpath,
             size,
         ]
+
+    def vm_prepare_disk_cloudinit(self, args: TaskConfig) -> bool:
+        cloudbase_config = self.vm_get_args_cloudbase(args)
+        self.ci_gen.create_openstack_dir(cloudbase_config)
+        self.ci_gen.create_openstack_iso(cloudbase_config)
+        log_info("Cloudinit Image created")
+        return True
 
     def _create_tpm_command(self, socketdir: str) -> list:
         return [

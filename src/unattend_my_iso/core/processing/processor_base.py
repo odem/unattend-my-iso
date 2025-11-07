@@ -1,6 +1,7 @@
 import os
 from typing import Optional
 from unattend_my_iso.addons.answerfile import AnswerFileAddon
+from unattend_my_iso.addons.cloudinit import CloudInitAddon
 from unattend_my_iso.addons.cmd import CmdAddon
 from unattend_my_iso.addons.grub import GrubAddon
 from unattend_my_iso.addons.addon_base import UmiAddon
@@ -92,20 +93,17 @@ class TaskProcessorBase:
         return success
 
     def _get_addons(self):
-        user = UserAddon()
-        grub = GrubAddon()
-        ssh = SshAddon()
-        cmd = CmdAddon()
-        postinst = PostinstallAddon()
-        answer = AnswerFileAddon()
-        self.addons = {
-            answer.addon_name: answer,
-            grub.addon_name: grub,
-            ssh.addon_name: ssh,
-            cmd.addon_name: cmd,
-            postinst.addon_name: postinst,
-            user.addon_name: user,
-        }
+        addons = [
+            UserAddon(),
+            GrubAddon(),
+            SshAddon(),
+            CmdAddon(),
+            PostinstallAddon(),
+            AnswerFileAddon(),
+            CloudInitAddon(),
+        ]
+        for addon in addons:
+            self.addons[addon.addon_name] = addon
 
     def _get_templates(self, cfg: TaskConfig):
         searchpath = f"{cfg.sys.path_templates}/iso"

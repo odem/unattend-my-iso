@@ -3,6 +3,7 @@ import textwrap
 from typing import Any, Optional
 from unattend_my_iso.common.args import (
     AddonArgsAnswerFile,
+    AddonArgsCloudInit,
     AddonArgsCmd,
     AddonArgsGrub,
     AddonArgsPostinstall,
@@ -82,6 +83,7 @@ class CommandlineReader:
         self._create_parser_args_addon_ssh(p)
         self._create_parser_args_addon_user(p)
         self._create_parser_args_addon_cmd(p)
+        self._create_parser_args_addon_cloudinit(p)
         return p
 
     def _create_cli_parser_group(self, name: str) -> argparse.ArgumentParser:
@@ -104,6 +106,8 @@ class CommandlineReader:
             self._create_parser_args_addon_postinst(p)
         elif name == "addon_answerfile":
             self._create_parser_args_addon_answerfile(p)
+        elif name == "addon_cloudinit":
+            self._create_parser_args_addon_cloudinit(p)
         return p
 
     def _create_parser_args_addon_grub(self, p: argparse.ArgumentParser):
@@ -365,6 +369,61 @@ class CommandlineReader:
             type=list,
             default=None,
             help="Commands to be executed",
+        )
+
+    def _create_parser_args_addon_cloudinit(self, p: argparse.ArgumentParser):
+        group_target = p.add_argument_group(
+            "AddonArgsCloudInit",
+            description="Defines the arguments for CloudInit",
+        )
+        group_target.add_argument(
+            "-CIe",
+            "--ci_enabled",
+            type=str,
+            default=None,
+            help="Enable or disable cloudinit addon (true or false)",
+        )
+        group_target.add_argument(
+            "-CIU",
+            "--ci_uuid",
+            type=str,
+            default=None,
+            help="The uuid for the cloudinit iso",
+        )
+        group_target.add_argument(
+            "-CIh",
+            "--ci_hostname",
+            type=str,
+            default=None,
+            help="The hostname of the guest",
+        )
+        group_target.add_argument(
+            "-CId",
+            "--ci_diskname",
+            type=str,
+            default=None,
+            help="The name of the disk",
+        )
+        group_target.add_argument(
+            "-CIu",
+            "--ci_users",
+            type=str,
+            default=None,
+            help="The list of users",
+        )
+        group_target.add_argument(
+            "-CIr",
+            "--ci_runcmd",
+            type=str,
+            default=None,
+            help="The command to run",
+        )
+        group_target.add_argument(
+            "-CIw",
+            "--ci_writefiles",
+            type=str,
+            default=None,
+            help="The list of files to write",
         )
 
     def _create_parser_args_addon_answerfile(self, p: argparse.ArgumentParser):
@@ -714,13 +773,13 @@ class CommandlineReader:
             default=None,
             help="Name of the vm",
         )
-        group_target.add_argument(
-            "-rce",
-            "--ci_enabled",
-            type=str,
-            default=None,
-            help="Enable Cloudinit",
-        )
+        # group_target.add_argument(
+        #     "-rce",
+        #     "--ci_enabled",
+        #     type=str,
+        #     default=None,
+        #     help="Enable Cloudinit",
+        # )
         group_target.add_argument(
             "-rsp",
             "--spice_port",
@@ -965,4 +1024,6 @@ class CommandlineReader:
             return AddonArgsCmd(**all)
         elif name == "addon_postinstall":
             return AddonArgsPostinstall(**all)
+        elif name == "addon_cloudinit":
+            return AddonArgsCloudInit(**all)
         return None

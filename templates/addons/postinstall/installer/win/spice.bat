@@ -14,7 +14,7 @@ set "INSTALLER_WEBDAV=%TEMP%\spice-webdavd-x64-2.4.msi"
 curl -L -o %INSTALLER_TOOLS% %SPICE_TOOLS%
 curl -L -o %INSTALLER_WEBDAV% %SPICE_WEBDAV%
 
-%INSTALLER_TOOLS% /passive
+%INSTALLER_TOOLS% /S
 msiexec /package %INSTALLER_WEBDAV% /passive
 
 endlocal

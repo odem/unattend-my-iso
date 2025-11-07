@@ -6,7 +6,7 @@ virtio_url = "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/a
 iso_name = "Win11_25H2_German_x64.iso"
 iso_url = ""
 iso_type = "windows"
-answerfile = "autounattend.xml"
+answerfile = "autounattend_test.xml"
 path_postinstall = "postinstall"
 file_postinstall = "postinstall.bat"
 config_version = "0.0.3"
@@ -18,13 +18,12 @@ net_prepare_nics = true
 net_prepare_bridges = false
 res_cpu = 8
 secure_boot = true
-spice_port = 5900                                       # 5900
+spice_port = -1                                         # 5900
 res_mem = 4096
 disks = [["os-hdd0.qcow2", "256G", "hdd", "writeback"]]
 net_devs = [["nat"]]
 net_ports = [["2223", "22"], ["3389", "3389"]]
-ci_enabled = true
-ci_uuid = "12345-abcde-67890-fghij"
+
 
 [addon_answerfile]
 locale_string = "de_DE"
@@ -68,3 +67,41 @@ cmds = [
   { "name" = "cmd1", "scope" = "", "con" = "nat", "cmd" = "dir" },
   { "name" = "bash", "scope" = "", "con" = "nat", "cmd" = "cmd.exe" },
 ]
+[addon_cloudinit]
+ci_enabled = true
+ci_users = [
+  [
+    "ci-admin",
+    "Administratoren",
+    "adminpass",
+  ],
+  [
+    "ci-user1",
+    "Benutzer",
+    "ci-user1pass",
+  ],
+  [
+    "ci-user2",
+    "Benutzer",
+    "ci-user2pass",
+  ],
+  [
+    "ci-user3",
+    "Benutzer",
+    "ci-user3pass",
+  ],
+]
+ci_writefiles = [
+  [
+    "C:/autostart.ps1",
+    "TEMPLATE-AUTOSTART",
+  ],
+  [
+    "C:/runner123.bat",
+    "calc.exe",
+  ],
+]
+ci_runcmd = ["calc.exe", "notepad.exe"]
+ci_hostname = "cihost-123"
+ci_diskname = "cloudinit.iso"
+ci_uuid = "12345-abcde-67890-fghij"

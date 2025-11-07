@@ -273,6 +273,8 @@ class UmiQemuCommands:
             generated += self._create_disk_args_hdd(
                 args, filename, diskindex, diskcache
             )
+        elif filename != "" and disktype == "cloudinit":
+            generated += self._create_disk_args_cloudinit(args, filename, diskindex)
         elif filename != "" and disktype == "nvme":
             generated += self._create_disk_args_nvme(
                 args, filename, diskindex, diskcache
@@ -288,13 +290,13 @@ class UmiQemuCommands:
         self, args: TaskConfig, args_hv: HypervisorArgs
     ) -> list[str]:
         generated = []
-        if args.run.ci_enabled:
+        if args_hv.cdrom != "":
+            generated += ["-cdrom", f"{args_hv.cdrom}", "-boot", "order=cd"]
+        elif args.addons.cloudinit.ci_enabled:
             vm_dir = self.files._get_path_vm(args)
             iso_name = args_hv.ci_config.ci_isoname
             cd_file = f"{vm_dir}/{iso_name}"
             generated += ["-cdrom", f"{cd_file}", "-boot", "order=cd"]
-        if args_hv.cdrom != "":
-            generated += ["-cdrom", f"{args_hv.cdrom}", "-boot", "order=cd"]
         return self.bashformat(args, generated)
 
     def _generate_random_mac(self) -> str:
@@ -306,6 +308,22 @@ class UmiQemuCommands:
             return mac
         log_error("Got no random MAC")
         return ""
+
+    def _create_disk_args_cloudinit(
+        self, args: TaskConfig, filename: str, diskindex: int, cache: str = ""
+    ) -> list[str]:
+        generated = []
+        if filename != "":
+            ioname = f"io{diskindex}"
+            diskid = f"disk{diskindex}"
+            driveopts = f"drive={diskid},iothread={ioname}"
+            diskopts = f"file={filename},media=cdrom,format=raw"
+            generated += self.bashformat(args, ["-object", f"iothread,id={ioname}"])
+            generated += self.bashformat(
+                args, ["-drive", f"if=none,id={diskid},{diskopts}"]
+            )
+            generated += ["-device", f"virtio-blk-pci,{driveopts}"]
+        return generated
 
     def _create_disk_args_hdd(
         self, args: TaskConfig, filename: str, diskindex: int, cache: str = ""

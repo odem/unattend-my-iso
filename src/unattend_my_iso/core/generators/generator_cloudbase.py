@@ -1,32 +1,22 @@
-import os
 import yaml
 import json
 from dataclasses import dataclass, asdict
 from typing import List
 from datetime import date
-from unattend_my_iso.common.logging import log_error
+from unattend_my_iso.common.logging import log_error, log_info
 from unattend_my_iso.core.files.file_manager import UmiFileManager
 from unattend_my_iso.core.subprocess.caller import run
 
+DIR_OUT = "C:"
+FILE_CALC = "calc.exe"
+FILE_AS = f"{DIR_OUT}\\autostart.ps1"
+DIR_CB = "C:/Program Files/Cloudbase Solutions/Cloudbase-Init"
+REG_RUN = "HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
+REG_CB = "HKLM:\\SOFTWARE\\Cloudbase Solutions\\Cloudbase-Init"
 
-# Define a CloudBaseConfig dataclass to hold all environment-specific variables (now lowercase)
+
 @dataclass
-class CloudBaseConfig:
-    ci_adminname: str
-    ci_group_admin: str
-    ci_adminpass: str
-    ci_username: str
-    ci_userpass: str
-    ci_group_users: str
-    ci_uuid: str
-    ci_hostname: str
-    ci_dir: str
-    ci_isoname: str = "cloud-init.iso"
-
-
-# Define the CloudBaseUser dataclass
-@dataclass
-class CloudBaseUser:
+class CIBaseUser:
     name: str
     gecos: str
     primary_group: str
@@ -36,199 +26,226 @@ class CloudBaseUser:
     expiredate: date
 
 
-# Define the CommandLineArguments dataclass to store command arguments
 @dataclass
-class CommandLineArguments:
-    args: List[str]  # List of strings (each representing an argument for the command)
+class CIBaseConfig:
+    ci_users: list[CIBaseUser]
+    ci_uuid: str
+    ci_hostname: str
+    ci_dir: str
+    ci_runcmd: list[str]
+    ci_writefiles: list
+    ci_isoname: str
 
 
-# Define the WriteFile dataclass with content as a list of CommandLineArguments
 @dataclass
-class WriteFile:
+class CICommandLineArguments:
+    args: List[str]
+
+    def tostring(self) -> str:
+        return " ".join(self.args)
+
+    @staticmethod
+    def run_calc():
+        return CICommandLineArguments([FILE_CALC])
+
+    @staticmethod
+    def run_cmd(cmd: str):
+        arr = cmd.split(" ")
+        return CICommandLineArguments(arr)
+
+    @staticmethod
+    def run_cloudbase(dir: str):
+        return CICommandLineArguments(
+            [
+                "&",
+                f'"{dir}/Python/Scripts/cloudbase-init.exe"',
+                "--config-file",
+                f'"{dir}/conf/cloudbase-init.conf"',
+                "--debug",
+            ]
+        )
+
+    @staticmethod
+    def log_text(dir: str, text: str):
+        return CICommandLineArguments(
+            [
+                "Write-Output",
+                f'"{text}"',
+                "|",
+                "Out-File",
+                "-FilePath",
+                f'"{dir}/script-output.txt"',
+            ]
+        )
+
+    @staticmethod
+    def reg_del(path: str, name: str):
+        return CICommandLineArguments(
+            [
+                "Remove-ItemProperty",
+                "-Path",
+                path,
+                "-Name",
+                f'"{name}"',
+            ]
+        )
+
+    @staticmethod
+    def run_powershell(file: str):
+        return CICommandLineArguments(
+            [
+                "powershell.exe",
+                "-WindowStyle",
+                "Hidden",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                f"{file}",
+            ]
+        )
+
+    @staticmethod
+    def reg_add(path: str, name: str, value: list[str]):
+        args = [
+            "Set-ItemProperty",
+            "-Path",
+            f'"{path}"',
+            "-Name",
+            f'"{name}"',
+            "-Value",
+        ]
+        args.extend(value)
+        if args is not None:
+            return CICommandLineArguments(args)
+        return CICommandLineArguments([])
+
+    @staticmethod
+    def build_iso(dir: str, name: str):
+        return CICommandLineArguments(
+            [
+                "genisoimage",
+                "-output",
+                f"{dir}/{name}",
+                "-volid",
+                "config-2",
+                "-joliet",
+                "-rock",
+                "-graft-points",
+                f"openstack={dir}/openstack",
+            ]
+        )
+
+
+@dataclass
+class CIWriteFile:
     path: str
-    content: List[CommandLineArguments]  # List of CommandLineArguments instances
+    content: List[CICommandLineArguments]
 
-    # Convert the content to a YAML block-style string (using pipe)
-    def to_yaml_content(self) -> str:
+    def tostring(self) -> str:
         yaml_content = ""
         for command in self.content:
-            yaml_content += "\n  - " + " ".join(
-                command.args
-            )  # Each command as a string with space separation
+            yaml_content += f"\n{command.tostring()}"
         return yaml_content
 
 
-# Define the RunCmd dataclass using CommandLineArguments
 @dataclass
-class RunCmd:
-    command: List[CommandLineArguments]  # List of CommandLineArguments instances
+class CIRunCmd:
+    commands: List[CICommandLineArguments]
+
+    def tostring(self) -> str:
+        yaml_content = ""
+        for command in self.commands:
+            yaml_content += "\n".join(command.args)
+        return yaml_content
 
 
 class UmiCloudBaseGenerator:
     def __init__(self) -> None:
         self.files = UmiFileManager()
-        self.extender = "\\\n    "
 
-    # Helper function to create CloudBaseUsers based on the CloudBaseConfig
-    def create_cloudbase_users(self, config: CloudBaseConfig) -> List[CloudBaseUser]:
-        return [
-            CloudBaseUser(
-                name=config.ci_adminname,
-                gecos=f"CI {config.ci_adminname}",
-                primary_group=config.ci_group_admin,
-                groups=config.ci_group_admin,
-                passwd=config.ci_adminpass,
-                inactive=False,
-                expiredate=date(2099, 10, 1),
-            ),
-            CloudBaseUser(
-                name=config.ci_username,
-                gecos=f"CI {config.ci_username}",
-                primary_group=config.ci_group_users,
-                groups=config.ci_group_users,
-                passwd=config.ci_userpass,
-                inactive=False,
-                expiredate=date(2099, 10, 1),
-            ),
-        ]
-
-    # Helper function to create write_files based on the CloudBaseConfig
-    def create_write_files(self, config: CloudBaseConfig) -> List[WriteFile]:
-        reg_run = "Software\\Microsoft\\Windows\\CurrentVersion\\Run"
-        return [
-            WriteFile(
-                path=f"C:/Users/{config.ci_username}/autostart.ps1",
-                content=[
-                    # Each command is a CommandLineArguments object
-                    CommandLineArguments(
-                        [
-                            "Write-Output",
-                            '"This script was run by cloudbase-init"',
-                            "|",
-                            "Out-File",
-                            "-FilePath",
-                            f"C:/Users/{config.ci_username}/script-output.txt",
-                        ]
-                    ),
-                    CommandLineArguments(
-                        [
-                            "Remove-ItemProperty",
-                            "-Path",
-                            f'"HKLM:\\{reg_run}\\{config.ci_uuid}\\Plugins"',
-                            "-Name",
-                            '"UserDataPlugin"',
-                        ]
-                    ),
-                    CommandLineArguments(
-                        [
-                            "Set-ItemProperty",
-                            "-Path",
-                            f'"HKCU:\\{reg_run}"',
-                            "-Name",
-                            '"CIAutostart"',
-                            "-Value",
-                            f'"powershell.exe -ExecutionPolicy Bypass -File C:/Users/{config.ci_username}/autostart.ps1"',
-                        ]
-                    ),
-                    CommandLineArguments(
-                        [
-                            "cd",
-                            '"C:\\Program Files\\Cloudbase Solutions\\Cloudbase-Init\\Python\\Scripts\\cloudbase-init.exe"',
-                        ]
-                    ),
-                    CommandLineArguments(
-                        [
-                            "./cloudbase-init.exe",
-                            "--config-file",
-                            "./cloudbase-init.conf",
-                            "--debug",
-                        ]
-                    ),
-                ],
-            )
-        ]
-
-    # Helper function to create runcmds based on the CloudBaseConfig
-    def create_runcmds(self, config: CloudBaseConfig) -> List[RunCmd]:
-        return [
-            RunCmd(
-                command=[
-                    CommandLineArguments(
-                        [
-                            "powershell.exe",
-                            "-ExecutionPolicy",
-                            "Bypass",
-                            "-File",
-                            f"C:/Users/{config.ci_username}/autostart.ps1",
-                        ]
-                    )
-                ]
-            )
-        ]
-
-    def create_openstack_iso(self, cfg: CloudBaseConfig) -> bool:
-        cmd = [
-            "genisoimage",
-            "-output",
-            f"{cfg.ci_dir}/{cfg.ci_isoname}",
-            "-volid",
-            "config-2",
-            "-joliet",
-            "-rock",
-            "-graft-points",
-            f"openstack={cfg.ci_dir}/openstack",
-        ]
-        proc = run(cmd, text=True, capture_output=True)
+    def create_openstack_iso(self, cfg: CIBaseConfig) -> bool:
+        cmd = CICommandLineArguments.build_iso(cfg.ci_dir, cfg.ci_isoname)
+        proc = run(cmd.args, text=True, capture_output=True)
         if proc.returncode != 0:
             log_error(f"{proc.stdout}{proc.stderr}", "CloudInit")
         return True
 
-    def create_openstack_dir(self, cfg: CloudBaseConfig) -> bool:
-        meta_data = self.create_meta_data(cfg)
-        user_data = self.create_user_data(cfg)
+    def create_openstack_dir(self, cfg: CIBaseConfig) -> bool:
         vm_dir = cfg.ci_dir
         openstack_dir = f"{vm_dir}/openstack"
         latest_dir = f"{openstack_dir}/latest"
         filename_md = f"{latest_dir}/meta_data.json"
         filename_user = f"{latest_dir}/user_data"
-        self.files.rm(latest_dir)
+        meta_data = self.create_meta_data(cfg)
+        user_data = self.create_user_data(cfg)
+        self.files.rm(openstack_dir)
         self.files.makedirs(latest_dir)
         self.files.append_to_file(filename_md, meta_data)
         self.files.append_to_file(filename_user, user_data)
         return True
 
-    def create_meta_data(self, cfg: CloudBaseConfig) -> str:
-        # The JSON data structure for meta_data
+    def create_meta_data(self, cfg: CIBaseConfig) -> str:
         meta_data = {"uuid": cfg.ci_uuid, "hostname": cfg.ci_hostname}
         return json.dumps(meta_data, indent=4)
 
-    def create_user_data(self, cfg: CloudBaseConfig) -> str:
-
-        # Now we can generate all the necessary components using the CloudBaseConfig
-        cloudbase_users_data = self.create_cloudbase_users(cfg)
-        write_files_data = self.create_write_files(cfg)
-        runcmd_data = self.create_runcmds(cfg)
-
-        # Combine everything into a dictionary structure
+    def create_user_data(self, cfg: CIBaseConfig) -> str:
+        write_files_data = self._create_write_files(cfg)
+        runcmd_data = self._create_runcmds(cfg.ci_runcmd)
         cloud_config = {
-            "users": [asdict(user) for user in cloudbase_users_data],
+            "users": [asdict(user) for user in cfg.ci_users],
+            "runcmd": [runcmd.tostring() for runcmd in runcmd_data],
             "write_files": [
                 {
                     **asdict(writefile),
-                    "content": writefile.to_yaml_content(),
+                    "content": writefile.tostring(),
                 }
                 for writefile in write_files_data
             ],
-            "runcmd": [
-                {
-                    **asdict(runcmd),
-                    "command": [cmd.args for cmd in runcmd.command],
-                }
-                for runcmd in runcmd_data
-            ],
         }
-
-        # Serialize to YAML
         yaml_text = yaml.dump(cloud_config, default_flow_style=False)
         full = f"#cloud-config\n{yaml_text}"
         return full
+
+    def _create_write_files(self, config: CIBaseConfig) -> List[CIWriteFile]:
+        result = []
+        default_content = self._create_default_write_files(config)
+        for file in config.ci_writefiles:
+            filename = file[0]
+            content = file[1]
+            log_info(f"{filename} {content}")
+            if content == "TEMPLATE-AUTOSTART":
+                content = default_content
+                result.append(CIWriteFile(path=filename, content=default_content))
+            else:
+                result.append(
+                    CIWriteFile(
+                        path=filename,
+                        content=[CICommandLineArguments(content.split(" "))],
+                    )
+                )
+        return result
+
+    def _create_default_write_files(
+        self, config: CIBaseConfig
+    ) -> List[CICommandLineArguments]:
+        reg_plugins = f'"{REG_CB}\\{config.ci_uuid}\\Plugins"'
+        as_cmd = CICommandLineArguments.run_powershell(FILE_AS)
+
+        return [
+            CICommandLineArguments.reg_add(
+                REG_RUN, "CIAutostart", [f'"{as_cmd.tostring()}"']
+            ),
+            CICommandLineArguments.reg_del(reg_plugins, "UserDataPlugin"),
+            CICommandLineArguments.reg_del(reg_plugins, "LocalScriptsPlugin"),
+            CICommandLineArguments.reg_del(reg_plugins, "SetHostNamePlugin"),
+            CICommandLineArguments.run_cloudbase(DIR_CB),
+            CICommandLineArguments.log_text(DIR_OUT, "Dummy text 123"),
+        ]
+
+    def _create_runcmds(self, cmd: list[str]) -> list[CIRunCmd]:
+        result = []
+        for single in cmd:
+            result.append(
+                CIRunCmd(commands=[CICommandLineArguments(single.split(" "))])
+            )
+        return result

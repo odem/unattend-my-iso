@@ -149,6 +149,9 @@ class TaskProcessorIsogen(TaskProcessorBase):
         if args.addons.cmd.cmd_enabled:
             if self._integrate_addon("cmd", args, template) is False:
                 return False
+        if args.addons.cloudinit.ci_enabled:
+            if self._integrate_addon("cloudinit", args, template) is False:
+                return False
         return True
 
     def _prepare_bootloader(self, args: TaskConfig, template: TemplateConfig) -> bool:

@@ -74,6 +74,45 @@ cmds = [
   { "name" = "bash", "scope" = "", "con" = "nat", "cmd" = "bash -i" },
 ]
 
+[addon_cloudinit]
+ci_enabled = true
+ci_users = [
+  [
+    "ci-admin",
+    "Administratoren",
+    "adminpass",
+  ],
+  [
+    "ci-user1",
+    "Benutzer",
+    "ci-user1pass",
+  ],
+  [
+    "ci-user2",
+    "Benutzer",
+    "ci-user2pass",
+  ],
+  [
+    "ci-user3",
+    "Benutzer",
+    "ci-user3pass",
+  ],
+]
+ci_writefiles = [
+  [
+    "C:/autostart.ps1",
+    "TEMPLATE-AUTOSTART",
+  ],
+  [
+    "C:/runner123.bat",
+    "calc.exe",
+  ],
+]
+ci_runcmd = ["calc.exe", "notepad.exe"]
+ci_hostname = "cihost-123"
+ci_diskname = "cloudinit.iso"
+ci_uuid = "12345-abcde-67890-fghij"
+
 [[env]]
 "DEFAULT_HOST" = "debian13"
 "DEFAULT_DOMAIN" = "local"

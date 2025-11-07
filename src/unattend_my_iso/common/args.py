@@ -61,8 +61,6 @@ class RunArgs(ArgumentBase):
     build_homedir: str = HOME
     build_user: str = USER
     file_pid: str = "vm.pid"
-    ci_enabled: bool = False
-    ci_uuid: str = "12345-abcde-67890-fghij"
 
 
 @dataclass
@@ -125,6 +123,17 @@ class AddonArgsSsh(ArgumentBase):
 
 
 @dataclass
+class AddonArgsCloudInit(ArgumentBase):
+    ci_enabled: bool = True
+    ci_users: list[list] = field(default_factory=lambda: [])
+    ci_runcmd: list[str] = field(default_factory=lambda: [])
+    ci_writefiles: list = field(default_factory=lambda: [])
+    ci_hostname: str = "CIHOST"
+    ci_diskname: str = "cloudinit.raw"
+    ci_uuid: str = "12345-abcde-67890-fghij"
+
+
+@dataclass
 class AddonArgsPostinstall(ArgumentBase):
     postinstall_enabled: bool = True
     enable_grub_theme: bool = True
@@ -181,6 +190,7 @@ class AddonArgs:
     user: AddonArgsUser
     postinstall: AddonArgsPostinstall
     cmd: AddonArgsCmd
+    cloudinit: AddonArgsCloudInit
 
     def get_env_vars(self) -> list[str]:
         result = [
@@ -190,6 +200,7 @@ class AddonArgs:
             *(self.grub.get_env_vars_bash()),
             *(self.postinstall.get_env_vars_bash()),
             *(self.cmd.get_env_vars_bash()),
+            *(self.cloudinit.get_env_vars_bash()),
         ]
         return result
 
@@ -224,4 +235,6 @@ def get_group_arguments(name: str) -> Optional[Any]:
         return AddonArgsPostinstall()
     elif name == "addon_answerfile":
         return AddonArgsAnswerFile()
+    elif name == "addon_cloudinit":
+        return AddonArgsCloudInit()
     return None

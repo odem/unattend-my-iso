@@ -18,6 +18,7 @@ from unattend_my_iso.common.const import (
 from unattend_my_iso.common.args import (
     AddonArgs,
     AddonArgsAnswerFile,
+    AddonArgsCloudInit,
     AddonArgsCmd,
     AddonArgsGrub,
     AddonArgsPostinstall,
@@ -296,6 +297,14 @@ def get_config(
             f"Matched addon_postinstall config invalid: {cfg_post}", "ConfigReader"
         )
         return None
+    cfg_cloudinit = _match_group(
+        "addon_cloudinit", template_name, cfg_sys.path_templates, template_overlay
+    )
+    if cfg_cloudinit is None or isinstance(cfg_cloudinit, AddonArgsCloudInit) is False:
+        log_error(
+            f"Matched addon_cloudinit config invalid: {cfg_cloudinit}", "ConfigReader"
+        )
+        return None
     cfg_answer = _match_group(
         "addon_answerfile", template_name, cfg_sys.path_templates, template_overlay
     )
@@ -304,7 +313,9 @@ def get_config(
             f"Matched addon_answerfile config invalid: {cfg_answer}", "ConfigReader"
         )
         return None
-    cfg_addons = AddonArgs(cfg_answer, cfg_ssh, cfg_grub, cfg_user, cfg_post, cfg_cmd)
+    cfg_addons = AddonArgs(
+        cfg_answer, cfg_ssh, cfg_grub, cfg_user, cfg_post, cfg_cmd, cfg_cloudinit
+    )
     cfg = TaskConfig(
         sys=cfg_sys, addons=cfg_addons, target=cfg_target, run=cfg_run, env=cfg_env
     )
