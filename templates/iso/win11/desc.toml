@@ -22,7 +22,7 @@ spice_port = -1                                         # 5900
 res_mem = 4096
 disks = [["os-hdd0.qcow2", "256G", "hdd", "writeback"]]
 net_devs = [["nat"]]
-net_ports = [["2223", "22"], ["3389", "3389"]]
+net_ports = [["2223", "22"], ["3390", "3389"]]
 
 
 [addon_answerfile]
