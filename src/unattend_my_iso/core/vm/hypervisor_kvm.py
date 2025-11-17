@@ -96,6 +96,7 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         self, info: ExecCommandInfo, args: TaskConfig
     ) -> list[str]:
         result = []
+        user = "root"
         if info.con == "nat":
             host = "localhost"
             ports = args.run.net_ports
@@ -108,12 +109,21 @@ class UmiHypervisorKvm(UmiHypervisorBase):
             parts = info.con.split(":")
             host = parts[0]
             port = parts[1]
-            con = f"ssh -p {port} root@{host} {info.cmd}"
+            if "@" in host:
+                parts_user = info.con.split("@")
+                user = parts_user[0]
+                host = parts_user[1]
+
+            con = f"ssh -p {port} {user}@{host} {info.cmd}"
             result.append(con)
         else:
             host = info.con
             port = 22
-            con = f"ssh -p {port} root@{host} {info.cmd}"
+            if "@" in host:
+                parts_user = info.con.split("@")
+                user = parts_user[0]
+                host = parts_user[1]
+            con = f"ssh -p {port} {user}@{host} {info.cmd}"
             result.append(con)
 
         return result

@@ -26,14 +26,40 @@ class SshAddon(UmiAddon):
         dst = self.files._get_path_intermediate(args)
         dstssh = f"{dst}{args.addons.answerfile.answerfile_hook_dir_cdrom}/ssh"
         dstauth = f"{dstssh}/authorized_keys"
-        srcpath = args.addons.ssh.config_auth_append
+
+        srcpath = args.addons.ssh.config_auth
+        if srcpath.startswith("~"):
+            srcpath = srcpath.replace("~", args.run.build_homedir)
+        elif srcpath.startswith("/") is False:
+            srcpath = self.get_template_path_optional(
+                "ssh", args.addons.ssh.config_auth, args
+            )
         if srcpath == "":
-            return True
-        srcpath = srcpath.replace("~", args.run.build_homedir)
-        if os.path.exists(srcpath):
-            log_debug(f"Appending auth key: {srcpath}", self.__class__.__qualname__)
+            copied = True
+        elif os.path.exists(srcpath):
+            log_debug(f"Copy auth keys: {srcpath}", self.__class__.__qualname__)
             os.makedirs(dstssh, exist_ok=True)
-            return self.files.cp(srcpath, dstauth)
+            copied = self.files.cp(srcpath, dstauth)
+        else:
+            copied = False
+
+        appendpath = args.addons.ssh.config_auth_append
+        appendpath = appendpath.replace("~", args.run.build_homedir)
+        if os.path.exists(appendpath):
+            os.makedirs(dstssh, exist_ok=True)
+            content = self.files.read_file(appendpath)
+            if copied:
+                log_debug(
+                    f"Appending auth key: {appendpath}",
+                    self.__class__.__qualname__,
+                )
+                return self.files.append_to_file(dstauth, content)
+            else:
+                log_debug(
+                    f"Appending auth key: {appendpath}",
+                    self.__class__.__qualname__,
+                )
+                return self.files.cp(srcpath, dstauth)
         else:
             log_error(f"Invalid authorization file: {srcpath}")
         return False
