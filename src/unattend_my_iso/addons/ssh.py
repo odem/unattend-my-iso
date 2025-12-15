@@ -22,10 +22,30 @@ class SshAddon(UmiAddon):
             return False
         return True
 
+    def _get_deployment_keys(self, args: TaskConfig) -> str:
+        result = ""
+        userlist = args.addons.answerfile.deployment_users
+        if args.addons.ssh.config_auth_append_deployment is False:
+            return result
+        for user in userlist:
+            userdir_default = self.files._get_path_template_userhome(user, args)
+            if os.path.exists(userdir_default):
+                keyfile = f"{userdir_default}/.ssh/id_rsa.pub"
+                if os.path.exists(keyfile):
+                    log_info(
+                        f"Appending deployment key for user : '{user}'",
+                        self.__class__.__qualname__,
+                    )
+                    content = self.files.read_file(keyfile)
+                    result = f"\n{result}{content}\n"
+        return result
+
     def copy_authorized_keys(self, args: TaskConfig) -> bool:
         dst = self.files._get_path_intermediate(args)
         dstssh = f"{dst}{args.addons.answerfile.answerfile_hook_dir_cdrom}/ssh"
         dstauth = f"{dstssh}/authorized_keys"
+        appendpath = args.addons.ssh.config_auth_append
+        appendpath = appendpath.replace("~", args.run.build_homedir)
 
         srcpath = args.addons.ssh.config_auth
         if srcpath.startswith("~"):
@@ -34,34 +54,23 @@ class SshAddon(UmiAddon):
             srcpath = self.get_template_path_optional(
                 "ssh", args.addons.ssh.config_auth, args
             )
-        if srcpath == "":
-            copied = True
-        elif os.path.exists(srcpath):
+        if os.path.exists(srcpath):
             log_debug(f"Copy auth keys: {srcpath}", self.__class__.__qualname__)
             os.makedirs(dstssh, exist_ok=True)
-            copied = self.files.cp(srcpath, dstauth)
+            self.files.cp(srcpath, dstauth)
         else:
-            copied = False
-
-        appendpath = args.addons.ssh.config_auth_append
-        appendpath = appendpath.replace("~", args.run.build_homedir)
-        if os.path.exists(appendpath):
             os.makedirs(dstssh, exist_ok=True)
+            self.files.touch_file(dstauth)
+
+        content = ""
+        if os.path.exists(appendpath):
             content = self.files.read_file(appendpath)
-            if copied:
-                log_debug(
-                    f"Appending auth key: {appendpath}",
-                    self.__class__.__qualname__,
-                )
-                return self.files.append_to_file(dstauth, content)
-            else:
-                log_debug(
-                    f"Appending auth key: {appendpath}",
-                    self.__class__.__qualname__,
-                )
-                return self.files.cp(srcpath, dstauth)
-        else:
-            log_error(f"Invalid authorization file: {srcpath}")
+        pubkeys_deploy = self._get_deployment_keys(args)
+        if pubkeys_deploy != "":
+            content = f"{content}\n# Deployment keys{pubkeys_deploy}"
+
+        if content != "":
+            return self.files.append_to_file(dstauth, content)
         return False
 
     def copy_keyfiles(self, args: TaskConfig) -> bool:

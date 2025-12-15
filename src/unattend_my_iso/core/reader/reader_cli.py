@@ -317,6 +317,13 @@ class CommandlineReader:
             help="Name of file which is appended to authorization file",
         )
         group_target.add_argument(
+            "-sAP",
+            "--config_auth_append_deployment",
+            type=bool,
+            default=None,
+            help="Appends deployment pubkeys to authorized_keys",
+        )
+        group_target.add_argument(
             "-sk",
             "--config_key",
             type=str,

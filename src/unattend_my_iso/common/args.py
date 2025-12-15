@@ -118,7 +118,8 @@ class AddonArgsSsh(ArgumentBase):
     config_client: str = "ssh_config"
     config_daemon: str = "sshd_config"
     config_auth: str = "authorized_keys"
-    config_auth_append: str = "authorized_keys"
+    config_auth_append: str = ""
+    config_auth_append_deployment: bool = False
     config_key: str = ""
 
 

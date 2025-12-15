@@ -31,3 +31,12 @@ class UmiFileContents:
         except Exception as e:
             log_error(f"Exception on file append: {e}")
         return False
+
+    def touch_file(self, filename: str) -> bool:
+        try:
+            with open(filename, "w") as file:
+                file.write("")
+                return True
+        except Exception as e:
+            log_error(f"Exception on file touch: {e}")
+        return False

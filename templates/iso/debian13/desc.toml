@@ -65,7 +65,7 @@ timeout = 0
 
 [addon_ssh]
 ssh_enabled = true
-config_auth_append = "~/.ssh/id_rsa_dummy.pub"
+config_auth_append = "~/.ssh/id_rsa.pub"
 
 [addon_cmd]
 cmd_enabled = true

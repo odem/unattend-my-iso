@@ -69,13 +69,16 @@ def _match_group_with_template(
     if overlay_name != "":
         filename = f"desc.{overlay_name}.toml"
     file_template = f"{template_path}/iso/{template_name}/{filename}"
+    log_debug(f"Reading {filename}", "ConfigReader")
     toml_group: list | dict = read_template_group(file_template, target)
     if isinstance(toml_group, list) and len(toml_group) == 1:
         cfg_dict = toml_group[0]
         if isinstance(cfg_dict, dict) and isinstance(result, EnvironmentArgs):
             for dkey, dval in cfg_dict.items():
                 result.env_args[dkey] = dval
-                log_debug(f"env_update for {target} name={dkey}", "ConfigReader")
+                log_debug(
+                    f"env_update for {target} name={dkey}", "ConfigReader"
+                )
         return result
     else:
         for fld in toml_group.items():

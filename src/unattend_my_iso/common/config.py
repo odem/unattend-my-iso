@@ -5,6 +5,7 @@ from unattend_my_iso.common.arg_base import ArgumentBase
 from unattend_my_iso.common.args import (
     AddonArgs,
     AddonArgsAnswerFile,
+    AddonArgsCloudInit,
     AddonArgsCmd,
     AddonArgsGrub,
     AddonArgsPostinstall,
@@ -101,6 +102,7 @@ def get_config_default(work_path: str) -> TaskConfig:
     args_postinstall = AddonArgsPostinstall()
     args_cmd = AddonArgsCmd()
     args_user = AddonArgsUser()
+    args_ci = AddonArgsCloudInit()
     cfg_addons = AddonArgs(
         args_answers,
         args_ssh,
@@ -108,6 +110,7 @@ def get_config_default(work_path: str) -> TaskConfig:
         args_user,
         args_postinstall,
         args_cmd,
+        args_ci
     )
     cfg_target = TargetArgs()
     cfg_run = RunArgs()
