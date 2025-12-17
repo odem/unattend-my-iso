@@ -71,7 +71,7 @@ class SshAddon(UmiAddon):
 
         if content != "":
             return self.files.append_to_file(dstauth, content)
-        return False
+        return True
 
     def copy_keyfiles(self, args: TaskConfig) -> bool:
         dst = self.files._get_path_intermediate(args)
