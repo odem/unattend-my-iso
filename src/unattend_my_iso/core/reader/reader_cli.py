@@ -712,11 +712,25 @@ class CommandlineReader:
             help="Additional users to add as admins",
         )
         group_target.add_argument(
+            "-acu",
+            "--config_users",
+            type=str,
+            default=None,
+            help="Additional users to add as config users",
+        )
+        group_target.add_argument(
             "-aagn",
             "--admin_group_name",
             type=str,
             default=None,
             help="name of the admin group",
+        )
+        group_target.add_argument(
+            "-acgn",
+            "--config_group_name",
+            type=str,
+            default=None,
+            help="name of the config group",
         )
         group_target.add_argument(
             "-augn",

@@ -103,7 +103,9 @@ class AddonArgsAnswerFile(ArgumentBase):
     sudo_users: list[str] = field(default_factory=lambda: [])
     deployment_users: list[str] = field(default_factory=lambda: [])
     admin_users: list[str] = field(default_factory=lambda: [])
+    config_users: list[str] = field(default_factory=lambda: [])
     admin_group_name: str = "admin"
+    config_group_name: str = "config"
     user_group_name: str = "users"
     packages_install: list[str] = field(default_factory=lambda: [])
     grub_install_device: str = "default"
