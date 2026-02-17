@@ -139,6 +139,7 @@ class TaskProcessorBase:
         overlay = args.target.template_overlay
         combined = f"{name}.{overlay}"
         if overlay == "":
+            print(f"Keys       : {self.templates.keys()}")
             if name in self.templates.keys():
                 ret = self.templates[name]
         else:

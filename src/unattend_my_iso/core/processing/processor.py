@@ -23,10 +23,24 @@ class UmiTaskProcessor(
         if len(taskconfigs) > 0:
             for cfg in taskconfigs:
                 if isinstance(cfg, TaskConfig):
+                    log_info(
+                        f"TaskTemplate: {cfg.target.template}",
+                        self.__class__.__qualname__,
+                    )
+                    log_info(
+                        f"TaskOverlay : {cfg.target.template_overlay}",
+                        self.__class__.__qualname__,
+                    )
                     self._get_addons()
                     self._get_templates(cfg)
                     self._get_overlays(cfg)
                     template = self._get_task_template(cfg)
+                    if template is None:
+                        log_error(
+                            f"TemplateErr : Template is None. Current={template}",
+                            self.__class__.__qualname__,
+                        )
+                        sys.exit(2)
                     if template is not None:
                         result = self._process_task(cfg, template)
                         self._process_result(result)
