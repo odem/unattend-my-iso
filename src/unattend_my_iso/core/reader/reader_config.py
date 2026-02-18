@@ -76,9 +76,7 @@ def _match_group_with_template(
         if isinstance(cfg_dict, dict) and isinstance(result, EnvironmentArgs):
             for dkey, dval in cfg_dict.items():
                 result.env_args[dkey] = dval
-                log_debug(
-                    f"env_update for {target} name={dkey}", "ConfigReader"
-                )
+                log_debug(f"env_update for {target} name={dkey}", "ConfigReader")
         return result
     else:
         for fld in toml_group.items():
