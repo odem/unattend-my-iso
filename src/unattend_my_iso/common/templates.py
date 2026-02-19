@@ -66,13 +66,13 @@ def read_template_iso(file: str, overlays: list[str]) -> Optional[TemplateConfig
         if cfg.config_version == APP_VERSION:
             return cfg
         else:
-            # log_warn(
-            #     (
-            #         f"Template config version does not match for {cfg.name:10}: "
-            #         f"{APP_VERSION} vs {cfg.config_version}"
-            #     ),
-            #     CLSNAME,
-            # )
+            log_warn(
+                (
+                    f"Template config version does not match for {cfg.name:10}: "
+                    f"{APP_VERSION} vs {cfg.config_version}"
+                ),
+                CLSNAME,
+            )
             return None
     else:
         log_error("Template config is not valid", CLSNAME)

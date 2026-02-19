@@ -49,7 +49,7 @@ install-pip: $(DIR_VENV)
 		pip install -r requirements.txt ; \
 		python -m build
 install-tools: #build
-	sudo apt install python3.13 python3.13-venv python3-pip \
+	sudo apt -y install python3.13 python3.13-venv python3-pip \
 		qemu-kvm xorriso ovmf swtpm wimtools isolinux mkisofs randmac
 	source $(DIR_VENV)/bin/activate ; pip install --editable .
 build: 
