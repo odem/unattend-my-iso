@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "unattend_my_iso"
-version = "0.0.1"
+version = "0.0.6"
 description = "Short description of your project"
 authors = [{ name = "jb", email = "foo@bar.baz" }]
 readme = "README.md"

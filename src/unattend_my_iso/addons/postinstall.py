@@ -24,6 +24,8 @@ class PostinstallAddon(UmiAddon):
             return False
         if self._create_config(args, template) is False:
             return False
+        if self._create_version_info(args, template) is False:
+            return False
         return True
 
     def copy_postinstall(self, args: TaskConfig, template: TemplateConfig) -> bool:
@@ -203,6 +205,21 @@ class PostinstallAddon(UmiAddon):
             txt = f"set {name}[{i}]={joblist_arg[i]}"
             result += f"{txt}\n"
         return result
+
+    def _create_version_info(self, args: TaskConfig, template: TemplateConfig) -> bool:
+        interpath = self.files._get_path_intermediate(args)
+        dstinfo = f"{interpath}/umi/config"
+        dstinfofile = f"{dstinfo}/umi_versions.env"
+        contents = (
+            f"APP_VERSION={template.config_version}\n"
+            f"TEMPLATE_ITERATION={template.template_iteration}\n"
+        )
+        os.makedirs(dstinfo, exist_ok=True)
+        if os.path.exists(dstinfofile):
+            self.files.rm(dstinfofile)
+        if self.files.append_to_file(dstinfofile, contents) is False:
+            return False
+        return self.files.chmod(dstinfofile, 777)
 
     def _create_config(self, args: TaskConfig, template: TemplateConfig) -> bool:
         if template.iso_type == "windows":

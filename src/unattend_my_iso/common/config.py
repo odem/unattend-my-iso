@@ -56,6 +56,7 @@ class TemplateConfig(ArgumentBase):
     iso_url: str
     iso_type: str
     config_version: str
+    template_iteration: str = ""
     virtio_name: str = ""
     virtio_url: str = ""
     answerfile: str = ""
@@ -110,7 +111,7 @@ def get_config_default(work_path: str) -> TaskConfig:
         args_user,
         args_postinstall,
         args_cmd,
-        args_ci
+        args_ci,
     )
     cfg_target = TargetArgs()
     cfg_run = RunArgs()

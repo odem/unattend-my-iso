@@ -1,7 +1,7 @@
 import os
 
 # Globals
-APP_VERSION = "0.0.5"
+APP_VERSION = "0.0.6"
 
 # Current user
 HOME = os.path.expanduser("~")
