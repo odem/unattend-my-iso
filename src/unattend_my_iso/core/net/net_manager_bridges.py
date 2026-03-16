@@ -110,7 +110,7 @@ class BridgeManager:
 
     def add_nics(self, devlists: list[list[str]]):
         for devlist in devlists:
-            if len(devlist) == 2:
+            if len(devlist) >= 2:
                 name = devlist[0]
                 self.add_nic(name)
         return True
@@ -125,7 +125,7 @@ class BridgeManager:
 
     def assign_nics(self, devlists: list[list[str]]):
         for devlist in devlists:
-            if len(devlist) == 2:
+            if len(devlist) >= 2:
                 name = devlist[0]
                 bridge = devlist[1]
                 if self.assign_nic(name, bridge) is False:
@@ -134,7 +134,7 @@ class BridgeManager:
 
     def unassign_nics(self, devlists: list[list[str]]):
         for devlist in devlists:
-            if len(devlist) == 2:
+            if len(devlist) >= 2:
                 name = devlist[0]
                 bridge = devlist[1]
                 if self.has_nic(name):
