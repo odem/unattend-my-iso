@@ -231,10 +231,10 @@ class UmiQemuCommands:
             bridge = ""
             if len(devargs) > 0:
                 name = devargs[0]
-            elif len(devargs) > 1:
+            if len(devargs) > 1:
                 name = devargs[0]
                 bridge = devargs[1]
-            elif len(devargs) > 3:
+            if len(devargs) > 2:
                 name = devargs[0]
                 bridge = devargs[1]
                 mac = devargs[2]
