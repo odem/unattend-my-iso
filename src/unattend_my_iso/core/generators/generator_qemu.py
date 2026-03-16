@@ -226,13 +226,18 @@ class UmiQemuCommands:
         if len(args_hv.netdevs) == 0:
             return []
         for devargs in args_hv.netdevs:
+            mac = ""
             name = ""
             bridge = ""
             if len(devargs) > 0:
                 name = devargs[0]
-            if len(devargs) >= 2:
+            elif len(devargs) > 1:
                 name = devargs[0]
                 bridge = devargs[1]
+            elif len(devargs) > 3:
+                name = devargs[0]
+                bridge = devargs[1]
+                mac = devargs[2]
             if name != "" and bridge == "" and name.startswith("nat"):
                 log_debug(
                     f"Using NAT device with ports: {args_hv.portfwd}",
@@ -244,7 +249,7 @@ class UmiQemuCommands:
                     f"Using TAP device with bridge: {bridge}",
                     self.__class__.__qualname__,
                 )
-                generated += self._create_net_args_tap(args, name, i)
+                generated += self._create_net_args_tap(args, name, i, mac)
                 i += 1
         return self.bashformat(args, generated)
 
