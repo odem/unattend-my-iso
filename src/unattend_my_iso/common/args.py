@@ -109,7 +109,7 @@ class AddonArgsAnswerFile(ArgumentBase):
     user_group_name: str = "users"
     packages_install: list[str] = field(default_factory=lambda: [])
     grub_install_device: str = ""
-    grub_iso_device: str = "cd0"
+    grub_iso_device: str = "(cd0)"
     include_offline_packages: list[str] = field(default_factory=lambda: [])
     include_git_repositories: list[str] = field(default_factory=lambda: [])
 
