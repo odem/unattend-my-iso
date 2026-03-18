@@ -747,6 +747,13 @@ class CommandlineReader:
             help="The device to install grub to",
         )
         group_target.add_argument(
+            "-agid",
+            "--grub_iso_device",
+            type=str,
+            default=None,
+            help="The device from which grub boots",
+        )
+        group_target.add_argument(
             "-aiop",
             "--include_offline_packages",
             type=str,

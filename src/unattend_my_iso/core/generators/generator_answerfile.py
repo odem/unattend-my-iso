@@ -92,7 +92,7 @@ class AnswerfilePreseed:
 
     def generate_fragment_grub(self, args: TaskConfig) -> list[DIOption]:
         c = args.addons.answerfile
-        return [
+        result = [
             DIOption("#", "Grub"),
             DIOption("grub-installer/only_debian", True),
             DIOption("grub-installer/with_other_os", True),
@@ -101,8 +101,12 @@ class AnswerfilePreseed:
             DIOption("grub-installer/efi_secure_boot", False),
             DIOption("grub-installer/choose_bootdev", "", "select"),
             DIOption("grub-installer/skip", False),
-            DIOption("grub-installer/bootdev", c.grub_install_device),
         ]
+        if c.install_disk != "":
+            result.append(DIOption("grub-installer/bootdev", c.grub_install_device))
+        else:
+            result.append(DIOption("grub-installer/bootdev", "select"))
+        return result
 
     def generate_fragment_packages(self, args: TaskConfig) -> list[DIOption]:
         c = args.addons.answerfile

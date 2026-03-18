@@ -83,15 +83,16 @@ class GrubAddon(UmiAddon):
         kernel1 = self._extract_kernel_version_headers(inter)
         if kernel1 == "X.Y.Z-W":
             kernel1 = self._extract_kernel_version_image(inter)
+        name = args.target.template
         kernel2 = args.addons.grub.grub_kernel_lvm_alt1
         kernel3 = args.addons.grub.grub_kernel_lvm_alt2
-        name = args.target.template
-        hostname = args.addons.answerfile.host_name
-        ip = args.addons.answerfile.net_ip
-        version = args.sys.tool_version
         timeout = args.addons.grub.timeout
         theme = args.addons.grub.grub_theme
         sleeptime = args.addons.grub.sleeptime
+        hostname = args.addons.answerfile.host_name
+        ip = args.addons.answerfile.net_ip
+        bootdev = args.addons.answerfile.grub_iso_device
+        version = args.sys.tool_version
         buildtime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         rules = []
         if os.path.exists(grub):
@@ -107,6 +108,7 @@ class GrubAddon(UmiAddon):
                 Replaceable(grub, "CFG_VERSION", version),
                 Replaceable(grub, "CFG_SLEEPTIME", str(sleeptime)),
                 Replaceable(grub, "CFG_TIMEOUT", str(timeout)),
+                Replaceable(grub, "CFG_BOOT_DEVICE", str(bootdev)),
             ]
         return rules
 
