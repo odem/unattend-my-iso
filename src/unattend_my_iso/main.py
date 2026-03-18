@@ -1,5 +1,6 @@
 import logging
-import os
+
+# import os
 import sys
 from unattend_my_iso.core.reader.reader_cli import CommandlineReader
 from unattend_my_iso.common.logging import init_logger, log_info
