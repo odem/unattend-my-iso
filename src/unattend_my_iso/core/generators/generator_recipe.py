@@ -1,3 +1,4 @@
+from unattend_my_iso.common.logging import log_info
 from unattend_my_iso.common.model import PartitionFlag, RecipeDescription
 from unattend_my_iso.common.const import (
     DOUBLE_PREFIX,
@@ -31,11 +32,7 @@ class AnswerfileRecipe:
         text = f"{LINE_PREFIX}{name} ::"
         return f"{'':40}{LINE_CONT}{text:78}{LINE_CONT}"
 
-    def create_partition_layout(self, method: str):
-        pass
-
-    def get_default_partitions(self, vg_name: str):
-        # wiese
+    def create_partition_layout_simple(self, vg_name: str):
         return [
             RecipeDescription([1024], "vfat", "/boot/efi", "", "", "ESP", "gpt"),
             RecipeDescription([1024], "ext4", "/boot", "", "", "BOOT", "gpt"),
@@ -43,20 +40,25 @@ class AnswerfileRecipe:
             RecipeDescription([50000, 50000, 50000], "ext4", "/", vg_name, "lv_root"),
         ]
 
-        # mps
-        # return [
-        #     RecipeDescription([1024], "vfat", "/boot/efi", "", "", "ESP", "gpt"),
-        #     RecipeDescription([1024], "ext4", "/boot", "", "", "BOOT", "gpt"),
-        #     RecipeDescription([4096], "linux-swap", "", vg_name, "lv_swap"),
-        #     RecipeDescription([50000, 50000, 50000], "ext4", "/", vg_name, "lv_root"),
-        #     RecipeDescription(
-        #         [100000, 100000, 100000], "ext4", "/srv", vg_name, "lv_srv"
-        #     ),
-        #     RecipeDescription(
-        #         [1400000, 1400000, 1400000], "ext4", "/home", vg_name, "lv_home"
-        #     ),
-        #     RecipeDescription([10000, 100000, 100000], "ext4", "/media/disks/extra"),
-        # ]
+    def create_partition_layout_mps(self, vg_name: str):
+        return [
+            RecipeDescription([1024], "vfat", "/boot/efi", "", "", "ESP", "gpt"),
+            RecipeDescription([1024], "ext4", "/boot", "", "", "BOOT", "gpt"),
+            RecipeDescription([10000, 10000, 10000], "ext4", "/media/disks/extra"),
+            RecipeDescription([4096], "linux-swap", "", vg_name, "lv_swap"),
+            RecipeDescription([50000, 50000, 100000], "ext4", "/", vg_name, "lv_root"),
+            RecipeDescription([5000, 5000, 50000], "ext4", "/home", vg_name, "lv_home"),
+            RecipeDescription([1000, 10000, 100000], "ext4", "/srv", vg_name, "lv_srv"),
+        ]
+
+    def get_default_partitions(self, method: str, vg_name: str):
+        log_info(f"Using template:  {method}")
+        if method == "mps":
+            return self.create_partition_layout_mps(vg_name)
+        elif method == "simple":
+            return self.create_partition_layout_simple(vg_name)
+        else:
+            return self.create_partition_layout_simple(vg_name)
 
     def create_partition_fragment(self, desc: RecipeDescription) -> str:
         body = ""

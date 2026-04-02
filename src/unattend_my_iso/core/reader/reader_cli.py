@@ -593,6 +593,13 @@ class CommandlineReader:
             help="The crypto password to use",
         )
         group_target.add_argument(
+            "-adr",
+            "--disk_recipe",
+            type=str,
+            default=None,
+            help="The recipe to use for disk partitions",
+        )
+        group_target.add_argument(
             "-adl",
             "--disk_lvm_vg",
             type=str,

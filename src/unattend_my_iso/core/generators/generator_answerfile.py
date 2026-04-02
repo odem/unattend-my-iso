@@ -307,13 +307,13 @@ class AnswerfilePreseed:
 
     def generate_fragment_recipe(self, args: TaskConfig) -> list[DIOption]:
         recipe = AnswerfileRecipe()
-        disks = recipe.get_default_partitions(args.addons.answerfile.disk_lvm_vg)
+        disk_name = args.addons.answerfile.disk_lvm_vg
+        recipe_name = args.addons.answerfile.disk_recipe
+        disks = recipe.get_default_partitions(recipe_name, disk_name)
         recipe = recipe.generate_recipe(RECIPE_NAME, disks)
         methods = "REGULAR"
         if args.addons.answerfile.answerfile_enable_crypto:
             methods = "LUKS+LVM"
-        elif args.addons.answerfile.answerfile_enable_zfs:
-            methods = "ZFS"
         elif args.addons.answerfile.answerfile_enable_lvm:
             methods = "LVM"
         return [

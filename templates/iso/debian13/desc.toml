@@ -33,13 +33,18 @@ user_other_fullname = "umi"
 user_other_pw = "umipass"
 host_name = "debian13"
 host_domain = "local"
+install_disk = "/dev/vda"
+disk_recipe = "mps"
+disk_lvm_vg = "vg_test"
 net_dhcp = true
 packages_install = ["openssh-server"]
 additional_users = ["umi-admin"]
 sudo_users = ["mps", "umi-admin", "deploy"]
 deploy_users = ["mps", "deploy"]
 admin_users = ["umi-admin"]
+config_users = ["umi-admin"]
 admin_group_name = "admin"
+config_group_name = "config"
 
 [addon_postinstall]
 password_generate = false
@@ -75,7 +80,7 @@ cmds = [
 ]
 
 [addon_cloudinit]
-ci_enabled = true
+ci_enabled = false
 ci_users = [
   [
     "ci-admin",

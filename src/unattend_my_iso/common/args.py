@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 from unattend_my_iso.common.arg_base import ArgumentBase
 from unattend_my_iso.common.const import (
+    DEFAULT_DISK_RECIPE,
     DEFAULT_DOMAIN,
     DEFAULT_HOSTNAME,
     DEFAULT_KEYBOARD,
@@ -70,7 +71,6 @@ class AddonArgsAnswerFile(ArgumentBase):
     answerfile_enable_dhcp: bool = True
     answerfile_enable_crypto: bool = False
     answerfile_enable_lvm: bool = False
-    answerfile_enable_zfs: bool = False
     answerfile_confirm_partitioning: bool = True
     answerfile_confirm_final_reboot: bool = True
     answerfile_hook_dir_cdrom: str = "/umi"
@@ -88,6 +88,7 @@ class AddonArgsAnswerFile(ArgumentBase):
     net_gateway: str = f"{DEFAULT_SUBNET}.1"
     net_dns: str = f"{DEFAULT_SUBNET}.1"
     disk_password: str = DEFAULT_PASSWORD_CRYPTO
+    disk_recipe: str = DEFAULT_DISK_RECIPE
     disk_lvm_vg: str = DEFAULT_VGNAME
     time_utc: bool = True
     time_zone: str = DEFAULT_TIMEZONE
