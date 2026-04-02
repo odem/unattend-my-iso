@@ -309,7 +309,8 @@ class AnswerfilePreseed:
         recipe = AnswerfileRecipe()
         disk_name = args.addons.answerfile.disk_lvm_vg
         recipe_name = args.addons.answerfile.disk_recipe
-        disks = recipe.get_default_partitions(recipe_name, disk_name)
+        recipe_custom = args.addons.answerfile.disk_recipe_custom
+        disks = recipe.get_default_partitions(recipe_name, disk_name, recipe_custom)
         recipe = recipe.generate_recipe(RECIPE_NAME, disks)
         methods = "REGULAR"
         if args.addons.answerfile.answerfile_enable_crypto:

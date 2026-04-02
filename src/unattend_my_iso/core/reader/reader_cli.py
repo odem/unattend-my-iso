@@ -600,6 +600,13 @@ class CommandlineReader:
             help="The recipe to use for disk partitions",
         )
         group_target.add_argument(
+            "-adrc",
+            "--disk_recipe_custom",
+            type=list,
+            default=None,
+            help="The custom recipe to use for disk partitions",
+        )
+        group_target.add_argument(
             "-adl",
             "--disk_lvm_vg",
             type=str,

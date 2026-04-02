@@ -32,6 +32,9 @@ class AnswerfileRecipe:
         text = f"{LINE_PREFIX}{name} ::"
         return f"{'':40}{LINE_CONT}{text:78}{LINE_CONT}"
 
+    def create_partition_layout_custom(self, definitions: list):
+        return [RecipeDescription(*x) for x in definitions]
+
     def create_partition_layout_simple(self, vg_name: str):
         return [
             RecipeDescription([1024], "vfat", "/boot/efi", "", "", "ESP", "gpt"),
@@ -51,12 +54,14 @@ class AnswerfileRecipe:
             RecipeDescription([1000, 10000, 100000], "ext4", "/srv", vg_name, "lv_srv"),
         ]
 
-    def get_default_partitions(self, method: str, vg_name: str):
+    def get_default_partitions(self, method: str, vg_name: str, definitions: list):
         log_info(f"Using template:  {method}")
         if method == "mps":
             return self.create_partition_layout_mps(vg_name)
         elif method == "simple":
             return self.create_partition_layout_simple(vg_name)
+        elif method == "custom":
+            return self.create_partition_layout_custom(definitions)
         else:
             return self.create_partition_layout_simple(vg_name)
 

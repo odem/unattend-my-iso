@@ -89,6 +89,7 @@ class AddonArgsAnswerFile(ArgumentBase):
     net_dns: str = f"{DEFAULT_SUBNET}.1"
     disk_password: str = DEFAULT_PASSWORD_CRYPTO
     disk_recipe: str = DEFAULT_DISK_RECIPE
+    disk_recipe_custom: list = field(default_factory=lambda:[])
     disk_lvm_vg: str = DEFAULT_VGNAME
     time_utc: bool = True
     time_zone: str = DEFAULT_TIMEZONE
