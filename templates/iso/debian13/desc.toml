@@ -10,7 +10,7 @@ answerfile = ""
 path_postinstall = ""
 file_postinstall = "postinstall.bash"
 enabled_overlays = []
-config_version = "0.0.7"
+config_version = "0.0.8"
 
 [run]
 vmname = "debian13-test"
@@ -39,10 +39,9 @@ disk_recipe_custom = [
   [[1024], "vfat", "/boot/efi", "", "", "ESP", "gpt"],
   [[1024], "ext4", "/boot", "", "", "BOOT", "gpt"],
   [[4096], "linux-swap", "", "", "", "SWAP", "gpt"],
-  [[50000, 50000, 50000], "ext4", "/", "vg_test123", "lv_root"],
+  [[50000, 50000, 50000], "ext4", "/", "vg_test", "lv_root"],
   # Dont format
 ]
-
 disk_lvm_vg = "vg_test"
 net_dhcp = true
 packages_install = ["openssh-server"]
