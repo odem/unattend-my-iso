@@ -3,14 +3,14 @@
 name = "debian13"
 virtio_name = ""
 virtio_url = ""
-iso_name = "debian-13.2.0-amd64-netinst.iso"
-iso_url = "https://saimei.ftp.acc.umu.se/debian-cd/current/amd64/iso-cd/debian-13.2.0-amd64-netinst.iso"
+iso_name = "debian-13.4.0-amd64-netinst.iso"
+iso_url = "https://saimei.ftp.acc.umu.se/debian-cd/current/amd64/iso-cd/debian-13.4.0-amd64-netinst.iso"
 iso_type = "linux"
 answerfile = ""
 path_postinstall = ""
 file_postinstall = "postinstall.bash"
 enabled_overlays = []
-config_version = "0.0.3"
+config_version = "0.0.7"
 
 [run]
 vmname = "debian13-test"
@@ -79,36 +79,41 @@ ci_enabled = true
 ci_users = [
   [
     "ci-admin",
-    "Administratoren",
-    "adminpass",
+    "ci-admin",
+    "$6$6t21d0KaVTJz4eXi$j7ZxCq9iMIm.xW5pieu6xq45Lo3U5xufS2PbqHkZhSqFaptgaLkTzLgDpLkddVWlM.7ihMEZPYyCv17y2VJeJ0", # adminpass
   ],
   [
     "ci-user1",
-    "Benutzer",
-    "ci-user1pass",
+    "ci-user1",
+    "$6$cl2SfA5SSCsPde6I$qYOff9CBH2mKQcEPSs.GxA9Z7XRYH6BnaFMWczt3uBcsDcLZPAlBomM/HUapWPpYetE/ST42F0LXWopZyeqHN/", # user1pass
   ],
   [
     "ci-user2",
-    "Benutzer",
-    "ci-user2pass",
+    "ci-user2",
+    "$6$77I5pp/fbi.Vk3xc$0YG/nDAy3ze2u4fAPI8q6W60dcwBYwV6JnOy7cln9cjmO9EuRE.Cbs6L7eOb8g/ggwYhRcDhA4NhpIVnYf7nJ.", # user2pass
   ],
   [
     "ci-user3",
-    "Benutzer",
-    "ci-user3pass",
+    "ci-user3",
+    "$6$dSlTjbCRlLHmynPk$k6JZHKtu4imsCk5vEI9TU3W23ExPmP8Jva17ajfHVST20muWE3dLxe/A1s40LVoF..CMF/dAeDmv6Vh91tQQ80", # user3pass
   ],
 ]
 ci_writefiles = [
   [
-    "C:/autostart.ps1",
+    "/autostart.ps1",
     "TEMPLATE-AUTOSTART",
+    "0777",
+    "umi:umi",
   ],
   [
-    "C:/runner123.bat",
-    "calc.exe",
+    "/runner123.bash",
+    "touch /ci-autorun.log",
+    "0755",
+    "umi:root",
   ],
 ]
-ci_runcmd = ["calc.exe", "notepad.exe"]
+# ci_runcmd = ["calc.exe", "notepad.exe"]
+ci_runcmd = ["/runner123.bash"]
 ci_hostname = "cihost-123"
 ci_diskname = "cloudinit.iso"
 ci_uuid = "12345-abcde-67890-fghij"

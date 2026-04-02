@@ -312,6 +312,8 @@ class AnswerfilePreseed:
         methods = "REGULAR"
         if args.addons.answerfile.answerfile_enable_crypto:
             methods = "LUKS+LVM"
+        elif args.addons.answerfile.answerfile_enable_zfs:
+            methods = "ZFS"
         elif args.addons.answerfile.answerfile_enable_lvm:
             methods = "LVM"
         return [

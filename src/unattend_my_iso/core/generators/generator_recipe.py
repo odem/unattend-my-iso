@@ -31,6 +31,9 @@ class AnswerfileRecipe:
         text = f"{LINE_PREFIX}{name} ::"
         return f"{'':40}{LINE_CONT}{text:78}{LINE_CONT}"
 
+    def create_partition_layout(self, method: str):
+        pass
+
     def get_default_partitions(self, vg_name: str):
         # wiese
         return [

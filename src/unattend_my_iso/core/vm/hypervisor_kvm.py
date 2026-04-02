@@ -343,7 +343,15 @@ class UmiHypervisorKvm(UmiHypervisorBase):
         vmdir = self.files._get_path_vm(args)
         users = [
             CIBaseUser(
-                user[0], user[0], user[1], user[1], user[2], False, date(2099, 5, 5)
+                user[0],
+                user[0],
+                user[1],
+                user[1],
+                "/bin/bash",
+                user[2],
+                "0",
+                False,
+                f"{date(2099, 5, 5)}",
             )
             for user in args.addons.cloudinit.ci_users
         ]

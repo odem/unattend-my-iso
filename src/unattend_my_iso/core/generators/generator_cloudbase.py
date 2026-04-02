@@ -21,9 +21,11 @@ class CIBaseUser:
     gecos: str
     primary_group: str
     groups: str
+    shell: str
     passwd: str
-    inactive: bool
-    expiredate: date
+    inactive: str
+    lock_passwd: bool
+    expiredate: str
 
 
 @dataclass
@@ -33,7 +35,7 @@ class CIBaseConfig:
     ci_hostname: str
     ci_dir: str
     ci_runcmd: list[str]
-    ci_writefiles: list
+    ci_writefiles: list[str]
     ci_isoname: str
 
 
@@ -140,6 +142,8 @@ class CICommandLineArguments:
 class CIWriteFile:
     path: str
     content: List[CICommandLineArguments]
+    permissions: str = "0644"
+    owner: str = "root:root"
 
     def tostring(self) -> str:
         yaml_content = ""
@@ -198,6 +202,9 @@ class UmiCloudBaseGenerator:
                 {
                     **asdict(writefile),
                     "content": writefile.tostring(),
+                    "permissions": (
+                        "0755" if writefile.path.endswith(".bash") else "644"
+                    ),
                 }
                 for writefile in write_files_data
             ],
@@ -215,12 +222,21 @@ class UmiCloudBaseGenerator:
             log_info(f"{filename} {content}")
             if content == "TEMPLATE-AUTOSTART":
                 content = default_content
-                result.append(CIWriteFile(path=filename, content=default_content))
+                result.append(
+                    CIWriteFile(
+                        path=filename,
+                        content=default_content,
+                        permissions=file[2],
+                        owner=file[3],
+                    )
+                )
             else:
                 result.append(
                     CIWriteFile(
                         path=filename,
                         content=[CICommandLineArguments(content.split(" "))],
+                        permissions=file[2],
+                        owner=file[3],
                     )
                 )
         return result

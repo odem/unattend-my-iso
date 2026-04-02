@@ -70,6 +70,7 @@ class AddonArgsAnswerFile(ArgumentBase):
     answerfile_enable_dhcp: bool = True
     answerfile_enable_crypto: bool = False
     answerfile_enable_lvm: bool = False
+    answerfile_enable_zfs: bool = False
     answerfile_confirm_partitioning: bool = True
     answerfile_confirm_final_reboot: bool = True
     answerfile_hook_dir_cdrom: str = "/umi"
