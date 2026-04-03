@@ -89,7 +89,7 @@ class AddonArgsAnswerFile(ArgumentBase):
     net_dns: str = f"{DEFAULT_SUBNET}.1"
     disk_password: str = DEFAULT_PASSWORD_CRYPTO
     disk_recipe: str = DEFAULT_DISK_RECIPE
-    disk_recipe_custom: list = field(default_factory=lambda:[])
+    disk_recipe_custom: list = field(default_factory=lambda: [])
     disk_lvm_vg: str = DEFAULT_VGNAME
     time_utc: bool = True
     time_zone: str = DEFAULT_TIMEZONE
@@ -113,6 +113,11 @@ class AddonArgsAnswerFile(ArgumentBase):
     packages_install: list[str] = field(default_factory=lambda: [])
     grub_install_device: str = ""
     grub_iso_device: str = "(cd0)"
+    ssh_installation_enabled: bool = False
+    ssh_installation_breakpoint_pre: str = ""
+    ssh_installation_breakpoint_post: str = ""
+    ssh_installation_password: str = "installerpass"
+    include_anna_packages: list[str] = field(default_factory=lambda: [])
     include_offline_packages: list[str] = field(default_factory=lambda: [])
     include_git_repositories: list[str] = field(default_factory=lambda: [])
 

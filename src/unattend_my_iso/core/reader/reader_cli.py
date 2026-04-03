@@ -509,6 +509,34 @@ class CommandlineReader:
             help="Hook filename",
         )
         group_target.add_argument(
+            "-asie",
+            "--ssh_installation_enabled",
+            type=str,
+            default=None,
+            help="Enable SSH installation",
+        )
+        group_target.add_argument(
+            "-asip",
+            "--ssh_installation_password",
+            type=str,
+            default=None,
+            help="The password to use for SSH authentication (during installation)",
+        )
+        group_target.add_argument(
+            "-asibpr",
+            "--ssh_installation_breakpoint_pre",
+            type=str,
+            default=None,
+            help="The component which network-installation should preceed",
+        )
+        group_target.add_argument(
+            "-asibpo",
+            "--ssh_installation_breakpoint_post",
+            type=str,
+            default=None,
+            help="The component which network-installation should follow",
+        )
+        group_target.add_argument(
             "-aid",
             "--install_disk",
             type=str,
@@ -766,6 +794,13 @@ class CommandlineReader:
             type=str,
             default=None,
             help="The device from which grub boots",
+        )
+        group_target.add_argument(
+            "-aiap",
+            "--include_anna_packages",
+            type=str,
+            default=None,
+            help="The packages to include via anna-install",
         )
         group_target.add_argument(
             "-aiop",

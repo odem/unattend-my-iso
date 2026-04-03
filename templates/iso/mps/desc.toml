@@ -1,13 +1,13 @@
 
 [description]
 name = "mps"
-iso_name = "debian-13.0.0-amd64-netinst.iso"
-iso_url = "https://saimei.ftp.acc.umu.se/debian-cd/current/amd64/iso-cd/debian-13.0.0-amd64-netinst.iso"
+iso_name = "debian-13.4.0-amd64-netinst.iso"
+iso_url = "https://saimei.ftp.acc.umu.se/debian-cd/current/amd64/iso-cd/debian-13.4.0-amd64-netinst.iso"
 iso_type = "linux"
 path_postinstall = "postinstall"
 file_postinstall = "postinstall.bash"
 enabled_overlays = ["mpsdev", "hive"]
-config_version = "0.0.3"
+config_version = "0.0.8"
 
 [run]
 vmname = "mps-test"
@@ -71,7 +71,7 @@ sudo_users = ["umi", "umi-admin"]
 admin_users = ["umi-admin"]
 admin_group_name = "admin"
 disk_password = "diskpass"
-include_git_repositories = ["https://github.com/odem/mps.git"]
+# include_git_repositories = ["https://github.com/odem/mps.git"]
 
 [addon_cmd]
 cmd_enabled = true
