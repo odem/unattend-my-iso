@@ -1,7 +1,7 @@
 
 [description]
 name = "hive"
-config_version = "0.0.8"
+config_version = "0.0.9"
 
 [run]
 vmname = "hive"
@@ -73,13 +73,15 @@ deployment_users = ["deploy"]
 admin_group_name = "umi-admin"
 config_group_name = "umi-config"
 disk_password = "diskpass"
-# include_git_repositories = ["https://github.com/mpsffap/mps.git"]
+include_git_repositories = ["https://github.com/mpsffap/mps.git"]
 include_anna_packages = [
   "fdisk-udeb",
   "parted-udeb",
   "wget-udeb",
   "ssh-client-udeb",
 ]
+preseed_commands_early = ["echo foo"]
+preseed_commands_late = ["in-target /usr/bin/touch /footest"]
 ssh_installation_enabled = false
 ssh_installation_breakpoint_pre = "" # Can be networking, partman, packages or grub
 ssh_installation_breakpoint_post = "" # Can be networking, partman, packages or grub

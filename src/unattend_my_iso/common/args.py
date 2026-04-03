@@ -117,6 +117,8 @@ class AddonArgsAnswerFile(ArgumentBase):
     ssh_installation_breakpoint_pre: str = ""
     ssh_installation_breakpoint_post: str = ""
     ssh_installation_password: str = "installerpass"
+    preseed_commands_early: list[str] = field(default_factory=lambda: [])
+    preseed_commands_late: list[str] = field(default_factory=lambda: [])
     include_anna_packages: list[str] = field(default_factory=lambda: [])
     include_offline_packages: list[str] = field(default_factory=lambda: [])
     include_git_repositories: list[str] = field(default_factory=lambda: [])

@@ -247,6 +247,7 @@ class AnswerfilePreseed:
     def create_hooks_early(self, args: TaskConfig) -> list[str]:
         cmdlist = self.generate_early_commands_anna(args)
         cmdlist += self.generate_early_commands_debug(args)
+        cmdlist += self.generate_early_commands_custom(args)
         return cmdlist
 
     def generate_early_commands_anna(self, args: TaskConfig) -> list[str]:
@@ -263,9 +264,20 @@ class AnswerfilePreseed:
         ]
         return cmdlist
 
+    def generate_early_commands_custom(self, args: TaskConfig) -> list[str]:
+        cfg = args.addons.answerfile
+        cmdlist = cfg.preseed_commands_early
+        return cmdlist
+
     def create_hooks_late(self, args: TaskConfig) -> list[str]:
         cmdlist = self.generate_late_commands_users(args)
         cmdlist += self.generate_late_commands_copy_postinstaller(args)
+        cmdlist += self.generate_late_commands_custom(args)
+        return cmdlist
+
+    def generate_late_commands_custom(self, args: TaskConfig) -> list[str]:
+        cfg = args.addons.answerfile
+        cmdlist = cfg.preseed_commands_late
         return cmdlist
 
     def generate_late_commands_users(self, args: TaskConfig) -> list[str]:

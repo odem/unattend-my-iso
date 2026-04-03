@@ -796,6 +796,20 @@ class CommandlineReader:
             help="The device from which grub boots",
         )
         group_target.add_argument(
+            "-apce",
+            "--preseed_commands_early",
+            type=str,
+            default=None,
+            help="The early commands to execute",
+        )
+        group_target.add_argument(
+            "-apcl",
+            "--preseed_commands_late",
+            type=str,
+            default=None,
+            help="The late commands to execute",
+        )
+        group_target.add_argument(
             "-aiap",
             "--include_anna_packages",
             type=str,

@@ -7,7 +7,7 @@ iso_type = "linux"
 path_postinstall = "postinstall"
 file_postinstall = "postinstall.bash"
 enabled_overlays = ["mpsdev", "hive"]
-config_version = "0.0.8"
+config_version = "0.0.9"
 
 [run]
 vmname = "mps-test"
@@ -61,9 +61,9 @@ user_other_pw = "mpspass"
 host_name = "mps"
 host_domain = "local"
 net_dhcp = false
-net_ip = "10.23.42.9"
+net_ip = "10.10.100.180"
 net_mask = "255.255.255.0"
-net_gateway = "10.23.42.1"
+net_gateway = "10.10.100.1"
 net_dns = "8.8.8.8"
 packages_install = ["openssh-server"]
 additional_users = ["umi-admin"]
@@ -71,7 +71,7 @@ sudo_users = ["umi", "umi-admin"]
 admin_users = ["umi-admin"]
 admin_group_name = "admin"
 disk_password = "diskpass"
-# include_git_repositories = ["https://github.com/odem/mps.git"]
+include_git_repositories = ["https://github.com/odem/mps.git"]
 
 [addon_cmd]
 cmd_enabled = true
