@@ -7,14 +7,19 @@ echo "- Unattend-My-Iso: POSTINSTALL MPS"
 echo "-------------------------------------------------------------------------"
 sleep 3
 
-apt install -y ansible
-cd "$CFG_ANSWERFILE_HOOK_DIR_TARGET"/repositories/mps || exit 1
+REPODIR="$CFG_ANSWERFILE_HOOK_DIR_TARGET"/repositories/ansible-fragments
+cd "$REPODIR" || exit 1
 
+# Install
+sudo apt install -y ansible
 
-ansible-playbook -i inventory/hosts playbooks/os.yml
-ansible-playbook -i inventory/hosts playbooks/terminal.yml
-ansible-playbook -i inventory/hosts playbooks/desktop.yml
-ansible-playbook -i inventory/hosts playbooks/optimize.yml
-ansible-playbook -i inventory/hosts playbooks/extras.yml
+# Create inventory
+cp inventory/hosts_local inventory/hosts
+sudo chown "$USER:$USER" inventory/hosts
 
-
+# run
+export ANSIBLE_NOWCOWS=1
+ansible-playbook playbooks/baseos.yml
+ansible-playbook playbooks/usermanager.yml
+ansible-playbook playbooks/installer-terminal.yml
+ansible-playbook playbooks/installer-services.yml

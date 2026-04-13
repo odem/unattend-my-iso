@@ -46,6 +46,9 @@ default_user_dir = "umi"
 grub_theme = "anon"
 timeout = 30
 
+[addon_cloudinit]
+ci_enabled = false
+
 [addon_answerfile]
 answerfile_enable_networking = false
 answerfile_enable_dhcp = false
@@ -65,7 +68,7 @@ net_ip = "10.10.100.180"
 net_mask = "255.255.255.0"
 net_gateway = "10.10.100.1"
 net_dns = "8.8.8.8"
-packages_install = ["openssh-server"]
+packages_install = ["openssh-server", "sudo"]
 additional_users = ["umi-admin"]
 sudo_users = ["umi", "umi-admin"]
 admin_users = ["umi-admin"]

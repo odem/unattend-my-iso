@@ -1,4 +1,5 @@
 import os
+from unattend_my_iso.common.const import HOME
 from unattend_my_iso.core.subprocess.caller import run
 from typing_extensions import override
 from unattend_my_iso.addons.addon_base import UmiAddon
@@ -67,7 +68,10 @@ class SshAddon(UmiAddon):
             content = self.files.read_file(appendpath)
         pubkeys_deploy = self._get_deployment_keys(args)
         if pubkeys_deploy != "":
-            content = f"{content}\n# Deployment keys{pubkeys_deploy}"
+            content = (
+                f"# Config auth append\n{content}\n"
+                "# Deployment keys\n{pubkeys_deploy}"
+            )
 
         if content != "":
             return self.files.append_to_file(dstauth, content)

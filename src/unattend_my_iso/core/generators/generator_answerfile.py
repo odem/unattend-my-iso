@@ -2,10 +2,12 @@ from unattend_my_iso.common.config import TaskConfig
 from unattend_my_iso.common.const import (
     DEFAULT_PASSWORD,
     DEFAULT_USERNAME,
+    HOME,
     RECIPE_NAME,
 )
-from unattend_my_iso.common.logging import log_warn
+from unattend_my_iso.common.logging import log_info, log_warn
 from unattend_my_iso.common.model import DIOption
+from unattend_my_iso.core.files.file_manager import UmiFileManager
 from unattend_my_iso.core.generators.generator_recipe import (
     LINE_CONT,
     LINE_PREFIX,
@@ -25,6 +27,8 @@ class AnswerfilePreseed:
         cfg_packages = self.generate_fragment_packages(args)
         cfg_grub = self.generate_fragment_grub(args)
         cfg_hooklate = self.generate_fragment_hook_late(args)
+        # cfg_debug_start = self.generate_fragment_debugprint("UMI - START2", args)
+        # cfg_debug_stop = self.generate_fragment_debugprint("UMI - STOP2", args)
         cfg_reboot = self.generate_fragment_reboot(args)
         return [
             *cfg_hookearly,
@@ -37,6 +41,8 @@ class AnswerfilePreseed:
             *cfg_packages,
             *cfg_grub,
             *cfg_hooklate,
+            # *cfg_debug_start,
+            # *cfg_debug_stop,
             *cfg_reboot,
         ]
 
@@ -233,6 +239,16 @@ class AnswerfilePreseed:
             DIOption("preseed/late_command", cmd_full),
         ]
 
+    def generate_fragment_debugprint(
+        self, text: str, args: TaskConfig
+    ) -> list[DIOption]:
+        cmdlist = self.generate_preseed_debugprint(text, args)
+        cmd_full = self.convert_tasklist(cmdlist)
+        return [
+            DIOption("#", "Log (Debug)"),
+            DIOption("preseed/late_command", cmd_full),
+        ]
+
     def convert_tasklist(self, tasks: list[str]) -> str:
         i = 0
         result = f"{'':47}{LINE_CONT}"
@@ -280,34 +296,58 @@ class AnswerfilePreseed:
         cmdlist = cfg.preseed_commands_late
         return cmdlist
 
+    def generate_preseed_debugprint(self, text: str, args: TaskConfig) -> list[str]:
+        cmdlist = [
+            f"in-target echo 'UMI: {text}'",
+        ]
+        return cmdlist
+
     def generate_late_commands_users(self, args: TaskConfig) -> list[str]:
         cfg = args.addons.answerfile
+        cdrom_dir = cfg.answerfile_hook_dir_cdrom
+        target_dir = cfg.answerfile_hook_dir_target
         admin_group = cfg.admin_group_name
         config_group = cfg.config_group_name
-        cmdlist = [f"in-target /usr/sbin/groupadd {admin_group}"]
+        cmdlist = [
+            f"mkdir -p /target{target_dir}/",
+            f"cp -r /cdrom{cdrom_dir}/* /target{target_dir}/",
+        ]
+        cmdlist += [f"in-target /usr/sbin/groupadd {admin_group}"]
         cmdlist += [f"in-target /usr/sbin/groupadd {config_group}"]
         if len(args.addons.answerfile.additional_users) > 0:
             for user in args.addons.answerfile.additional_users:
+                cmdlist += [f"in-target adduser --disabled-password --gecos '' {user}"]
+        if len(args.addons.answerfile.deployment_users) > 0:
+            for user in args.addons.answerfile.deployment_users:
+                sshdir = f"/home/{user}/.ssh"
+                sudodir = "/etc/sudoers.d"
+                sudocmd = f"{user} ALL=(ALL) NOPASSWD:ALL"
                 cmdlist += [
-                    f"in-target /sbin/adduser --disabled-password --gecos '' {user}"
+                    f"in-target usermod -aG sudo {user}",
+                    f"in-target usermod -aG {admin_group} {user}",
+                    f"in-target usermod -aG {config_group} {user}",
+                    f"in-target mkdir -p {sshdir}",
+                    f"in-target ssh-keygen -t rsa -N '' -f {sshdir}/id_rsa",
+                    f"in-target cp {target_dir}/ssh/authorized_keys {sshdir}/authorized_keys",
+                    f"in-target bash -c \"cat  '{sshdir}/id_rsa.pub' >> {sshdir}/authorized_keys\"",
+                    f"in-target chown {user}:{user} -R {sshdir}",
+                    f"in-target mkdir -p {sudodir}",
+                    f"in-target bash -c \"echo  '{sudocmd}' > {sudodir}/{user}\"",
+                    f"in-target echo 'User {user} added at: '$(date)",
                 ]
         return cmdlist
 
     def generate_late_commands_copy_postinstaller(self, args: TaskConfig) -> list[str]:
         cfg = args.addons.answerfile
-        cdrom_dir = cfg.answerfile_hook_dir_cdrom
         target_dir = cfg.answerfile_hook_dir_target
         filename = cfg.answerfile_hook_filename
         admin_group = cfg.admin_group_name
-        cmdlist = [
-            f"mkdir -p /target{target_dir}/",
-            f"cp -r /cdrom{cdrom_dir}/* /target{target_dir}/",
-        ]
+        cmdlist = []
         if args.addons.postinstall.postinstall_enabled:
             cmdlist += [
                 f"in-target chown root:{admin_group} -R {target_dir}",
-                f"in-target chmod 770 -R {target_dir}",
-                "in-target chmod 770 /target/opt",
+                f"in-target chmod ug+rw -R {target_dir}",
+                f"in-target chmod o-rwx -R {target_dir}",
                 f"in-target chmod 770 {target_dir}/{filename}",
                 f"in-target /bin/bash {target_dir}/{filename}",
             ]

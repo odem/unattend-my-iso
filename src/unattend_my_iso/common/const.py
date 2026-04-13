@@ -1,10 +1,12 @@
 import os
+import pwd
 
 # Globals
 APP_VERSION = "0.0.9"
 
 # Current user
-HOME = os.path.expanduser("~")
+HOME = pwd.getpwnam(os.environ["SUDO_USER"]).pw_dir
+# HOME = os.path.expanduser("~")
 USER = os.getlogin()
 
 # Workspace search path

@@ -12,8 +12,6 @@ sleep 3
 if [[ -f /opt/umi/config/.bashrc ]] ; then
     chmod 644 ~/.bashrc
     cat /opt/umi/config/.bashrc > /root/.bashrc
-else
-    echo ".bashrc not present!"
 fi
 
 # systemd unit
