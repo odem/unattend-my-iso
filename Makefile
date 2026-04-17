@@ -46,12 +46,12 @@ $(DIR_VENV):
 install-pip: $(DIR_VENV)
 	source $(DIR_VENV)/bin/activate && \
 		pip install --upgrade build && \
-		pip install -r requirements.txt ; \
+		pip install -r requirements.txt && \
 		python -m build
-install-tools: #build
+install-tools: $(DIR_VENV)
 	sudo apt -y install python3.13 python3.13-venv python3-pip \
 		qemu-kvm xorriso ovmf swtpm wimtools isolinux mkisofs randmac
-	source $(DIR_VENV)/bin/activate ; pip install --editable .
+	source $(DIR_VENV)/bin/activate && pip install --editable .
 build: 
 	@source $(DIR_VENV)/bin/activate ; \
 		python3 -m src.$(PROJECT_NAME).main  -tp build_all \

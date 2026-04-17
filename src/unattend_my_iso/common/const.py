@@ -5,7 +5,11 @@ import pwd
 APP_VERSION = "0.0.9"
 
 # Current user
-HOME = pwd.getpwnam(os.environ["SUDO_USER"]).pw_dir
+
+user = os.environ["USER"]
+if "SUDO_USER" in os.environ:
+    user = os.environ["SUDO_USER"]
+HOME = pwd.getpwnam(user).pw_dir
 # HOME = os.path.expanduser("~")
 USER = os.getlogin()
 
