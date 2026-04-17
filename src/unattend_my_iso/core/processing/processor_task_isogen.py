@@ -155,9 +155,13 @@ class TaskProcessorIsogen(TaskProcessorBase):
         return True
 
     def _prepare_bootloader(self, args: TaskConfig, template: TemplateConfig) -> bool:
-        if template.iso_type == "windows":
-            return self._create_efidisk_windows(args)
-        return self._create_irmod_linux(args)
+
+        irmod_switch = True
+        if irmod_switch:
+            if template.iso_type == "windows":
+                return self._create_efidisk_windows(args)
+            return self._create_irmod_linux(args)
+        return True
 
     def _generate_iso(self, args: TaskConfig, template: TemplateConfig) -> bool:
         dst = self.files._get_path_isopath(args)

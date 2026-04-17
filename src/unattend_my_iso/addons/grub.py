@@ -83,6 +83,7 @@ class GrubAddon(UmiAddon):
         kernel1 = self._extract_kernel_version_headers(inter)
         if kernel1 == "X.Y.Z-W":
             kernel1 = self._extract_kernel_version_image(inter)
+        kernel_live = kernel1.split("-")[0]
         name = args.target.template
         kernel2 = args.addons.grub.grub_kernel_lvm_alt1
         kernel3 = args.addons.grub.grub_kernel_lvm_alt2
@@ -99,6 +100,7 @@ class GrubAddon(UmiAddon):
             rules += [
                 Replaceable(grub, "CFG_THEME", theme),
                 Replaceable(grub, "CFG_KERNEL", kernel1),
+                Replaceable(grub, "CFG_LIVE_KERNEL", kernel_live),
                 Replaceable(grub, "CFG_LVM_KERNEL_ALT1", kernel2),
                 Replaceable(grub, "CFG_LVM_KERNEL_ALT2", kernel3),
                 Replaceable(grub, "CFG_TYPE", name),

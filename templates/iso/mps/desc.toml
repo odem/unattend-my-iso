@@ -6,7 +6,7 @@ iso_url = "https://saimei.ftp.acc.umu.se/debian-cd/current/amd64/iso-cd/debian-1
 iso_type = "linux"
 path_postinstall = "postinstall"
 file_postinstall = "postinstall.bash"
-enabled_overlays = ["mpsdev", "hive"]
+enabled_overlays = ["mpsdev", "hive", "live"]
 config_version = "0.0.9"
 
 [run]

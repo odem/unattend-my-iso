@@ -53,8 +53,10 @@ class TaskProcessorBase:
         dstinter = self.files._get_path_intermediate(args)
         modpath = f"{dstinter}/irmod"
         initrdlist = self._extract_ramdisks(dstinter)
+        log_info("List of found initrd:")
         try:
             for initrd in initrdlist:
+                log_info(f"-> {initrd}")
                 subdir = os.path.dirname(initrd)
                 if subdir in args.addons.grub.initrd_list:
                     if self.isogen.create_irmod(subdir, modpath, dstinter) is False:
@@ -73,12 +75,19 @@ class TaskProcessorBase:
         matches = []
         for root, _, files in os.walk(path):
             for file in files:
-                if file.startswith("initrd") and file.endswith(".gz"):
-                    filepath = os.path.join(root, file)
-                    filepath = filepath.removeprefix(path)
-                    if filepath.startswith("/"):
-                        filepath = filepath.removeprefix("/")
-                    matches.append(filepath)
+                if file.startswith("initrd"):
+                    if file.endswith(".gz"):
+                        filepath = os.path.join(root, file)
+                        filepath = filepath.removeprefix(path)
+                        if filepath.startswith("/"):
+                            filepath = filepath.removeprefix("/")
+                        matches.append(filepath)
+                    if file.endswith(".amd64"):
+                        filepath = os.path.join(root, file)
+                        filepath = filepath.removeprefix(path)
+                        if filepath.startswith("/"):
+                            filepath = filepath.removeprefix("/")
+                        matches.append(filepath)
         return matches
 
     def _integrate_addon(
