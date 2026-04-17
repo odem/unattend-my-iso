@@ -37,10 +37,13 @@ class AnswerfileRecipe:
 
     def create_partition_layout_simple(self, vg_name: str):
         return [
-            RecipeDescription([1024], "vfat", "/boot/efi", "", "", "ESP", "gpt"),
-            RecipeDescription([1024], "ext4", "/boot", "", "", "BOOT", "gpt"),
-            RecipeDescription([4096], "linux-swap", "", "", "", "SWAP", "gpt"),
-            RecipeDescription([50000, 50000, 50000], "ext4", "/", vg_name, "lv_root"),
+            RecipeDescription([2048], "vfat", "/boot/efi", "", "", "ESP", "gpt"),
+            RecipeDescription([2048], "ext4", "/boot", "", "", "BOOT", "gpt"),
+            RecipeDescription([4096], "linux-swap", "", vg_name, "lv_swap"),
+            RecipeDescription(
+                [450000, 500000, 100000], "ext4", "/", vg_name, "lv_root"
+            ),
+            RecipeDescription([20000, 20000, 20000], "ext4", "/media/disks/extra"),
         ]
 
     def create_partition_layout_mps(self, vg_name: str):
