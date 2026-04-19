@@ -1,0 +1,17 @@
+{
+  "include": [
+    "src/**/*.py",
+    "scripts/**/*.py"
+  ],
+  "exclude": [
+    "tests/**/*",
+    "data/**/*",
+    "dist/**/*",
+    "templates/**/*",
+    "build/**/*",
+    "node_modules/**/*",
+    "**/*.pyc",
+    "**/__pycache__/**/*"
+  ],
+  "reportUnknownMemberType": "none"
+}
