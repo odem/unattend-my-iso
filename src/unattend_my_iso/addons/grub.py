@@ -3,6 +3,7 @@ from datetime import datetime
 from typing_extensions import override
 from unattend_my_iso.addons.addon_base import Replaceable, UmiAddon
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
+from unattend_my_iso.common.logging import log_info
 
 
 class GrubAddon(UmiAddon):
@@ -22,7 +23,10 @@ class GrubAddon(UmiAddon):
         return True
 
     def copy_grub(self, args: TaskConfig) -> bool:
-        srcgrub = self.get_template_path_optional("grub", "grub.cfg", args)
+        subdir = "default"
+        if args.addons.grub.grub_boot_type != "default":
+            subdir = args.addons.grub.grub_boot_type
+        srcgrub = self.get_template_path_optional("grub", f"{subdir}/grub.cfg", args)
         dst = self.files._get_path_intermediate(args)
         dstgrub = f"{dst}/boot/grub"
         dstgrubfile = f"{dstgrub}/grub.cfg"
@@ -32,12 +36,19 @@ class GrubAddon(UmiAddon):
         return self._apply_replacements(rules)
 
     def copy_theme(self, args: TaskConfig) -> bool:
+        subdir = "default"
+        if args.addons.grub.grub_boot_type != "default":
+            subdir = args.addons.grub.grub_boot_type
         dst = self.files._get_path_intermediate(args)
         themename = args.addons.grub.grub_theme
         themeicons = args.addons.grub.grub_icons
         themename = args.addons.grub.grub_theme
-        srctheme = self.get_template_path_optional("grub", f"themes/{themename}", args)
-        srcicons = self.get_template_path_optional("grub", f"icons/{themeicons}", args)
+        srctheme = self.get_template_path_optional(
+            "grub", f"{subdir}/themes/{themename}", args
+        )
+        srcicons = self.get_template_path_optional(
+            "grub", f"{subdir}/icons/{themeicons}", args
+        )
         dstgrub = f"{dst}/boot/grub"
         dstthemes = f"{dstgrub}/themes"
         dsticons = f"{dstthemes}/{themename}/icons"

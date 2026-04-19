@@ -37,10 +37,12 @@ user_enabled = true
 default_user_dir = "umi"
 
 [addon_grub]
+grub_enabled = true
+grub_boot_type = "live"
 grub_theme = "anon"
 timeout = 30
 sleeptime = 10
-initrd_list = ["live"]
+initrd_list = ["install", "live"]
 
 [addon_answerfile]
 answerfile_enable_networking = false

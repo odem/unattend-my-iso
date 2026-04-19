@@ -123,6 +123,13 @@ class CommandlineReader:
             help="Enable or disable grub addon (true or false)",
         )
         group_target.add_argument(
+            "-gbt",
+            "--grub_boot_type",
+            type=str,
+            default=None,
+            help="The grub boot type (default or live modes)",
+        )
+        group_target.add_argument(
             "-gT",
             "--grub_theme",
             type=str,

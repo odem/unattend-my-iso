@@ -49,10 +49,17 @@ class TaskProcessorBase:
             log_error(f"Exception on efidisk: {exe}", self.__class__.__qualname__)
         return True
 
-    def _create_irmod_linux(self, args: TaskConfig) -> bool:
+    def _create_irmod_linux(self, args: TaskConfig, template: TemplateConfig) -> bool:
         dstinter = self.files._get_path_intermediate(args)
         modpath = f"{dstinter}/irmod"
-        initrdlist = self._extract_ramdisks(dstinter)
+
+        # Enumerate ramdisks
+        if template.live_boot_type != "":
+            initrdlist = self._extract_ramdisks(dstinter)
+        else:
+            initrdlist = self._extract_ramdisks_live(dstinter)
+
+        # Iterate found elements
         log_info("List of found initrd:")
         try:
             for initrd in initrdlist:
@@ -72,6 +79,19 @@ class TaskProcessorBase:
         return True
 
     def _extract_ramdisks(self, path: str) -> list[str]:
+        matches = []
+        for root, _, files in os.walk(path):
+            for file in files:
+                if file.startswith("initrd"):
+                    if file.endswith(".gz"):
+                        filepath = os.path.join(root, file)
+                        filepath = filepath.removeprefix(path)
+                        if filepath.startswith("/"):
+                            filepath = filepath.removeprefix("/")
+                        matches.append(filepath)
+        return matches
+
+    def _extract_ramdisks_live(self, path: str) -> list[str]:
         matches = []
         for root, _, files in os.walk(path):
             for file in files:

@@ -136,10 +136,13 @@ class PostinstallAddon(UmiAddon):
             return True
 
         if args.addons.postinstall.enable_grub_theme:
+            subdir = "default"
+            if args.addons.grub.grub_boot_type != "default":
+                subdir = "live"
             if args.addons.grub.grub_theme == "default":
                 return True
             srcpath = self.get_template_path_optional(
-                "grub", f"themes/{args.addons.grub.grub_theme}", args
+                "grub", f"{subdir}/themes/{args.addons.grub.grub_theme}", args
             )
             if os.path.exists(srcpath) is False:
                 log_error(

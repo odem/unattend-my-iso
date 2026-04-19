@@ -167,6 +167,7 @@ class AddonArgsPostinstall(ArgumentBase):
 @dataclass
 class AddonArgsGrub(ArgumentBase):
     grub_enabled: bool = True
+    grub_boot_type: str = "default"
     grub_theme: str = "default"
     grub_icons: str = ""
     initrd_list: list[str] = field(
@@ -175,6 +176,7 @@ class AddonArgsGrub(ArgumentBase):
             # "install.amd/gtk",
             # "install",
             # "install/gtk",
+            # "live"
         ]
     )
     grub_kernel_lvm_alt1: str = ""
