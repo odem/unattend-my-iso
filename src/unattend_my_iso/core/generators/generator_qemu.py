@@ -340,12 +340,13 @@ class UmiQemuCommands:
             diskid = f"disk{diskindex}"
             diskcache = f"cache-size=16M,cache={cache}"
             driveopts = f"drive={diskid},iothread={ioname}"
+            serial = f"serial=DISK-{diskindex}"
             diskopts = f"file={filename},format=qcow2,{diskcache}"
             generated += self.bashformat(args, ["-object", f"iothread,id={ioname}"])
             generated += self.bashformat(
                 args, ["-drive", f"if=none,id={diskid},{diskopts}"]
             )
-            generated += ["-device", f"virtio-blk-pci,{driveopts}"]
+            generated += ["-device", f"virtio-blk-pci,{driveopts},{serial}"]
         return generated
 
     def _create_disk_args_nvme(

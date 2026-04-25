@@ -73,6 +73,8 @@ class UmiTaskProcessor(
             return self.task_build_addons(args)
         if tasktype == "irmod":
             return self.task_build_irmod(args)
+        if tasktype == "squashmod":
+            return self.task_build_squashmod(args)
         if tasktype == "iso":
             return self.task_build_iso(args)
         elif tasktype == "net_start":

@@ -49,6 +49,49 @@ class TaskProcessorBase:
             log_error(f"Exception on efidisk: {exe}", self.__class__.__qualname__)
         return True
 
+    def _create_fsmods_linux(self, args: TaskConfig, template: TemplateConfig) -> bool:
+
+        if self._create_irmod_linux(args, template) is False:
+            log_info("Error during irmod!", self.__class__.__qualname__)
+            return False
+        if self._create_squashmod_linux(args, template) is False:
+            log_info("Error during squashmod!", self.__class__.__qualname__)
+            return False
+        return True
+
+    def _create_squashmod_linux(
+        self, args: TaskConfig, template: TemplateConfig
+    ) -> bool:
+        dstinter = self.files._get_path_intermediate(args)
+        modpath = f"{dstinter}/live"
+        squashlist = []
+        log_info(f"squashfs dir: {modpath} -> '{template.live_boot_type}'")
+        if template.live_boot_type != "":
+            squashlist = self._extract_squashfs(dstinter)
+        # Iterate found elements
+        log_info("List of found squashfs:")
+        try:
+            for squash in squashlist:
+                log_info(f"-> {squash}")
+                subdir = os.path.dirname(squash)
+                if subdir in args.addons.grub.initrd_list:
+                    if (
+                        self.isogen.create_squashmod(args, subdir, modpath, dstinter)
+                        is False
+                    ):
+                        log_error(
+                            f"Error creating squashmod: {subdir}",
+                            self.__class__.__qualname__,
+                        )
+                        return False
+                else:
+                    log_info(
+                        f"Skipped squashmod: {squash}", self.__class__.__qualname__
+                    )
+        except Exception as exe:
+            log_error(f"Exception on squashmod: {exe}", self.__class__.__qualname__)
+        return True
+
     def _create_irmod_linux(self, args: TaskConfig, template: TemplateConfig) -> bool:
         dstinter = self.files._get_path_intermediate(args)
         modpath = f"{dstinter}/irmod"
@@ -84,6 +127,20 @@ class TaskProcessorBase:
             for file in files:
                 if file.startswith("initrd"):
                     if file.endswith(".gz"):
+                        filepath = os.path.join(root, file)
+                        filepath = filepath.removeprefix(path)
+                        if filepath.startswith("/"):
+                            filepath = filepath.removeprefix("/")
+                        matches.append(filepath)
+        return matches
+
+    def _extract_squashfs(self, path: str) -> list[str]:
+        matches = []
+        log_info(f"Checking: {path}")
+        for root, _, files in os.walk(path):
+            for file in files:
+                if file.startswith("filesystem"):
+                    if file.endswith(".squashfs"):
                         filepath = os.path.join(root, file)
                         filepath = filepath.removeprefix(path)
                         if filepath.startswith("/"):

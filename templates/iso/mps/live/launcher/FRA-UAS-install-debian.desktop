@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=FRA-UAS Install DEBIAN
+GenericName=FRA-UAS Install DEBIAN
+Exec=/usr/local/bin/install-debian.bash
+Comment=FRA-UAS — Installer for Debian Live
+Keywords=bash;system;install;debian;installer
+Icon=preferences-system
+Terminal=true
+Categories=Qt;System;
+StartupWMClass=Terminal
+StartupNotify=True

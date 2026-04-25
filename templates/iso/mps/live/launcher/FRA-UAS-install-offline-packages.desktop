@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=FRA-UAS Install PACKAGES
+GenericName=FRA-UAS Install PACKAGES
+Exec=/usr/local/bin/install-offline-packages.bash
+Comment=FRA-UAS — Installer for Offline Packages Live
+Keywords=bash;system;install;debian;installer
+Icon=preferences-system
+Terminal=true
+Categories=Qt;System;
+StartupWMClass=Terminal
+StartupNotify=True

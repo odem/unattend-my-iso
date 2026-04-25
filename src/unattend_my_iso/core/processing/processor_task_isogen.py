@@ -24,6 +24,8 @@ class TaskProcessorIsogen(TaskProcessorBase):
             return self._get_error_result("Addons not copied")
         if self._prepare_bootloader(args, template) is False:
             return self._get_error_result("irmod not created")
+        if self._prepare_bootloader_live(args, template) is False:
+            return self._get_error_result("squashmod not created")
         if self._generate_iso(args, template) is False:
             return self._get_error_result("iso not generated")
         return self._get_success_result()
@@ -54,6 +56,14 @@ class TaskProcessorIsogen(TaskProcessorBase):
             return self._get_error_result("No template")
         if self._prepare_bootloader(args, template) is False:
             return self._get_error_result("irmod not created")
+        return self._get_success_result()
+
+    def task_build_squashmod(self, args: TaskConfig) -> TaskResult:
+        template = self._get_task_template(args)
+        if template is None:
+            return self._get_error_result("No template")
+        if self._prepare_bootloader_live(args, template) is False:
+            return self._get_error_result("squashmod not created")
         return self._get_success_result()
 
     def task_build_iso(self, args: TaskConfig) -> TaskResult:
@@ -159,6 +169,13 @@ class TaskProcessorIsogen(TaskProcessorBase):
             return self._create_efidisk_windows(args)
         elif template.iso_type == "linux":
             return self._create_irmod_linux(args, template)
+        return True
+
+    def _prepare_bootloader_live(
+        self, args: TaskConfig, template: TemplateConfig
+    ) -> bool:
+        if template.iso_type == "linux":
+            return self._create_squashmod_linux(args, template)
         return True
 
     def _generate_iso(self, args: TaskConfig, template: TemplateConfig) -> bool:

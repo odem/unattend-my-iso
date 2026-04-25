@@ -1,5 +1,6 @@
 import os
 import shutil
+import subprocess
 from unattend_my_iso.core.subprocess.caller import run, Popen, PIPE, DEVNULL
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.common.logging import log_debug, log_error, log_info
@@ -42,6 +43,73 @@ class UmiIsoGenerator:
                 self.__class__.__qualname__,
             )
         return True
+
+    def create_squashmod(
+        self, args: TaskConfig, path_src: str, path_mod: str, path_in: str
+    ):
+        tmplpath = self.files._get_path_template(args)
+        interpath = self.files._get_path_intermediate(args)
+        mntpath = args.sys.path_mnt
+        os.chdir(args.sys.path_cwd)
+        src_launcher = f"{tmplpath}/live/launcher"
+        src_scripts = f"{tmplpath}/live/scripts"
+        dstmount = f"{mntpath}/squashfs"
+        dstsquash = f"{interpath}/live/squashfs"
+        dstumi = f"{dstsquash}/opt/umi"
+        dst_scripts = f"{dstsquash}/usr/local/bin/"
+        dst_launcher = f"{dstsquash}/usr/share/applications"
+        dst_dsklinks = f"{dstsquash}/home/user/Desktop"
+        log_info(f"Preparing squashmod for {path_mod}")
+        src_umi = f"{interpath}/umi"
+
+        # if os.path.exists(path_mod):
+        #     shutil.rmtree(path_mod)
+        os.makedirs(path_mod, exist_ok=True)
+        os.makedirs(dstsquash, exist_ok=True)
+        base_dir = os.path.realpath(path_in)
+        squash_location = f"{base_dir}/{path_src}"
+        squash_filepath = os.path.join(squash_location, "filesystem.squashfs")
+        squash_filepath_umi = os.path.join(squash_location, "umi-filesystem.squashfs")
+        # os.makedirs(dstmount, exist_ok=True)
+
+        # Mount squashfs
+        self.files.mount_folder(squash_filepath, dstmount, "loop", "squashfs")
+        log_info("Copy squash image files via rsync:")
+        run(
+            [
+                "sudo",
+                "rsync",
+                "-a",
+                "--info=progress2",
+                f"{dstmount}",
+                f"{interpath}/live/",
+            ]
+        )
+        self.files.unmount_folder(dstmount)
+
+        # Add modifications
+        self.files.cp(src_umi, dstumi)
+        self.files.cp(src_launcher, dst_launcher)
+        self.files.cp(src_launcher, dst_dsklinks)
+        self.files.cp(src_scripts, dst_scripts)
+        run(["sudo", "chown", "1000:1000", "-R", dst_dsklinks])
+        run(["sudo", "chmod", "+x", "-R", dst_dsklinks])
+
+        log_info("Create new squashfs:")
+        cmd = [
+            "sudo",
+            "mksquashfs",
+            dstsquash,
+            squash_filepath_umi,
+            "-quiet",
+            "-progress",
+        ]
+        run(["sudo", "rm", "-rf", squash_filepath_umi])
+        run(cmd)
+        run(["sudo", "rm", "-rf", squash_filepath])
+        run(["sudo", "rm", "-rf", dstsquash])
+        run(["sudo", "mv", squash_filepath_umi, squash_filepath])
+        log_info("Squashfs done!")
 
     def create_irmod(self, path_src: str, path_mod: str, path_in: str):
         if os.path.exists(path_mod):

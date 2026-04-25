@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=FRA-UAS Install ZFS
+GenericName=FRA-UAS Install ZFS
+Exec=/usr/local/bin/install-zfs.bash
+Comment=FRA-UAS — Installer for ZFS Live
+Keywords=bash;system;install;debian;installer
+Icon=preferences-system
+Terminal=true
+Categories=Qt;System;
+StartupWMClass=Terminal
+StartupNotify=True

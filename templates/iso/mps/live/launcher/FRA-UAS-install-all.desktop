@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=0.0.1
+Name=Install all installers
+GenericName=FRA-UAS Install ALL
+Exec=/usr/local/bin/install-all.bash
+Comment=FRA-UAS — Live Installer for Debian on ZFS
+Keywords=bash;system;install;debian;installer
+Icon=preferences-system
+Terminal=true
+Categories=Qt;System;
+StartupWMClass=Terminal
+StartupNotify=True
