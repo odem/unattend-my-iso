@@ -14,7 +14,8 @@ HOME = pwd.getpwnam(user).pw_dir
 USER = os.getlogin()
 
 # Workspace search path
-GLOBAL_WORKPATHS = ["/etc/umi", "/usr/share/umi", f"{HOME}/.config/umi", os.getcwd()]
+GLOBAL_WORKPATHS = ["/etc/umi", "/usr/share/umi",
+                    f"{HOME}/.config/umi", os.getcwd()]
 
 # Template
 TEMPLATE_NAME = "desc.toml"

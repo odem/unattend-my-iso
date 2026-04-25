@@ -5,6 +5,7 @@ from unattend_my_iso.addons.cloudinit import CloudInitAddon
 from unattend_my_iso.addons.cmd import CmdAddon
 from unattend_my_iso.addons.grub import GrubAddon
 from unattend_my_iso.addons.addon_base import UmiAddon
+from unattend_my_iso.addons.live import LiveBootAddon
 from unattend_my_iso.addons.postinstall import PostinstallAddon
 from unattend_my_iso.addons.ssh import SshAddon
 from unattend_my_iso.addons.user import UserAddon
@@ -46,7 +47,8 @@ class TaskProcessorBase:
                 )
                 return False
         except Exception as exe:
-            log_error(f"Exception on efidisk: {exe}", self.__class__.__qualname__)
+            log_error(
+                f"Exception on efidisk: {exe}", self.__class__.__qualname__)
         return True
 
     def _create_fsmods_linux(self, args: TaskConfig, template: TemplateConfig) -> bool:
@@ -76,7 +78,8 @@ class TaskProcessorBase:
                 subdir = os.path.dirname(squash)
                 if subdir in args.addons.grub.initrd_list:
                     if (
-                        self.isogen.create_squashmod(args, subdir, modpath, dstinter)
+                        self.isogen.create_squashmod(
+                            args, subdir, modpath, dstinter)
                         is False
                     ):
                         log_error(
@@ -89,7 +92,8 @@ class TaskProcessorBase:
                         f"Skipped squashmod: {squash}", self.__class__.__qualname__
                     )
         except Exception as exe:
-            log_error(f"Exception on squashmod: {exe}", self.__class__.__qualname__)
+            log_error(
+                f"Exception on squashmod: {exe}", self.__class__.__qualname__)
         return True
 
     def _create_irmod_linux(self, args: TaskConfig, template: TemplateConfig) -> bool:
@@ -116,9 +120,11 @@ class TaskProcessorBase:
                         )
                         return False
                 else:
-                    log_info(f"Skipped irmod: {initrd}", self.__class__.__qualname__)
+                    log_info(f"Skipped irmod: {initrd}",
+                             self.__class__.__qualname__)
         except Exception as exe:
-            log_error(f"Exception on irmod: {exe}", self.__class__.__qualname__)
+            log_error(f"Exception on irmod: {exe}",
+                      self.__class__.__qualname__)
         return True
 
     def _extract_ramdisks(self, path: str) -> list[str]:
@@ -187,6 +193,7 @@ class TaskProcessorBase:
             PostinstallAddon(),
             AnswerFileAddon(),
             CloudInitAddon(),
+            LiveBootAddon(),
         ]
         for addon in addons:
             self.addons[addon.addon_name] = addon

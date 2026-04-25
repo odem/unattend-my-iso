@@ -78,13 +78,15 @@ class TaskProcessorIsogen(TaskProcessorBase):
         if template.virtio_name != "":
             srcvirtio = self.files._get_path_isovirtio(args, template)
             if self.exists(srcvirtio):
-                log_info("ISO-VIRT is already present", self.__class__.__qualname__)
+                log_info("ISO-VIRT is already present",
+                         self.__class__.__qualname__)
             else:
                 log_info(
                     f"ISO-VIRT requires download ({os.path.basename(srcvirtio)})",
                     self.__class__.__qualname__,
                 )
-                self._download_file(args, template.virtio_url, template.virtio_name)
+                self._download_file(
+                    args, template.virtio_url, template.virtio_name)
             if self.exists(srcvirtio) is False:
                 return False
 
@@ -100,7 +102,8 @@ class TaskProcessorIsogen(TaskProcessorBase):
                 f"ISO-OS requires download ({os.path.basename(srciso)})",
                 self.__class__.__qualname__,
             )
-            result = self._download_file(args, template.iso_url, template.iso_name)
+            result = self._download_file(
+                args, template.iso_url, template.iso_name)
             return result
 
     def _extract_iso_contents(self, args: TaskConfig, template: TemplateConfig) -> bool:
@@ -136,7 +139,8 @@ class TaskProcessorIsogen(TaskProcessorBase):
             copied = self.files.chmod(dst, privilege=0o200)
             self.files.unmount_folder(dir_mount)
             if copied:
-                log_info(f"Copied virt-ISO {file_mount}", self.__class__.__qualname__)
+                log_info(f"Copied virt-ISO {file_mount}",
+                         self.__class__.__qualname__)
                 return True
         return False
 
@@ -161,6 +165,9 @@ class TaskProcessorIsogen(TaskProcessorBase):
                 return False
         if args.addons.cloudinit.ci_enabled:
             if self._integrate_addon("cloudinit", args, template) is False:
+                return False
+        if args.addons.live.live_enabled:
+            if self._integrate_addon("live", args, template) is False:
                 return False
         return True
 

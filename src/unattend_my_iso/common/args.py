@@ -148,6 +148,11 @@ class AddonArgsCloudInit(ArgumentBase):
 
 
 @dataclass
+class AddonArgsLiveBoot(ArgumentBase):
+    live_enabled: bool = True
+
+
+@dataclass
 class AddonArgsPostinstall(ArgumentBase):
     postinstall_enabled: bool = True
     enable_grub_theme: bool = True
@@ -207,6 +212,7 @@ class AddonArgs:
     postinstall: AddonArgsPostinstall
     cmd: AddonArgsCmd
     cloudinit: AddonArgsCloudInit
+    live: AddonArgsLiveBoot
 
     def get_env_vars(self) -> list[str]:
         result = [
@@ -217,6 +223,7 @@ class AddonArgs:
             *(self.postinstall.get_env_vars_bash()),
             *(self.cmd.get_env_vars_bash()),
             *(self.cloudinit.get_env_vars_bash()),
+            *(self.live.get_env_vars_bash()),
         ]
         return result
 
@@ -253,4 +260,6 @@ def get_group_arguments(name: str) -> Optional[Any]:
         return AddonArgsAnswerFile()
     elif name == "addon_cloudinit":
         return AddonArgsCloudInit()
+    elif name == "addon_live":
+        return AddonArgsLiveBoot()
     return None

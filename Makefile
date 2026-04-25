@@ -50,7 +50,7 @@ install-pip: $(DIR_VENV)
 		python -m build
 install-tools: $(DIR_VENV)
 	sudo apt -y install python3.13 python3.13-venv python3-pip \
-		qemu-kvm xorriso ovmf swtpm wimtools isolinux mkisofs randmac
+		qemu-kvm xorriso ovmf swtpm wimtools isolinux mkisofs randmac squashfs-tools
 	source $(DIR_VENV)/bin/activate && pip install --editable .
 build: 
 	@source $(DIR_VENV)/bin/activate ; \

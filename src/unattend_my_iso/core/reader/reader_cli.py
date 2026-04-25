@@ -6,6 +6,7 @@ from unattend_my_iso.common.args import (
     AddonArgsCloudInit,
     AddonArgsCmd,
     AddonArgsGrub,
+    AddonArgsLiveBoot,
     AddonArgsPostinstall,
     AddonArgsSsh,
     AddonArgsUser,
@@ -21,7 +22,8 @@ class CommandlineReader:
             prog="PROG",
             usage="%(prog)s [options]",
             formatter_class=argparse.RawTextHelpFormatter,
-            description=textwrap.dedent("Builds and runs unattended iso images"),
+            description=textwrap.dedent(
+                "Builds and runs unattended iso images"),
             epilog="""\
     Examples:
     --------------------------------------------------
@@ -84,6 +86,7 @@ class CommandlineReader:
         self._create_parser_args_addon_user(p)
         self._create_parser_args_addon_cmd(p)
         self._create_parser_args_addon_cloudinit(p)
+        self._create_parser_args_addon_live(p)
         return p
 
     def _create_cli_parser_group(self, name: str) -> argparse.ArgumentParser:
@@ -438,6 +441,19 @@ class CommandlineReader:
             type=str,
             default=None,
             help="The list of files to write",
+        )
+
+    def _create_parser_args_addon_live(self, p: argparse.ArgumentParser):
+        group_target = p.add_argument_group(
+            "AddonArgsLiveBoot",
+            description="Defines the arguments for LiveBoot",
+        )
+        group_target.add_argument(
+            "-le",
+            "--live_enabled",
+            type=str,
+            default=None,
+            help="Enable or disable liveboot addon (true or false)",
         )
 
     def _create_parser_args_addon_answerfile(self, p: argparse.ArgumentParser):
@@ -1124,4 +1140,6 @@ class CommandlineReader:
             return AddonArgsPostinstall(**all)
         elif name == "addon_cloudinit":
             return AddonArgsCloudInit(**all)
+        elif name == "addon_live":
+            return AddonArgsLiveBoot(**all)
         return None

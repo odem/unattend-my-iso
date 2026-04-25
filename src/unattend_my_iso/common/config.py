@@ -8,6 +8,7 @@ from unattend_my_iso.common.args import (
     AddonArgsCloudInit,
     AddonArgsCmd,
     AddonArgsGrub,
+    AddonArgsLiveBoot,
     AddonArgsPostinstall,
     AddonArgsSsh,
     AddonArgsUser,
@@ -91,8 +92,10 @@ def password_generate(args: TaskConfig) -> bool:
         log_info("Regenerate passwords")
         length = args.addons.postinstall.password_length
         charset = args.addons.postinstall.password_charset
-        args.addons.answerfile.user_root_pw = _get_char_sequence(charset, length)
-        args.addons.answerfile.user_other_pw = _get_char_sequence(charset, length)
+        args.addons.answerfile.user_root_pw = _get_char_sequence(
+            charset, length)
+        args.addons.answerfile.user_other_pw = _get_char_sequence(
+            charset, length)
     return True
 
 
@@ -105,6 +108,7 @@ def get_config_default(work_path: str) -> TaskConfig:
     args_cmd = AddonArgsCmd()
     args_user = AddonArgsUser()
     args_ci = AddonArgsCloudInit()
+    args_live = AddonArgsLiveBoot()
     cfg_addons = AddonArgs(
         args_answers,
         args_ssh,
@@ -113,6 +117,7 @@ def get_config_default(work_path: str) -> TaskConfig:
         args_postinstall,
         args_cmd,
         args_ci,
+        args_live,
     )
     cfg_target = TargetArgs()
     cfg_run = RunArgs()

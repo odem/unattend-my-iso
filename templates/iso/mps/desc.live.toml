@@ -1,4 +1,3 @@
-
 [description]
 name = "live"
 config_version = "0.0.9"
@@ -109,6 +108,9 @@ cmds = [
 [addon_ssh]
 ssh_enabled = true
 config_auth_append = "~/.ssh/id_rsa.pub"
+
+[addon_live]
+live_enabled = true
 
 [[env]]
 "DEFAULT_HOST" = "hive"

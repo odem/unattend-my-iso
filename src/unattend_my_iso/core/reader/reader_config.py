@@ -21,6 +21,7 @@ from unattend_my_iso.common.args import (
     AddonArgsCloudInit,
     AddonArgsCmd,
     AddonArgsGrub,
+    AddonArgsLiveBoot,
     AddonArgsPostinstall,
     AddonArgsSsh,
     AddonArgsUser,
@@ -76,14 +77,16 @@ def _match_group_with_template(
         if isinstance(cfg_dict, dict) and isinstance(result, EnvironmentArgs):
             for dkey, dval in cfg_dict.items():
                 result.env_args[dkey] = dval
-                log_debug(f"env_update for {target} name={dkey}", "ConfigReader")
+                log_debug(
+                    f"env_update for {target} name={dkey}", "ConfigReader")
         return result
     else:
         for fld in toml_group.items():
             name = fld[0]
             val = fld[1]
             setattr(result, name, val)
-            log_debug(f"tpl_update for {target} name={name} val={val}", "ConfigReader")
+            log_debug(
+                f"tpl_update for {target} name={name} val={val}", "ConfigReader")
         return result
 
 
@@ -93,14 +96,16 @@ def _match_group_with_cli(result: Optional[Any], target: str) -> Optional[Any]:
         return None
     cfg_cli = get_cli_group(target)
     if cfg_cli is None:
-        log_error(f"client config is not a valid dataclass: {cfg_cli}", "ConfigReader")
+        log_error(
+            f"client config is not a valid dataclass: {cfg_cli}", "ConfigReader")
         return None
     for field in fields(cfg_cli):
         name = field.name
         val = _get_normalized_value(result, cfg_cli, name)
         if val is not None:
             setattr(result, name, val)
-            log_debug(f"cli_update for {target} name={name}, val={val}", "ConfigReader")
+            log_debug(
+                f"cli_update for {target} name={name}, val={val}", "ConfigReader")
     return result
 
 
@@ -130,7 +135,8 @@ def check_work_path(work_path: str) -> str:
     cwd = os.getcwd()
     new_path = cwd
     if work_path == "":
-        log_debug(f"Global work_path search space: {GLOBAL_WORKPATHS}", "ConfigReader")
+        log_debug(
+            f"Global work_path search space: {GLOBAL_WORKPATHS}", "ConfigReader")
         log_info(f"Using searched work_path: {work_path}", "ConfigReader")
         testpaths = GLOBAL_WORKPATHS
         for testpath in testpaths:
@@ -149,7 +155,8 @@ def check_work_path(work_path: str) -> str:
                 f"Using user-supplied relative work_path: {new_path}", "ConfigReader"
             )
     if os.path.exists(new_path) is False:
-        log_error(f"Supplied working path was invalid: {new_path}", "Configreader")
+        log_error(
+            f"Supplied working path was invalid: {new_path}", "Configreader")
         sys.exit(1)
     return new_path
 
@@ -170,7 +177,8 @@ def get_configs() -> list[TaskConfig]:
             cfg = get_config(cfg_sys, template_name, template_overlay)
             result.append(cfg)
         elif template_overlay != "*":
-            result += get_configs_overlay_list(cfg_sys, template_name, template_overlay)
+            result += get_configs_overlay_list(cfg_sys,
+                                               template_name, template_overlay)
         elif template_overlay == "*":
             result += get_configs_overlay_all(cfg_sys, template_name)
     else:
@@ -252,7 +260,8 @@ def get_config(
         "target", template_name, cfg_sys.path_templates, template_overlay
     )
     if cfg_target is None or isinstance(cfg_target, TargetArgs) is False:
-        log_error(f"Matched target config invalid: {cfg_target}", "ConfigReader")
+        log_error(
+            f"Matched target config invalid: {cfg_target}", "ConfigReader")
         return None
     cfg_env = _match_group(
         "env", template_name, cfg_sys.path_templates, template_overlay
@@ -270,25 +279,29 @@ def get_config(
         "addon_ssh", template_name, cfg_sys.path_templates, template_overlay
     )
     if cfg_ssh is None or isinstance(cfg_ssh, AddonArgsSsh) is False:
-        log_error(f"Matched addon_ssh config invalid: {cfg_ssh}", "ConfigReader")
+        log_error(
+            f"Matched addon_ssh config invalid: {cfg_ssh}", "ConfigReader")
         return None
     cfg_grub = _match_group(
         "addon_grub", template_name, cfg_sys.path_templates, template_overlay
     )
     if cfg_grub is None or isinstance(cfg_grub, AddonArgsGrub) is False:
-        log_error(f"Matched addon_grub config invalid: {cfg_grub}", "ConfigReader")
+        log_error(
+            f"Matched addon_grub config invalid: {cfg_grub}", "ConfigReader")
         return None
     cfg_user = _match_group(
         "addon_user", template_name, cfg_sys.path_templates, template_overlay
     )
     if cfg_user is None or isinstance(cfg_user, AddonArgsUser) is False:
-        log_error(f"Matched addon_user config invalid: {cfg_user}", "ConfigReader")
+        log_error(
+            f"Matched addon_user config invalid: {cfg_user}", "ConfigReader")
         return None
     cfg_cmd = _match_group(
         "addon_cmd", template_name, cfg_sys.path_templates, template_overlay
     )
     if cfg_cmd is None or isinstance(cfg_cmd, AddonArgsCmd) is False:
-        log_error(f"Matched addon_cmd config invalid: {cfg_cmd}", "ConfigReader")
+        log_error(
+            f"Matched addon_cmd config invalid: {cfg_cmd}", "ConfigReader")
         return None
     cfg_post = _match_group(
         "addon_postinstall", template_name, cfg_sys.path_templates, template_overlay
@@ -306,6 +319,14 @@ def get_config(
             f"Matched addon_cloudinit config invalid: {cfg_cloudinit}", "ConfigReader"
         )
         return None
+    cfg_live = _match_group(
+        "addon_live", template_name, cfg_sys.path_templates, template_overlay
+    )
+    if cfg_live is None or isinstance(cfg_live, AddonArgsLiveBoot) is False:
+        log_error(
+            f"Matched addon_live config invalid: {cfg_live}", "ConfigReader"
+        )
+        return None
     cfg_answer = _match_group(
         "addon_answerfile", template_name, cfg_sys.path_templates, template_overlay
     )
@@ -315,7 +336,7 @@ def get_config(
         )
         return None
     cfg_addons = AddonArgs(
-        cfg_answer, cfg_ssh, cfg_grub, cfg_user, cfg_post, cfg_cmd, cfg_cloudinit
+        cfg_answer, cfg_ssh, cfg_grub, cfg_user, cfg_post, cfg_cmd, cfg_cloudinit, cfg_live
     )
     cfg = TaskConfig(
         sys=cfg_sys, addons=cfg_addons, target=cfg_target, run=cfg_run, env=cfg_env
