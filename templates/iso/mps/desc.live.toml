@@ -28,6 +28,7 @@ joblist_early = []
 joblist_late = ["installer/postinstall_mps.bash"]
 copy_additional_scripts = ["installer/default/finalize.bash"]
 exec_additional_scripts = [
+  "installer/default/offline_packages.bash",
   "installer/default/hostnet_dhcp.bash",
   "installer/default/hostnames.bash",
   "installer/default/apt.bash",
@@ -42,6 +43,17 @@ exec_additional_scripts = [
 ]
 enable_grub_theme = true
 
+[addon_live]
+live_enabled = true
+live_boot_type = "live"
+live_initrd_list = ["live"]
+live_copy_umidir = true
+live_copy_launchers = ["UMI-install-all.desktop"]
+live_copy_scripts = [
+  "installer/live/install-all.bash",
+  "installer/live/install-user-live.bash",
+]
+
 [addon_user]
 user_enabled = true
 default_user_dir = "umi"
@@ -52,7 +64,7 @@ grub_boot_type = "live"
 grub_theme = "showroom"
 timeout = 30
 sleeptime = 10
-initrd_list = ["install", "live"]
+initrd_list = ["install"]
 
 [addon_answerfile]
 answerfile_enable_networking = false
@@ -84,7 +96,7 @@ admin_group_name = "umi-admin"
 config_group_name = "umi-config"
 disk_password = "diskpass"
 include_git_repositories = ["https://github.com/mpsffap/ansible-fragments.git"]
-include_offline_packages = []
+include_offline_packages = ["vlan", "ifenslave", "isc-dhcp-client"]
 include_anna_packages = [
   "fdisk-udeb",
   "parted-udeb",
@@ -109,8 +121,6 @@ cmds = [
 ssh_enabled = true
 config_auth_append = "~/.ssh/id_rsa.pub"
 
-[addon_live]
-live_enabled = true
 
 [[env]]
 "DEFAULT_HOST" = "hive"

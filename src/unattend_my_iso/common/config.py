@@ -57,7 +57,6 @@ class TemplateConfig(ArgumentBase):
     iso_url: str
     iso_type: str
     config_version: str
-    live_boot_type: str = ""
     template_iteration: str = ""
     virtio_name: str = ""
     virtio_url: str = ""

@@ -33,98 +33,82 @@ class TaskProcessorBase:
     isogen: UmiIsoGenerator = UmiIsoGenerator()
     hvrunner: UmiHypervisorBase = UmiHypervisorKvm()
     netman: UmiNetworkManager = UmiNetworkManager()
+    topic: str
 
     def __init__(self):
-        pass
+        self.topic = self.__class__.__qualname__
 
     def _create_efidisk_windows(self, args: TaskConfig) -> bool:
         dstinter = self.files._get_path_intermediate(args)
         try:
             if self.isogen.create_efidisk_windows(args, dstinter) is False:
-                log_error(
-                    f"Error creating efidisk for windows: {dstinter}",
-                    self.__class__.__qualname__,
-                )
+                log_error(f"Error creating efidisk: {dstinter}", self.topic)
                 return False
         except Exception as exe:
-            log_error(
-                f"Exception on efidisk: {exe}", self.__class__.__qualname__)
+            log_error(f"Exception on efidisk: {exe}", self.topic)
         return True
 
     def _create_fsmods_linux(self, args: TaskConfig, template: TemplateConfig) -> bool:
 
         if self._create_irmod_linux(args, template) is False:
-            log_info("Error during irmod!", self.__class__.__qualname__)
+            log_info("Error during irmod!", self.topic)
             return False
         if self._create_squashmod_linux(args, template) is False:
-            log_info("Error during squashmod!", self.__class__.__qualname__)
+            log_info("Error during squashmod!", self.topic)
             return False
         return True
 
     def _create_squashmod_linux(
         self, args: TaskConfig, template: TemplateConfig
     ) -> bool:
-        dstinter = self.files._get_path_intermediate(args)
-        modpath = f"{dstinter}/live"
         squashlist = []
-        log_info(f"squashfs dir: {modpath} -> '{template.live_boot_type}'")
-        if template.live_boot_type != "":
+        cfg = args.addons.live
+        dstinter = self.files._get_path_intermediate(args)
+        modpath = f"{dstinter}/{cfg.live_boot_type}"
+        if cfg.live_boot_type != "":
             squashlist = self._extract_squashfs(dstinter)
-        # Iterate found elements
-        log_info("List of found squashfs:")
+        else:
+            log_info("No squashfs images found", self.topic)
         try:
             for squash in squashlist:
-                log_info(f"-> {squash}")
+                log_info(f"Mod squashfs: {squash}",
+                         self.topic)
                 subdir = os.path.dirname(squash)
-                if subdir in args.addons.grub.initrd_list:
+                if subdir in args.addons.live.live_initrd_list:
                     if (
                         self.isogen.create_squashmod(
                             args, subdir, modpath, dstinter)
                         is False
                     ):
-                        log_error(
-                            f"Error creating squashmod: {subdir}",
-                            self.__class__.__qualname__,
-                        )
+                        log_error(f"Error on squashmod: {subdir}", self.topic)
                         return False
                 else:
-                    log_info(
-                        f"Skipped squashmod: {squash}", self.__class__.__qualname__
-                    )
+                    log_info(f"Skipped squashmod: {squash}", self.topic)
         except Exception as exe:
-            log_error(
-                f"Exception on squashmod: {exe}", self.__class__.__qualname__)
+            log_error(f"Exception on squashmod: {exe}", self.topic)
         return True
 
     def _create_irmod_linux(self, args: TaskConfig, template: TemplateConfig) -> bool:
         dstinter = self.files._get_path_intermediate(args)
         modpath = f"{dstinter}/irmod"
 
-        # Enumerate ramdisks
-        if template.live_boot_type != "":
+        if args.addons.live.live_boot_type != "":
             initrdlist = self._extract_ramdisks(dstinter)
         else:
             initrdlist = self._extract_ramdisks_live(dstinter)
-
-        # Iterate found elements
-        log_info("List of found initrd:")
         try:
             for initrd in initrdlist:
-                log_info(f"-> {initrd}")
                 subdir = os.path.dirname(initrd)
                 if subdir in args.addons.grub.initrd_list:
+                    log_info(f"Mod initramfs: {initrd}", self.topic)
                     if self.isogen.create_irmod(subdir, modpath, dstinter) is False:
                         log_error(
-                            f"Error creating irmod: {subdir}",
-                            self.__class__.__qualname__,
-                        )
+                            f"Error creating irmod: {subdir}", self.topic)
                         return False
                 else:
-                    log_info(f"Skipped irmod: {initrd}",
-                             self.__class__.__qualname__)
+                    log_info(f"Skipped irmod: {initrd}", self.topic)
         except Exception as exe:
-            log_error(f"Exception on irmod: {exe}",
-                      self.__class__.__qualname__)
+            log_error(f"Exception on irmod: {exe}", self.topic)
         return True
 
     def _extract_ramdisks(self, path: str) -> list[str]:
@@ -142,7 +126,6 @@ class TaskProcessorBase:
 
     def _extract_squashfs(self, path: str) -> list[str]:
         matches = []
-        log_info(f"Checking: {path}")
         for root, _, files in os.walk(path):
             for file in files:
                 if file.startswith("filesystem"):
@@ -178,10 +161,7 @@ class TaskProcessorBase:
     ) -> bool:
         addon = self.addons[name]
         success = addon.integrate_addon(args, template)
-        log_info(
-            f"Integrated addon {addon.addon_name} -> {success}",
-            self.__class__.__qualname__,
-        )
+        log_info(f"Integrated {addon.addon_name} -> {success}", self.topic)
         return success
 
     def _get_addons(self):

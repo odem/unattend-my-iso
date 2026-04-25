@@ -70,10 +70,12 @@ class PostinstallAddon(UmiAddon):
         if template.path_postinstall != "":
             if os.path.exists(srcpath):
                 if self.files.cp(srcpath, dstdir) is False:
-                    log_error("Postinstall copy failed", self.__class__.__qualname__)
+                    log_error("Postinstall copy failed",
+                              self.__class__.__qualname__)
                     return False
             else:
-                log_error(f"Invalid path : {srcpath}", self.__class__.__qualname__)
+                log_error(f"Invalid path : {srcpath}",
+                          self.__class__.__qualname__)
                 return False
         return True
 
@@ -88,13 +90,15 @@ class PostinstallAddon(UmiAddon):
         ]
         for filename in allscripts:
             log_debug(f"Copy File {filename}", self.__class__.__qualname__)
-            srcpath = self.get_template_path_optional("postinstall", filename, args)
+            srcpath = self.get_template_path_optional(
+                "postinstall", filename, args)
             dstfile = f"{interpath}/umi/postinstall/{filename}"
             dstpath = os.path.dirname(dstfile)
             if os.path.exists(srcpath):
                 os.makedirs(dstpath, exist_ok=True)
                 if self.files.cp(srcpath, dstfile) is False:
-                    log_error("Postinstall copy failed", self.__class__.__qualname__)
+                    log_error("Postinstall copy failed",
+                              self.__class__.__qualname__)
                     return False
             else:
                 log_error(
@@ -112,13 +116,15 @@ class PostinstallAddon(UmiAddon):
         allscripts = args.addons.postinstall.cronjobs
         for filename in allscripts:
             log_debug(f"Copy File {filename}", self.__class__.__qualname__)
-            srcpath = self.get_template_path_optional("postinstall", filename, args)
+            srcpath = self.get_template_path_optional(
+                "postinstall", filename, args)
             dstfile = f"{interpath}/umi/postinstall/cronjobs/{filename}"
             dstpath = os.path.dirname(dstfile)
             if os.path.exists(srcpath):
                 os.makedirs(dstpath, exist_ok=True)
                 if self.files.cp(srcpath, dstfile) is False:
-                    log_error("Postinstall copy failed", self.__class__.__qualname__)
+                    log_error("Postinstall copy failed",
+                              self.__class__.__qualname__)
                     return False
             else:
                 log_error(
@@ -137,9 +143,9 @@ class PostinstallAddon(UmiAddon):
 
         if args.addons.postinstall.enable_grub_theme:
             subdir = "default"
-            if args.addons.grub.grub_boot_type != "default":
-                subdir = "live"
-            if args.addons.grub.grub_theme == "default":
+            if args.addons.live.live_enabled:
+                subdir = args.addons.live.live_boot_type
+            if args.addons.grub.grub_theme == "":
                 return True
             srcpath = self.get_template_path_optional(
                 "grub", f"{subdir}/themes/{args.addons.grub.grub_theme}", args
@@ -247,9 +253,11 @@ class PostinstallAddon(UmiAddon):
         cfg_postinst = args.addons.postinstall.get_env_vars_batch()
         cfg_answerfile = args.addons.answerfile.get_env_vars_batch()
         if template.iso_type == "windows":
-            cfg_joblist = self._create_params_alljobs_batch(args, "CFG_JOBS_ALL")
+            cfg_joblist = self._create_params_alljobs_batch(
+                args, "CFG_JOBS_ALL")
         else:
-            cfg_joblist = self._create_params_alljobs_bash(args, "CFG_JOBS_ALL")
+            cfg_joblist = self._create_params_alljobs_bash(
+                args, "CFG_JOBS_ALL")
         arr = [
             "\n:: Template Config",
             *cfg_template,

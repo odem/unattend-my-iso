@@ -41,7 +41,8 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
             if os.path.exists(src):
                 shutil.move(src, dst)
         except Exception as exe:
-            log_error(f"Error on copy_file: {exe}", self.__class__.__qualname__)
+            log_error(f"Error on copy_file: {exe}",
+                      self.__class__.__qualname__)
             return False
         return True
 
@@ -51,13 +52,32 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
                 if os.path.isfile(src):
                     shutil.copy(src, dst)
                 elif os.path.isdir(src):
-                    shutil.copytree(src, dst, dirs_exist_ok=True, symlinks=True)
+                    shutil.copytree(
+                        src, dst, dirs_exist_ok=True, symlinks=True)
                 else:
                     log_error(
                         "Cant delete unknown file object", self.__class__.__qualname__
                     )
         except Exception as exe:
-            log_error(f"Error on copy_file: {exe}", self.__class__.__qualname__)
+            log_error(f"Error on copy_file: {exe}",
+                      self.__class__.__qualname__)
+            return False
+        return True
+
+    def exists(self, src: str) -> bool:
+        return os.path.exists(src)
+
+    def ln(self, src: str, dst: str) -> bool:
+        try:
+            if os.path.exists(src):
+                os.link(src, dst)
+            else:
+                log_error(
+                    "Link Source does not exist", self.__class__.__qualname__
+                )
+        except Exception as exe:
+            log_error(f"Error on copy_file: {exe}",
+                      self.__class__.__qualname__)
             return False
         return True
 
@@ -66,7 +86,8 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
             self.rm(dst)
             run(["cp", "-r", src, dst])
         except Exception as exe:
-            log_error(f"Error on copy_folder_iso: {exe}", self.__class__.__qualname__)
+            log_error(
+                f"Error on copy_folder_iso: {exe}", self.__class__.__qualname__)
             return False
         return True
 
@@ -90,7 +111,8 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
                         self.__class__.__qualname__,
                     )
             else:
-                log_error(f"Download failed! Url: {url}", self.__class__.__qualname__)
+                log_error(
+                    f"Download failed! Url: {url}", self.__class__.__qualname__)
         except Exception as exe:
             log_error(
                 f"Download failed! Url: {url}\n{exe}", self.__class__.__qualname__

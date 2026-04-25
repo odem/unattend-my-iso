@@ -150,6 +150,15 @@ class AddonArgsCloudInit(ArgumentBase):
 @dataclass
 class AddonArgsLiveBoot(ArgumentBase):
     live_enabled: bool = True
+    live_boot_type: str = ""
+    live_initrd_list: list[str] = field(
+        default_factory=lambda: [
+            "live"
+        ]
+    )
+    live_copy_umidir: bool = True
+    live_copy_launchers: list[str] = field(default_factory=lambda: [])
+    live_copy_scripts: list[str] = field(default_factory=lambda: [])
 
 
 @dataclass
@@ -172,7 +181,6 @@ class AddonArgsPostinstall(ArgumentBase):
 @dataclass
 class AddonArgsGrub(ArgumentBase):
     grub_enabled: bool = True
-    grub_boot_type: str = "default"
     grub_theme: str = "default"
     grub_icons: str = ""
     initrd_list: list[str] = field(

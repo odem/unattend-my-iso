@@ -24,9 +24,10 @@ class GrubAddon(UmiAddon):
 
     def copy_grub(self, args: TaskConfig) -> bool:
         subdir = "default"
-        if args.addons.grub.grub_boot_type != "default":
-            subdir = args.addons.grub.grub_boot_type
-        srcgrub = self.get_template_path_optional("grub", f"{subdir}/grub.cfg", args)
+        if args.addons.live.live_enabled:
+            subdir = args.addons.live.live_boot_type
+        srcgrub = self.get_template_path_optional(
+            "grub", f"{subdir}/grub.cfg", args)
         dst = self.files._get_path_intermediate(args)
         dstgrub = f"{dst}/boot/grub"
         dstgrubfile = f"{dstgrub}/grub.cfg"
@@ -37,8 +38,8 @@ class GrubAddon(UmiAddon):
 
     def copy_theme(self, args: TaskConfig) -> bool:
         subdir = "default"
-        if args.addons.grub.grub_boot_type != "default":
-            subdir = args.addons.grub.grub_boot_type
+        if args.addons.live.live_enabled:
+            subdir = args.addons.live.live_boot_type
         dst = self.files._get_path_intermediate(args)
         themename = args.addons.grub.grub_theme
         themeicons = args.addons.grub.grub_icons

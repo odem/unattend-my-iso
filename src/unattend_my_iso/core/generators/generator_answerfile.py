@@ -2,12 +2,10 @@ from unattend_my_iso.common.config import TaskConfig
 from unattend_my_iso.common.const import (
     DEFAULT_PASSWORD,
     DEFAULT_USERNAME,
-    HOME,
     RECIPE_NAME,
 )
-from unattend_my_iso.common.logging import log_info, log_warn
+from unattend_my_iso.common.logging import log_warn
 from unattend_my_iso.common.model import DIOption
-from unattend_my_iso.core.files.file_manager import UmiFileManager
 from unattend_my_iso.core.generators.generator_recipe import (
     LINE_CONT,
     LINE_PREFIX,
@@ -62,8 +60,10 @@ class AnswerfilePreseed:
             ret += [
                 DIOption("anna/choose_modules", ["network-console"]),
                 DIOption("user-setup/allow-password-weak", True),
-                DIOption("network-console/password", c.ssh_installation_password),
-                DIOption("network-console/password-again", c.ssh_installation_password),
+                DIOption("network-console/password",
+                         c.ssh_installation_password),
+                DIOption("network-console/password-again",
+                         c.ssh_installation_password),
             ]
         return ret
 
@@ -73,7 +73,8 @@ class AnswerfilePreseed:
             DIOption("#", "Locale"),
             DIOption("debian-installer/locale", c.locale_string),
             DIOption("localechooser/supported-locales", [c.locale_multi]),
-            DIOption("keyboard-configuration/xkb-keymap", c.locale_keyboard, "select"),
+            DIOption("keyboard-configuration/xkb-keymap",
+                     c.locale_keyboard, "select"),
         ]
 
     def generate_fragment_time(self, args: TaskConfig) -> list[DIOption]:
@@ -137,7 +138,8 @@ class AnswerfilePreseed:
             DIOption("grub-installer/skip", False),
         ]
         if c.install_disk != "":
-            ret.append(DIOption("grub-installer/bootdev", c.grub_install_device))
+            ret.append(
+                DIOption("grub-installer/bootdev", c.grub_install_device))
         else:
             ret.append(DIOption("grub-installer/bootdev", "select"))
         if c.ssh_installation_breakpoint_post.lower() == fragment_name:
@@ -163,7 +165,8 @@ class AnswerfilePreseed:
         ]
         ret += [
             DIOption("#", "Packages"),
-            DIOption("tasksel/first", ["ssh-server"], "multiselect", "tasksel"),
+            DIOption("tasksel/first", ["ssh-server"],
+                     "multiselect", "tasksel"),
             DIOption("pkgsel/upgrade", "full-upgrade"),
             DIOption("pkgsel/include", c.packages_install),
             DIOption("#", "Popularity Contest"),
@@ -316,7 +319,8 @@ class AnswerfilePreseed:
         cmdlist += [f"in-target /usr/sbin/groupadd {config_group}"]
         if len(args.addons.answerfile.additional_users) > 0:
             for user in args.addons.answerfile.additional_users:
-                cmdlist += [f"in-target adduser --disabled-password --gecos '' {user}"]
+                cmdlist += [
+                    f"in-target adduser --disabled-password --gecos '' {user}"]
         if len(args.addons.answerfile.deployment_users) > 0:
             for user in args.addons.answerfile.deployment_users:
                 sshdir = f"/home/{user}/.ssh"
@@ -406,7 +410,8 @@ class AnswerfilePreseed:
                     DIOption("partman-auto/method", "lvm"),
                     DIOption("partman-auto-lvm/guided_size", "max"),
                     DIOption("partman-auto-lvm/new_vg_name", c.disk_lvm_vg),
-                    DIOption("partman-auto-lvm/choose_recipe", RECIPE_NAME, "select"),
+                    DIOption("partman-auto-lvm/choose_recipe",
+                             RECIPE_NAME, "select"),
                 ]
             else:
                 ret += [
@@ -448,7 +453,8 @@ class AnswerfilePreseed:
         disk_name = args.addons.answerfile.disk_lvm_vg
         recipe_name = args.addons.answerfile.disk_recipe
         recipe_custom = args.addons.answerfile.disk_recipe_custom
-        disks = recipe.get_default_partitions(recipe_name, disk_name, recipe_custom)
+        disks = recipe.get_default_partitions(
+            recipe_name, disk_name, recipe_custom)
         recipe = recipe.generate_recipe(RECIPE_NAME, disks)
         methods = "REGULAR"
         if args.addons.answerfile.answerfile_enable_crypto:

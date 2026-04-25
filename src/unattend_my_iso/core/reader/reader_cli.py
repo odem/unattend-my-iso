@@ -111,6 +111,8 @@ class CommandlineReader:
             self._create_parser_args_addon_answerfile(p)
         elif name == "addon_cloudinit":
             self._create_parser_args_addon_cloudinit(p)
+        elif name == "addon_live":
+            self._create_parser_args_addon_live(p)
         return p
 
     def _create_parser_args_addon_grub(self, p: argparse.ArgumentParser):
@@ -124,13 +126,6 @@ class CommandlineReader:
             type=str,
             default=None,
             help="Enable or disable grub addon (true or false)",
-        )
-        group_target.add_argument(
-            "-gbt",
-            "--grub_boot_type",
-            type=str,
-            default=None,
-            help="The grub boot type (default or live modes)",
         )
         group_target.add_argument(
             "-gT",
@@ -449,11 +444,46 @@ class CommandlineReader:
             description="Defines the arguments for LiveBoot",
         )
         group_target.add_argument(
-            "-le",
+            "-lle",
             "--live_enabled",
             type=str,
             default=None,
             help="Enable or disable liveboot addon (true or false)",
+        )
+        group_target.add_argument(
+            "-llbt",
+            "--live_boot_type",
+            type=str,
+            default=None,
+            help="Boot type",
+        )
+        group_target.add_argument(
+            "-llil",
+            "--live_initrd_list",
+            type=list,
+            default=None,
+            help="List of inird to modify (live)",
+        )
+        group_target.add_argument(
+            "-llcl",
+            "--live_copy_launchers",
+            type=list,
+            default=None,
+            help="List of launchers to copy",
+        )
+        group_target.add_argument(
+            "-llcs",
+            "--live_copy_scripts",
+            type=list,
+            default=None,
+            help="List of scripts to copy",
+        )
+        group_target.add_argument(
+            "-llcu",
+            "--live_copy_umidir",
+            type=str,
+            default=None,
+            help="Copies umi dir to live imagee if enabled",
         )
 
     def _create_parser_args_addon_answerfile(self, p: argparse.ArgumentParser):

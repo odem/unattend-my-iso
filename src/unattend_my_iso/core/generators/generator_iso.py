@@ -1,14 +1,17 @@
 import os
-import shutil
-import subprocess
-from unattend_my_iso.core.subprocess.caller import run, Popen, PIPE, DEVNULL
+from unattend_my_iso.core.generators.generator_iso_mod_initramfs import UmiIsoGeneratorModInitramfs
+from unattend_my_iso.core.generators.generator_iso_mod_squash import UmiIsoGeneratorModSquash
+from unattend_my_iso.core.subprocess.caller import run
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
-from unattend_my_iso.common.logging import log_debug, log_error, log_info
+from unattend_my_iso.common.logging import log_debug, log_error
 from unattend_my_iso.core.files.file_manager import UmiFileManager
 
 
-class UmiIsoGenerator:
+class UmiIsoGenerator (UmiIsoGeneratorModInitramfs, UmiIsoGeneratorModSquash):
+
     def __init__(self) -> None:
+        UmiIsoGeneratorModInitramfs.__init__(self)
+        UmiIsoGeneratorModSquash.__init__(self)
         self.files = UmiFileManager()
 
     def create_iso(
@@ -43,102 +46,6 @@ class UmiIsoGenerator:
                 self.__class__.__qualname__,
             )
         return True
-
-    def create_squashmod(
-        self, args: TaskConfig, path_src: str, path_mod: str, path_in: str
-    ):
-        tmplpath = self.files._get_path_template(args)
-        interpath = self.files._get_path_intermediate(args)
-        mntpath = args.sys.path_mnt
-        os.chdir(args.sys.path_cwd)
-        src_launcher = f"{tmplpath}/live/launcher"
-        src_scripts = f"{tmplpath}/live/scripts"
-        dstmount = f"{mntpath}/squashfs"
-        dstsquash = f"{interpath}/live/squashfs"
-        dstumi = f"{dstsquash}/opt/umi"
-        dst_scripts = f"{dstsquash}/usr/local/bin/"
-        dst_launcher = f"{dstsquash}/usr/share/applications"
-        dst_dsklinks = f"{dstsquash}/home/user/Desktop"
-        log_info(f"Preparing squashmod for {path_mod}")
-        src_umi = f"{interpath}/umi"
-
-        # if os.path.exists(path_mod):
-        #     shutil.rmtree(path_mod)
-        os.makedirs(path_mod, exist_ok=True)
-        os.makedirs(dstsquash, exist_ok=True)
-        base_dir = os.path.realpath(path_in)
-        squash_location = f"{base_dir}/{path_src}"
-        squash_filepath = os.path.join(squash_location, "filesystem.squashfs")
-        squash_filepath_umi = os.path.join(squash_location, "umi-filesystem.squashfs")
-        # os.makedirs(dstmount, exist_ok=True)
-
-        # Mount squashfs
-        self.files.mount_folder(squash_filepath, dstmount, "loop", "squashfs")
-        log_info("Copy squash image files via rsync:")
-        run(
-            [
-                "sudo",
-                "rsync",
-                "-a",
-                "--info=progress2",
-                f"{dstmount}",
-                f"{interpath}/live/",
-            ]
-        )
-        self.files.unmount_folder(dstmount)
-
-        # Add modifications
-        self.files.cp(src_umi, dstumi)
-        self.files.cp(src_launcher, dst_launcher)
-        self.files.cp(src_launcher, dst_dsklinks)
-        self.files.cp(src_scripts, dst_scripts)
-        run(["sudo", "chown", "1000:1000", "-R", dst_dsklinks])
-        run(["sudo", "chmod", "+x", "-R", dst_dsklinks])
-
-        log_info("Create new squashfs:")
-        cmd = [
-            "sudo",
-            "mksquashfs",
-            dstsquash,
-            squash_filepath_umi,
-            "-quiet",
-            "-progress",
-        ]
-        run(["sudo", "rm", "-rf", squash_filepath_umi])
-        run(cmd)
-        run(["sudo", "rm", "-rf", squash_filepath])
-        run(["sudo", "rm", "-rf", dstsquash])
-        run(["sudo", "mv", squash_filepath_umi, squash_filepath])
-        log_info("Squashfs done!")
-
-    def create_irmod(self, path_src: str, path_mod: str, path_in: str):
-        if os.path.exists(path_mod):
-            shutil.rmtree(path_mod)
-        os.makedirs(path_mod)
-        base_dir = os.path.realpath(path_in)
-        initrd_location = f"{path_in}/{path_src}"
-        initrd_filepath = os.path.join(initrd_location, "initrd.gz")
-        with open(initrd_filepath, "rb") as initrd_file:
-            gzip_process = Popen(["gzip", "-d", "-c"], stdin=initrd_file, stdout=PIPE)
-            run(
-                self._get_cpio_cmd_extract(path_mod),
-                stdin=gzip_process.stdout,
-                stdout=DEVNULL,
-                stderr=DEVNULL,
-                check=True,
-            )
-            if gzip_process.stdout is not None:
-                gzip_process.stdout.close()
-        preseed_src = os.path.join(path_in, "preseed.cfg")
-        preseed_dst = os.path.join(path_mod, "preseed.cfg")
-        shutil.copy(preseed_src, preseed_dst)
-        os.chdir(path_mod)
-        cmd = "find . | cpio -o -H newc 2>/dev/null | gzip -9"
-        args = f"{cmd} > {{}}/{path_src}/initrd-umi.gz".format(base_dir)
-        run(args, shell=True, check=True)
-        log_debug(f"Delete irmod : {path_mod}", self.__class__.__qualname__)
-        shutil.rmtree(path_mod, ignore_errors=False)
-        log_info(f"Created irmod: {path_src}", self.__class__.__qualname__)
 
     def create_efidisk_windows(self, args: TaskConfig, infolder: str):
         mntpath = args.sys.path_mnt
@@ -182,25 +89,16 @@ class UmiIsoGenerator:
         find_command = f"find {infolder} -type f"
         cmd = f"md5sum $( {find_command} ) > {infolder}/md5sum.txt 2>/dev/null"
         try:
-            proc = run(cmd, shell=True, check=True, capture_output=True, text=True)
+            proc = run(cmd, shell=True, check=True,
+                       capture_output=True, text=True)
             if proc.returncode != 0:
                 log_error(
                     f"Error on md5sum: {proc.stdout}{proc.stderr}",
                     self.__class__.__qualname__,
                 )
         except Exception as exe:
-            log_error(f"Exception on md5sum: {exe}", self.__class__.__qualname__)
-
-    def _get_cpio_cmd_extract(self, path_mod: str) -> list[str]:
-        return [
-            "fakeroot",
-            "cpio",
-            "-D",
-            path_mod,
-            "--extract",
-            "--make-directories",
-            "--no-absolute-filenames",
-        ]
+            log_error(f"Exception on md5sum: {exe}",
+                      self.__class__.__qualname__)
 
     def _get_wimlib_cmd_extract(self, infolder: str, dstmgr: str) -> list[str]:
         return [

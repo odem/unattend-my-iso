@@ -37,28 +37,35 @@ class AnswerfileRecipe:
 
     def create_partition_layout_simple(self, vg_name: str):
         return [
-            RecipeDescription([2048], "vfat", "/boot/efi", "", "", "ESP", "gpt"),
+            RecipeDescription([2048], "vfat", "/boot/efi",
+                              "", "", "ESP", "gpt"),
             RecipeDescription([2048], "ext4", "/boot", "", "", "BOOT", "gpt"),
             RecipeDescription([4096], "linux-swap", "", vg_name, "lv_swap"),
             RecipeDescription(
                 [450000, 500000, 100000], "ext4", "/", vg_name, "lv_root"
             ),
-            RecipeDescription([20000, 20000, 20000], "ext4", "/media/disks/extra"),
+            RecipeDescription([20000, 20000, 20000],
+                              "ext4", "/media/disks/extra"),
         ]
 
     def create_partition_layout_mps(self, vg_name: str):
         return [
-            RecipeDescription([1024], "vfat", "/boot/efi", "", "", "ESP", "gpt"),
+            RecipeDescription([1024], "vfat", "/boot/efi",
+                              "", "", "ESP", "gpt"),
             RecipeDescription([1024], "ext4", "/boot", "", "", "BOOT", "gpt"),
-            RecipeDescription([10000, 10000, 10000], "ext4", "/media/disks/extra"),
+            RecipeDescription([10000, 10000, 10000],
+                              "ext4", "/media/disks/extra"),
             RecipeDescription([4096], "linux-swap", "", vg_name, "lv_swap"),
-            RecipeDescription([50000, 50000, 100000], "ext4", "/", vg_name, "lv_root"),
-            RecipeDescription([5000, 5000, 50000], "ext4", "/home", vg_name, "lv_home"),
-            RecipeDescription([1000, 10000, 100000], "ext4", "/srv", vg_name, "lv_srv"),
+            RecipeDescription([50000, 50000, 100000],
+                              "ext4", "/", vg_name, "lv_root"),
+            RecipeDescription([5000, 5000, 50000], "ext4",
+                              "/home", vg_name, "lv_home"),
+            RecipeDescription([1000, 10000, 100000], "ext4",
+                              "/srv", vg_name, "lv_srv"),
         ]
 
     def get_default_partitions(self, method: str, vg_name: str, definitions: list):
-        log_info(f"Using template:  {method}")
+        log_info(f"Using template:  {method}", self.__class__.__qualname__)
         if method == "mps":
             return self.create_partition_layout_mps(vg_name)
         elif method == "simple":
@@ -144,7 +151,8 @@ class AnswerfileRecipe:
             arr += [
                 PartitionFlag("$lvmok"),
                 PartitionFlag("lv_name", desc.name_lv),
-                PartitionFlag("in_vg ", desc.name_vg),  # CAUTION: Needs trailing space!
+                # CAUTION: Needs trailing space!
+                PartitionFlag("in_vg ", desc.name_vg),
             ]
         else:
             arr += [PartitionFlag("$primary")]
