@@ -1,242 +1,196 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MNTDIR="/mnt"
-echo "[0/11] Set variables..."
-DISKS=(
-  "/dev/disk/by-id/virtio-DISK-0"
-  "/dev/disk/by-id/virtio-DISK-1"
-  "/dev/disk/by-id/virtio-DISK-2"
-  "/dev/disk/by-id/virtio-DISK-3"
+echo "[0/7] Config..."
+
+# -----------------------
+# POOLS
+# -----------------------
+
+RPOOL=(
+  "rpool"
+  "mirror"
+  "/dev/disk/by-id/virtio-DISK-0 /dev/disk/by-id/virtio-DISK-1"
 )
 
-HOSTNAME="debian-zfs"
-USERNAME="user"
+TANK=(
+  "tank"
+  "mirror"
+  "/dev/disk/by-id/virtio-DISK-2 /dev/disk/by-id/virtio-DISK-3"
+)
 
-POOLNAME_RPOOL="rpool"
-POOLNAME_BPOOL="bpool"
+# -----------------------
+# HELPERS
+# -----------------------
+export DEBIAN_FRONTEND=noninteractive
+echo "zfs-dkms zfs-dkms/license/accepted boolean true" | debconf-set-selections
 
-echo "[1/11] Building device arrays..."
-EFI_DEVS=()
-BPOOL_DEVS=()
-RPOOL_DEVS=()
-for d in "${DISKS[@]}"; do
-  EFI_DEVS+=("${d}-part1")
-  BPOOL_DEVS+=("${d}-part2")
-  RPOOL_DEVS+=("${d}-part3")
-done
-
-echo "[2/11] Installing prerequisites..."
 apt update
 apt install -y debootstrap parted gdisk dosfstools \
   zfsutils-linux zfs-dkms linux-headers-"$(uname -r)"
 dkms autoinstall
 modprobe zfs
-# -----------------------------------------------------------------------------
-# -----------------------------------------------------------------------------
-# -----------------------------------------------------------------------------
-echo "[3/11] Checking, wiping and partitioning disks..."
-for d in "${DISKS[@]}"; do
-  if [[ ! -e "$d" ]]; then
-    echo "ERROR: Disk not found: $d"
-    echo "Check /dev/disk/by-id/ in your VM."
-    exit 1
-  fi
-done
 
-echo ""
-for d in "${DISKS[@]}"; do
-  echo ""
-  echo "  -> Wiping $d"
+get_part() {
+  echo "${1}-part${2}"
+}
+
+disk_in_list() {
+  local disk="$1"
+  shift
+  for d in "$@"; do
+    [[ "$d" == "$disk" ]] && return 0
+  done
+  return 1
+}
+
+# -----------------------
+# PARTITIONING (RPOOL DEFINES LAYOUT)
+# -----------------------
+
+read -r -a RPOOL_DISKS <<<"${RPOOL[2]}"
+
+partition_disk() {
+  local d="$1"
+
+  echo "-> $d"
+
   sgdisk --zap-all "$d"
   wipefs -a "$d" || true
+  sgdisk -o "$d"
 
-  echo ""
-  echo "  -> Creating partitions on $d"
-  sgdisk -n1:1M:+512M -t1:EF00 "$d"   # EFI
-  sgdisk -n2:0:+1G    -t2:BF01 "$d"   # bpool
-  sgdisk -n3:0:0      -t3:BF00 "$d"   # rpool
-  echo ""
-done
+  if disk_in_list "$d" "${RPOOL_DISKS[@]}"; then
+    echo "   system disk (EFI + bpool + rpool)"
 
-echo "Syncing disks and fs"
-partprobe
-udevadm trigger
-udevadm settle
-sync
+    sgdisk -n1:1M:+512M -t1:EF00 "$d" # EFI
+    sgdisk -n2:0:+1G -t2:BF01 "$d"    # bpool (/boot)
+    sgdisk -n3:0:0 -t3:BF00 "$d"      # rpool
 
-echo "[4/11] Formatting EFI partition (first disk only)..."
-mkfs.vfat -F32 "${EFI_DEVS[0]}"
+  else
+    echo "   data disk"
 
-echo "[5/11] Creating ZFS pools (mirror across 4 disks)..."
-udevadm trigger
-udevadm settle
-zpool create -f \
-  -o ashift=12 \
-  -o autotrim=on \
-  -o compatibility=grub2 \
-  -O acltype=posixacl \
-  -O xattr=sa \
-  -O relatime=on \
-  -O normalization=formD \
-  -O mountpoint=none \
-  "$POOLNAME_BPOOL" mirror "${BPOOL_DEVS[@]}"
-# -o cachefile=/etc/zfs/zpool.cache \
-  # -O compression=lz4 \
+    sgdisk -n1:1M:0 -t1:BF00 "$d"
+  fi
+}
 
-zpool create -f \
-  -o ashift=12 \
-  -o autotrim=on \
-  -O acltype=posixacl \
-  -O xattr=sa \
-  -O relatime=on \
-  -O normalization=formD \
-  -O mountpoint=none \
-  "$POOLNAME_RPOOL" mirror "${RPOOL_DEVS[@]}"
-# -o cachefile=/etc/zfs/zpool.cache \
-  # -O compression=lz4 \
+partition_all() {
+  echo "[Partitioning...]"
 
-echo "[6/11] Creating datasets..."
-[[ -d "$MNTDIR" ]] || mkdir "$MNTDIR"
-zfs create -o canmount=off -o mountpoint=none bpool/BOOT
-zfs create -o canmount=noauto -o mountpoint=none bpool/BOOT/debian
-zfs create -o canmount=off -o mountpoint=none rpool/ROOT
-zfs create -o canmount=noauto -o mountpoint=none rpool/ROOT/debian
-# zfs create -o mountpoint=none rpool/home
-# zfs create -V 4G -b $(getconf PAGESIZE) -o compression=zle \
-#     -o logbias=throughput -o sync=always \
-#     -o primarycache=metadata -o secondarycache=none \
-#     -o com.sun:auto-snapshot=false rpool/swap
-# mkswap -f /dev/zvol/rpool/swap
-# echo /dev/zvol/rpool/swap none swap discard 0 0 >> /etc/fstab
-# echo RESUME=none > /etc/initramfs-tools/conf.d/resume
+  ALL_DISKS=("${RPOOL_DISKS[@]}")
 
-# chroot mounts
-echo "Create Chroot mounts"
-# sudo mount -t zfs rpool/ROOT/debian "$MNTDIR"
-# [[ -d "$MNTDIR"/boot ]] || mkdir "$MNTDIR"/boot
-# sudo mount -t zfs bpool/BOOT/debian "$MNTDIR"/boot
+  read -r -a TANK_DISKS <<<"${TANK[2]}"
+  ALL_DISKS+=("${TANK_DISKS[@]}")
 
-zfs set mountpoint="$MNTDIR" rpool/ROOT/debian
-zfs set mountpoint="$MNTDIR"/boot bpool/BOOT/debian
-zfs mount rpool/ROOT/debian
-zfs mount bpool/BOOT/debian
+  ALL_DISKS=($(printf "%s\n" "${ALL_DISKS[@]}" | sort -u))
 
-echo "[7/11] Copying ZFS cache..."
-# mkdir -p "$MNTDIR"/etc/zfs
-# cp /etc/zfs/zpool.cache "$MNTDIR"/etc/zfs/
+  for d in "${ALL_DISKS[@]}"; do
+    partition_disk "$d"
+  done
 
-#-----------------------------------------------------------------------------
-#-----------------------------------------------------------------------------
-#-----------------------------------------------------------------------------
-echo "[9/11] Installing base system..."
-debootstrap trixie "$MNTDIR"
-# mount --rbind /proc "$MNTDIR"/proc
-# mount --make-rslave "$MNTDIR"/proc
+  partprobe
+  udevadm settle --timeout=30
+}
 
-echo "[8/11] Preparing chroot..."
-mkdir -p "$MNTDIR"/dev "$MNTDIR"/proc "$MNTDIR"/sys "$MNTDIR"/run
-mount --rbind /dev  "$MNTDIR"/dev
-mount --make-rslave "$MNTDIR"/dev
-# mount --rbind /dev/pts  "$MNTDIR"/dev/pts
-# mount --make-rslave "$MNTDIR"/dev/pts
-# mount -t devpts devpts "$MNTDIR"/dev/pts -o gid=5,mode=620
-mount --rbind /proc "$MNTDIR"/proc
-mount --make-rslave "$MNTDIR"/proc
-mount --rbind /sys  "$MNTDIR"/sys
-mount --make-rslave "$MNTDIR"/sys
-mount --rbind /run  "$MNTDIR"/run
-mount --make-rslave "$MNTDIR"/run
+# -----------------------
+# EFI FORMAT
+# -----------------------
 
-echo "Preparing chroot (efi)..."
-mkdir -p "$MNTDIR"/sys/firmware/efi 
-mount --rbind /sys/firmware/efi/efivars "$MNTDIR"/sys/firmware/efi/efivars
-mount --make-rslave "$MNTDIR"/sys/firmware/efi/efivars
-mkdir -p "$MNTDIR"/boot/efi
-mount "${EFI_DEVS[0]}" "$MNTDIR"/boot/efi
+format_efi() {
+  echo "[EFI formatting...]"
 
+  for d in "${RPOOL_DISKS[@]}"; do
+    mkfs.vfat -F32 -n EFI "$(get_part "$d" 1)"
+  done
+}
 
-cat <<EOF > "$MNTDIR"/root/setup-chroot.sh
-#!/bin/bash
-set -e
+# -----------------------
+# ZFS OPTIONS
+# -----------------------
 
-echo "Hostname..."
-echo "$HOSTNAME" > /etc/hostname
+ZPOOL_OPTS="-f -o ashift=12 -o autotrim=on"
+ZFS_PROPS="-O acltype=posixacl -O xattr=sa -O relatime=on -O normalization=formD -O mountpoint=none"
 
-echo "APT sources..."
-cat > /etc/apt/sources.list <<EOL
-deb http://deb.debian.org/debian trixie main contrib non-free-firmware
-deb http://deb.debian.org/debian trixie-updates main contrib non-free-firmware
-deb http://security.debian.org/debian-security trixie-security main contrib non-free-firmware
-EOL
+# -----------------------
+# POOL BUILDERS
+# -----------------------
 
-# Test mounts
+create_bpool() {
+  local name="${RPOOL[0]}"
+  local mode="${RPOOL[1]}"
 
-echo "Installing kernel, ZFS, GRUB..."
-apt update
-apt install --yes qemu-guest-agent bochs console-setup locales initramfs-tools \
-  firmware-linux-free \
-  console-setup \
-  kbd \
-  openssh-server
-apt install -y linux-headers-"$(uname -r)" linux-image-amd64 \
-zfs-initramfs initramfs-tools zfs-dkms grub-efi-amd64 shim-signed \
-  dpkg-dev linux-headers-generic linux-image-generic \
-echo REMAKE_INITRD=yes > /etc/dkms/zfs.conf
-modprobe zfs
+  devs=()
+  for d in "${RPOOL_DISKS[@]}"; do
+    devs+=("$(get_part "$d" 2)")
+  done
 
-#echo "Fixing ZFS mountpoints..."
-# zpool set cachefile=/etc/zfs/zpool.cache rpool
-# zfs set canmount=noauto rpool/ROOT/debian
-# zfs mount -a
+  echo "Creating bpool"
 
-echo "Installing GRUB..."
-apt purge --yes os-prober
-grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=debian
-grub-probe /boot
-update-initramfs -c -k all
-update-grub
+  zpool create \
+    $ZPOOL_OPTS \
+    -o compatibility=grub2 \
+    $ZFS_PROPS \
+    "$name" "$mode" "${devs[@]}"
+}
 
-# mkdir /etc/zfs/zfs-list.cache
-# touch /etc/zfs/zfs-list.cache/bpool
-# touch /etc/zfs/zfs-list.cache/rpool
-# zed -F &
+build_data_devs() {
+  local -n pool=$1
 
-echo "Creating user..."
-USERNAME=user
-useradd -m -G sudo -s /bin/bash \$USERNAME
-echo "\$USERNAME:\${USERNAME}pass" | chpasswd
-echo "root:rootpass" | chpasswd
+  read -r -a disks <<<"${pool[2]}"
 
-echo "Enabling ZFS services..."
-# systemctl enable zfs-import-cache
-# systemctl enable zfs-mount
-systemctl enable zfs.target
+  devs=()
 
-echo "Done."
-EOF
+  for d in "${disks[@]}"; do
+    if disk_in_list "$d" "${RPOOL_DISKS[@]}"; then
+      devs+=("$(get_part "$d" 3)")
+    else
+      devs+=("$(get_part "$d" 1)")
+    fi
+  done
+}
 
-chmod +x "$MNTDIR"/root/setup-chroot.sh
-chroot "$MNTDIR" /bin/bash /root/setup-chroot.sh
+create_rpool() {
+  build_data_devs RPOOL
 
-# User
-cp /home/user/.ssh/authorized_keys /mnt/user/.ssh/authorized_keys
+  echo "Creating rpool"
 
-echo "[10/11] Cleanup..."
-sync
-# umount -R "$MNTDIR"/run/live
-umount -R "$MNTDIR"/run
-umount -R "$MNTDIR"/proc
-umount -R "$MNTDIR"/sys
-umount -R "$MNTDIR"/dev
-umount "$MNTDIR"/boot/efi
-zfs umount "$MNTDIR"/boot
-zfs umount "$MNTDIR"
+  zpool create \
+    $ZPOOL_OPTS \
+    $ZFS_PROPS \
+    -O compression=lz4 \
+    "${RPOOL[0]}" "${RPOOL[1]}" "${devs[@]}"
+}
 
-zfs unmount -a
-zfs set mountpoint=/ rpool/ROOT/debian
-zfs set mountpoint=/boot bpool/BOOT/debian
-# zpool export -a
+create_tank() {
+  [[ -z "${TANK[0]}" ]] && return 0
 
-echo "[11/11] DONE. Reboot system."
+  build_data_devs TANK
 
+  echo "Creating tank"
+
+  zpool create \
+    $ZPOOL_OPTS \
+    $ZFS_PROPS \
+    -O compression=lz4 \
+    "${TANK[0]}" "${TANK[1]}" "${devs[@]}"
+}
+
+# -----------------------
+# EXECUTION
+# -----------------------
+
+echo "[1/7] Partition disks..."
+partition_all
+
+echo "[2/7] Format EFI..."
+format_efi
+
+echo "[3/7] bpool..."
+create_bpool
+
+echo "[4/7] rpool..."
+create_rpool
+
+echo "[5/7] tank..."
+create_tank
+
+echo "[DONE]"

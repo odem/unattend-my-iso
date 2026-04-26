@@ -1,5 +1,5 @@
 from unattend_my_iso.core.subprocess.caller import run, CalledProcessError, PIPE
-from unattend_my_iso.common.logging import log_debug, log_error, log_info
+from unattend_my_iso.common.logging import log_debug, log_error
 
 
 class FirewallManager:
@@ -184,8 +184,6 @@ class FirewallManager:
             "iptables",
             action,
             "FORWARD",
-            "-i",
-            name,
             "-j",
             "ACCEPT",
         ]

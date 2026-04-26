@@ -43,6 +43,11 @@ DEFAULT_TEMPLATE_OVERLAY = "*"
 DEFAULT_PASSWORD_LENGTH = 25
 DEFAULT_PASSWORD_CHARSET = "A-Za-z0-9!&/=?+*#-_.:,;"
 
+# liveboot
+DIR_SQUASH = "squashfs"
+NAME_SQUASH = "filesystem.squashfs"
+TYPE_SQUASH = "squashfs"
+
 # Logger
 LOGGER = None
 
@@ -57,10 +62,10 @@ RECIPE_DISK_CONT = f"{DOUBLE_PREFIX}{'.':70}{LINE_CONT}"
 RECIPE_DISK_END = f"{DOUBLE_PREFIX}.\n"
 
 # Debugging
-DEBUG_TEMPLATE = "guacweb"
-DEBUG_OVERLAY = "guacdb01"
+DEBUG_TEMPLATE = "mps"
+DEBUG_OVERLAY = "live"
 DEBUG_VERBOSITY = "2"
 DEBUG_PROCTYPE = "build_all"
-DEBUG_WORKDIR = "/home/jb/mps/repo/gitlab/idris-iso-config"  # "."
+DEBUG_WORKDIR = "."  # "/home/jb/mps/repo/gitlab/idris-iso-config"  # "."
 DEBUG_WORKDIR_PREFIX = "../.."
 DEFAULT_DEBUG_LEVEL = 4

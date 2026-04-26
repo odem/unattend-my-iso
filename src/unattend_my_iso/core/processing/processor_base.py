@@ -66,13 +66,12 @@ class TaskProcessorBase:
         dstinter = self.files._get_path_intermediate(args)
         modpath = f"{dstinter}/{cfg.live_boot_type}"
         if cfg.live_boot_type != "":
-            squashlist = self._extract_squashfs(dstinter)
+            squashlist = self._extract_squashfs(dstinter, cfg.live_initrd_list)
         else:
             log_info("No squashfs images found", self.topic)
         try:
             for squash in squashlist:
-                log_info(f"Mod squashfs: {squash}",
-                         self.topic)
+                log_info(f"Mod squashfs: {squash}", self.topic)
                 subdir = os.path.dirname(squash)
                 if subdir in args.addons.live.live_initrd_list:
                     if (
@@ -124,7 +123,7 @@ class TaskProcessorBase:
                         matches.append(filepath)
         return matches
 
-    def _extract_squashfs(self, path: str) -> list[str]:
+    def _extract_squashfs(self, path: str, accepted_dirs: list[str]) -> list[str]:
         matches = []
         for root, _, files in os.walk(path):
             for file in files:
@@ -134,7 +133,10 @@ class TaskProcessorBase:
                         filepath = filepath.removeprefix(path)
                         if filepath.startswith("/"):
                             filepath = filepath.removeprefix("/")
-                        matches.append(filepath)
+
+                        subdir = os.path.dirname(filepath)
+                        if subdir in accepted_dirs:
+                            matches.append(filepath)
         return matches
 
     def _extract_ramdisks_live(self, path: str) -> list[str]:

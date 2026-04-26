@@ -1,6 +1,7 @@
 import os
 from unattend_my_iso.common.config import TaskResult
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
+from unattend_my_iso.common.const import DIR_SQUASH, TYPE_SQUASH
 from unattend_my_iso.core.processing.processor_base import TaskProcessorBase
 from unattend_my_iso.common.logging import log_info
 
@@ -20,6 +21,8 @@ class TaskProcessorIsogen(TaskProcessorBase):
             return self._get_error_result("Not extracted iso")
         if self._extract_virtio_contents(args, template) is False:
             return self._get_error_result("Not extracted virtio")
+        if self._extract_squashfs_contents(args, template) is False:
+            return self._get_error_result("Not extracted squashfs")
         if self._copy_addons(args, template) is False:
             return self._get_error_result("Addons not copied")
         if self._prepare_bootloader(args, template) is False:
@@ -40,6 +43,8 @@ class TaskProcessorIsogen(TaskProcessorBase):
             return self._get_error_result("Not extracted iso")
         if self._extract_virtio_contents(args, template) is False:
             return self._get_error_result("Not extracted virtio")
+        if self._extract_squashfs_contents(args, template) is False:
+            return self._get_error_result("Not extracted squashfs")
         return self._get_success_result()
 
     def task_build_addons(self, args: TaskConfig) -> TaskResult:
@@ -110,7 +115,12 @@ class TaskProcessorIsogen(TaskProcessorBase):
         dir_mount = self.files._get_path_mountpath(args)
         file_mount = self.files._get_path_mountfile(args, template)
         dir_intermediate = self.files._get_path_intermediate(args)
-        self.files.unmount_folder(dir_mount)
+
+        if self.files.exists(dir_mount):
+            self.files.unmount_folder(dir_mount)
+        else:
+            os.makedirs(dir_mount)
+
         if self.files.mount_folder(file_mount, dir_mount):
             os.makedirs(dir_intermediate, exist_ok=True)
             copied = self.files.copy_folder_iso(dir_mount, dir_intermediate)
@@ -143,6 +153,30 @@ class TaskProcessorIsogen(TaskProcessorBase):
                          self.__class__.__qualname__)
                 return True
         return False
+
+    def _extract_squashfs_contents(
+        self, args: TaskConfig, template: TemplateConfig
+    ) -> bool:
+        cfg = args.addons.live
+        if cfg.live_boot_type == "":
+            return True
+        dstinter = self.files._get_path_intermediate(args)
+        dir_mount = self.files._get_path_mountpath(args)
+
+        log_info(f"Extracting squashfs list: {dstinter}", self.topic)
+        squashlist = self._extract_squashfs(dstinter, cfg.live_initrd_list)
+        log_info(f"Extracted squashfs list: {squashlist}", self.topic)
+        for squash in squashlist:
+            dirname = os.path.dirname(squash)
+            realpath = f"{dstinter}/{squash}"
+            dstmount = f"{dir_mount}/{dirname}/{DIR_SQUASH}"
+            dstout = f"{dstinter}/{dirname}"
+            os.makedirs(dstmount, exist_ok=True)
+            os.makedirs(dstout, exist_ok=True)
+            self.files.mount_folder(realpath, dstmount, "loop", TYPE_SQUASH)
+            self.files.rsync(dstmount, dstout)
+            self.files.unmount_folder(dstmount)
+        return True
 
     def _copy_addons(self, args: TaskConfig, template: TemplateConfig) -> bool:
         if args.addons.postinstall.postinstall_enabled:

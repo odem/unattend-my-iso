@@ -1,6 +1,6 @@
 import os
 from unattend_my_iso.common.logging import log_error
-from unattend_my_iso.core.subprocess import caller
+from unattend_my_iso.core.subprocess.caller import run
 
 
 class UmiFileMounts:
@@ -31,7 +31,7 @@ class UmiFileMounts:
 
         if os.path.exists(dst):
             command = self._get_mount_cmd(src, dst, opts, fstype)
-            completed_proc = caller.run(command, capture_output=True, text=True)
+            completed_proc = run(command, capture_output=True, text=True)
             if completed_proc.returncode == 0:
                 return True
             else:
@@ -48,9 +48,10 @@ class UmiFileMounts:
         # log_debug(f"Unmount iso at '{dir}'")
         if os.path.exists(dir):
             command = self._get_unmount_cmd(dir)
-            completed_proc = caller.run(command, capture_output=True, text=True)
+            completed_proc = run(command, capture_output=True, text=True)
             if completed_proc.returncode == 0:
-                os.rmdir(dir)
+                # os.rmdir(dir)
+                run(["sudo", "rm", "-rf", dir], check=True)
                 return True
             else:
                 msg = (

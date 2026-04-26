@@ -52,6 +52,8 @@ live_copy_launchers = ["UMI-install-all.desktop"]
 live_copy_scripts = [
   "installer/live/install-all.bash",
   "installer/live/install-user-live.bash",
+  "installer/live/install-zfs.bash",
+  "installer/live/install-debian.bash",
 ]
 
 [addon_user]
@@ -96,7 +98,14 @@ admin_group_name = "umi-admin"
 config_group_name = "umi-config"
 disk_password = "diskpass"
 include_git_repositories = ["https://github.com/mpsffap/ansible-fragments.git"]
-include_offline_packages = ["vlan", "ifenslave", "isc-dhcp-client"]
+include_offline_packages = [
+  "vlan",
+  "ifenslave",
+  "isc-dhcp-client",
+  "vim",
+  "vim-runtime",
+  "net-tools",
+]
 include_anna_packages = [
   "fdisk-udeb",
   "parted-udeb",

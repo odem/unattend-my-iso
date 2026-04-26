@@ -73,7 +73,21 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
                 os.link(src, dst)
             else:
                 log_error(
-                    "Link Source does not exist", self.__class__.__qualname__
+                    "Link source does not exist", self.__class__.__qualname__
+                )
+        except Exception as exe:
+            log_error(f"Error on copy_file: {exe}",
+                      self.__class__.__qualname__)
+            return False
+        return True
+
+    def rsync(self, src: str, dst: str) -> bool:
+        try:
+            if os.path.exists(src):
+                run(["sudo", "rsync", "-a", "--info=progress2", src, dst])
+            else:
+                log_error(
+                    "Rsync source does not exist", self.__class__.__qualname__
                 )
         except Exception as exe:
             log_error(f"Error on copy_file: {exe}",
@@ -83,7 +97,8 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
 
     def copy_folder_iso(self, src: str, dst: str) -> bool:
         try:
-            self.rm(dst)
+            # self.rm(dst)
+            run(["sudo", "rm", "-rf", dst])
             run(["cp", "-r", src, dst])
         except Exception as exe:
             log_error(
