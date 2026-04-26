@@ -1,3 +1,4 @@
+from unattend_my_iso.common.logging import log_info
 from unattend_my_iso.core.net.net_manager_bridges import BridgeManager
 from unattend_my_iso.core.net.net_manager_firewall import FirewallManager
 from unattend_my_iso.core.net.net_manager_nics import NicManager
@@ -29,6 +30,8 @@ class UmiNetworkManager(BridgeManager, NicManager, FirewallManager):
         if args_hv.net_prepare_fw:
             if self.add_masqueradings(args_hv.netbridges) is False:
                 return False
+            if self.add_hostaccesses(args_hv.netbridges) is False:
+                return False
 
             for dev in self.get_default_route_interfaces():
                 if self.add_masquerading(dev) is False:
@@ -40,6 +43,8 @@ class UmiNetworkManager(BridgeManager, NicManager, FirewallManager):
     def fw_stop(self, args_hv: HypervisorArgs) -> bool:
         if args_hv.net_prepare_fw:
             if self.del_masqueradings(args_hv.netbridges) is False:
+                return False
+            if self.del_hostaccesses(args_hv.netbridges) is False:
                 return False
             for dev in self.get_default_route_interfaces():
                 if self.del_masquerading(dev) is False:

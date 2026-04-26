@@ -1,10 +1,12 @@
 from unattend_my_iso.core.subprocess.caller import run, CalledProcessError, PIPE
-from unattend_my_iso.common.logging import log_debug, log_error
+from unattend_my_iso.common.logging import log_debug, log_error, log_info
 
 
 class FirewallManager:
+    topic: str
+
     def __init__(self):
-        pass
+        self.topic = self.__class__.__qualname__
 
     def has_masquerading(self, name: str) -> bool:
         try:
@@ -18,7 +20,7 @@ class FirewallManager:
                 if "MASQUERADE" in line and name in line:
                     return True
         except CalledProcessError as e:
-            log_error(f"Error checking {name}: {e}", self.__class__.__qualname__)
+            log_error(f"Error checking {name}: {e}", self.topic)
         return False
 
     def add_masquerading(self, name: str) -> bool:
@@ -26,12 +28,9 @@ class FirewallManager:
             return True
         try:
             run(self.create_rule_masq(name, True), check=True)
-            log_debug(
-                f"Added masquerading on {name}",
-                self.__class__.__qualname__,
-            )
+            log_debug(f"Added masquerading on {name}", self.topic)
         except CalledProcessError as e:
-            log_error(f"Error creating {name}: {e}", self.__class__.__qualname__)
+            log_error(f"Error creating {name}: {e}", self.topic)
             return False
         return True
 
@@ -39,13 +38,33 @@ class FirewallManager:
         if self.has_masquerading(name) is False:
             return True
         if name == "":
-            log_error(f"No uplink device: {name}", self.__class__.__qualname__)
+            log_error(f"No uplink device: {name}", self.topic)
             return False
         try:
             run(self.create_rule_masq(name, False), check=True)
-            log_debug(f"Deleted masquerading on {name}", self.__class__.__qualname__)
+            log_debug(f"Deleted masquerading on {name}", self.topic)
         except CalledProcessError as e:
-            log_error(f"Error creating {name}: {e}", self.__class__.__qualname__)
+            log_error(f"Error creating {name}: {e}", self.topic)
+            return False
+        return True
+
+    def add_hostaccess(self, name: str) -> bool:
+        try:
+            run(self.create_rule_inputaccess(name, True), check=True)
+            run(self.create_rule_fwdaccess(name, True), check=True)
+            log_debug(f"Added input access on {name} (IN+FWD)", self.topic)
+        except CalledProcessError as e:
+            log_error(f"Error creating {name}: {e}",     self.topic)
+            return False
+        return True
+
+    def del_hostaccess(self, name: str) -> bool:
+        try:
+            run(self.create_rule_inputaccess(name, False), check=False)
+            run(self.create_rule_fwdaccess(name, False), check=False)
+            log_debug(f"Removed input access on {name} (IN+FWD)", self.topic)
+        except CalledProcessError as e:
+            log_error(f"Error removing {name}: {e}", self.topic)
             return False
         return True
 
@@ -69,6 +88,26 @@ class FirewallManager:
                         return False
         return True
 
+    def add_hostaccesses(self, brlists: list[list[str]]) -> bool:
+        for brlist in brlists:
+            if len(brlist) >= 5:
+                name = brlist[0]
+                host = brlist[4]
+                if host is True:
+                    if self.add_hostaccess(name) is False:
+                        return False
+        return True
+
+    def del_hostaccesses(self, brlists: list[list[str]]) -> bool:
+        for brlist in brlists:
+            if len(brlist) >= 5:
+                name = brlist[0]
+                host = brlist[4]
+                if host is True:
+                    if self.del_hostaccess(name) is False:
+                        return False
+        return True
+
     def get_default_route_interfaces(self) -> list[str]:
         try:
             proc = run(
@@ -86,7 +125,8 @@ class FirewallManager:
             return interfaces
 
         except CalledProcessError as e:
-            log_error(f"Error running ip route: {e}", self.__class__.__qualname__)
+            log_error(
+                f"Error running ip route: {e}", self.topic)
             return []
 
     def set_ip_forwarding(self, enable: bool):
@@ -98,12 +138,10 @@ class FirewallManager:
                 stderr=PIPE,
                 check=True,
             )
-            log_debug(f"Set ip forwarding to {value}", self.__class__.__qualname__)
-        except CalledProcessError as e:
             log_debug(
-                f"Exception while setting ip forwarding: {e}",
-                self.__class__.__qualname__,
-            )
+                f"Set ip forwarding to {value}", self.topic)
+        except CalledProcessError as e:
+            log_debug(f"Exception during ip forwarding: {e}", self.topic)
 
     def create_rule_masq(self, name: str, add: bool) -> list[str]:
         action = "-A"
@@ -120,4 +158,34 @@ class FirewallManager:
             name,
             "-j",
             "MASQUERADE",
+        ]
+
+    def create_rule_inputaccess(self, name: str, add: bool) -> list[str]:
+        action = "-A"
+        if add is False:
+            action = "-D"
+        return [
+            "sudo",
+            "iptables",
+            action,
+            "INPUT",
+            "-i",
+            name,
+            "-j",
+            "ACCEPT",
+        ]
+
+    def create_rule_fwdaccess(self, name: str, add: bool) -> list[str]:
+        action = "-A"
+        if add is False:
+            action = "-D"
+        return [
+            "sudo",
+            "iptables",
+            action,
+            "FORWARD",
+            "-i",
+            name,
+            "-j",
+            "ACCEPT",
         ]

@@ -9,7 +9,7 @@ live_boot_type = "live"
 [run]
 vmname = "live"
 net_devs = [["tap-mpsl1", "brMps", "c2:9c:4a:d7:83:33"]]
-net_bridges = [["brMps", "10.10.100.1", "24", ""]]
+net_bridges = [["brMps", "10.10.100.1", "24", true, true]]
 net_ports = []
 disks = [
   ["disk1.qcow2", "64G", "hdd"],
