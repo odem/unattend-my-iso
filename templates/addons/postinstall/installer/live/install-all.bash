@@ -8,6 +8,7 @@ echo "All Installer"
 /opt/umi/postinstall/installer/default/apt.bash
 
 apt install -y openssh-server
+/usr/local/bin/install-user-live.bash
+
 # /usr/local/bin/install-zfs.bash
 # /usr/local/bin/install-debian.bash
-# /usr/local/bin/install-user-live.bash

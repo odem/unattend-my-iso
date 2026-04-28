@@ -299,6 +299,8 @@ class PostinstallAddon(UmiAddon):
         cfg_template = template.get_env_vars_bash()
         cfg_grub = args.addons.grub.get_env_vars_bash()
         cfg_ssh = args.addons.ssh.get_env_vars_bash()
+        cfg_live = args.addons.live.get_env_vars_bash()
+        cfg_ci = args.addons.cloudinit.get_env_vars_bash()
         cfg_env = args.env.get_env_vars_bash()
         cfg_postinst = args.addons.postinstall.get_env_vars_bash()
         cfg_answerfile = args.addons.answerfile.get_env_vars_bash()
@@ -316,6 +318,10 @@ class PostinstallAddon(UmiAddon):
             *cfg_grub,
             "\n# SSH Addon Args ",
             *cfg_ssh,
+            "\n# Live Addon Args ",
+            *cfg_live,
+            "\n# Cloud-Init Addon Args ",
+            *cfg_ci,
             "\n# Answerfile Addon Args ",
             *cfg_answerfile,
             "\n# Postinstall Addon Args ",

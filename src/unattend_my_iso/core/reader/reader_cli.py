@@ -485,6 +485,55 @@ class CommandlineReader:
             default=None,
             help="Copies umi dir to live imagee if enabled",
         )
+        group_target.add_argument(
+            "-lzn",
+            "--zfs_name",
+            type=str,
+            default=None,
+            help="Name of the zfs deployment",
+        )
+        group_target.add_argument(
+            "-lzb",
+            "--zfs_bpool",
+            type=list,
+            default=None,
+            help="List of bpool parameters (name, mode, disks)",
+        )
+        group_target.add_argument(
+            "-lzr",
+            "--zfs_rpool",
+            type=list,
+            default=None,
+            help="List of rpool parameters (name, mode, disks)",
+        )
+        group_target.add_argument(
+            "-lzo",
+            "--zfs_opool",
+            type=list,
+            default=None,
+            help="List of opool parameters (name, mode, disks)",
+        )
+        group_target.add_argument(
+            "-lzd",
+            "--zfs_datasets",
+            type=list,
+            default=None,
+            help="List of list of zfs arguments (name, mountpoint, label)",
+        )
+        group_target.add_argument(
+            "-lzpp",
+            "--zfs_props_pool",
+            type=list,
+            default=None,
+            help="List of pool properties",
+        )
+        group_target.add_argument(
+            "-lzpz",
+            "--zfs_props_zfs",
+            type=list,
+            default=None,
+            help="List of zfs properties",
+        )
 
     def _create_parser_args_addon_answerfile(self, p: argparse.ArgumentParser):
         group_target = p.add_argument_group(

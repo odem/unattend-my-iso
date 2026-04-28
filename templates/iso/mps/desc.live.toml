@@ -5,7 +5,6 @@ config_version = "0.0.9"
 # iso_url = "https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/debian-live-13.4.0-amd64-cinnamon.iso"
 iso_name = "debian-live-13.4.0-amd64-standard.iso"
 iso_url = "https://chuangtzu.ftp.acc.umu.se/debian-cd/current-live/amd64/iso-hybrid/debian-live-13.4.0-amd64-standard.iso"
-live_boot_type = "live"
 [run]
 vmname = "live"
 net_devs = [["tap-mpsl1", "brMps", "c2:9c:4a:d7:83:33"]]
@@ -54,6 +53,38 @@ live_copy_scripts = [
   "installer/live/install-user-live.bash",
   "installer/live/install-zfs.bash",
   "installer/live/install-debian.bash",
+]
+
+zfs_name = "debianzfs"
+zfs_bpool = [
+  "bpool",
+  "mirror",
+  "/dev/disk/by-id/virtio-DISK-0 /dev/disk/by-id/virtio-DISK-1",
+]
+zfs_rpool = [
+  "rpool",
+  "mirror",
+  "/dev/disk/by-id/virtio-DISK-0 /dev/disk/by-id/virtio-DISK-1",
+]
+zfs_opool = [
+  "opool",
+  "mirror",
+  "/dev/disk/by-id/virtio-DISK-2 /dev/disk/by-id/virtio-DISK-3",
+]
+zfs_datasets = [
+  ["root", "/", "rpool/ROOT/root-debian"],
+  ["boot", "/boot", "bpool/BOOT/boot-debian"],
+  ["home", "/home", "rpool/ROOT/home-debian"],
+  ["data", "/data", "opool/OPTS/data-debian"],
+  # Prevent formatting
+]
+zfs_props_pool = ["ashift=12", "autotrim=on"]
+zfs_props_zfs = [
+  "acltype=posixacl",
+  "xattr=sa",
+  "relatime=on",
+  "normalization=formD",
+  "mountpoint=none",
 ]
 
 [addon_user]

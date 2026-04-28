@@ -159,6 +159,13 @@ class AddonArgsLiveBoot(ArgumentBase):
     live_copy_umidir: bool = True
     live_copy_launchers: list[str] = field(default_factory=lambda: [])
     live_copy_scripts: list[str] = field(default_factory=lambda: [])
+    zfs_name: str = "zfs"
+    zfs_bpool: list[str] = field(default_factory=lambda: [])
+    zfs_rpool: list[str] = field(default_factory=lambda: [])
+    zfs_opool: list[str] = field(default_factory=lambda: [])
+    zfs_datasets: list[list[str]] = field(default_factory=lambda: [])
+    zfs_props_pool: list[str] = field(default_factory=lambda: [])
+    zfs_props_zfs: list[str] = field(default_factory=lambda: [])
 
 
 @dataclass

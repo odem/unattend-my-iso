@@ -50,7 +50,7 @@ class BridgeManager:
 
     def del_bridges(self, brlists: list[list[str]]) -> bool:
         for devlist in brlists:
-            if len(devlist) == 4:
+            if len(devlist) >= 4:
                 bridge = devlist[0]
                 if self.has_bridge(bridge):
                     if self.del_bridge(bridge) is False:
@@ -59,7 +59,7 @@ class BridgeManager:
 
     def add_bridges(self, brlists: list[list[str]]) -> bool:
         for brlist in brlists:
-            if len(brlist) == 4:
+            if len(brlist) >= 4:
                 bridge = brlist[0]
                 ip = brlist[1]
                 mask = brlist[2]
