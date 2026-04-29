@@ -479,6 +479,13 @@ class CommandlineReader:
             help="List of scripts to copy",
         )
         group_target.add_argument(
+            "-lsq",
+            "--live_squashfs_execute",
+            type=list,
+            default=None,
+            help="List of scripts to execute in squashfs image",
+        )
+        group_target.add_argument(
             "-llcu",
             "--live_copy_umidir",
             type=str,

@@ -1,9 +1,11 @@
 import os
+import re
+import glob
 from typing_extensions import override
 from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
 from unattend_my_iso.common.const import DIR_SQUASH
-from unattend_my_iso.common.logging import log_error
+from unattend_my_iso.common.logging import log_error, log_info
 from unattend_my_iso.core.subprocess.caller import run
 
 
@@ -21,6 +23,8 @@ class LiveBootAddon(UmiAddon):
         if self._copy_addon_data_scripts(args) is False:
             return False
         if self._copy_addon_data_launcher(args) is False:
+            return False
+        if self._exec_squashfs_scripts(args) is False:
             return False
         return True
 
@@ -70,3 +74,36 @@ class LiveBootAddon(UmiAddon):
                 self.files.cp(srcitem, dst_scripts)
             else:
                 log_error(f"File not found: {srcitem}", self.topic)
+
+    def _exec_squashfs_scripts(self, args: TaskConfig):
+        cfglive = args.addons.live
+        interpath = self.files._get_path_intermediate(args)
+        dstsquash = f"{interpath}/{cfglive.live_boot_type}/{DIR_SQUASH}"
+        if cfglive.live_boot_type != "":
+            if len(cfglive.live_squashfs_execute) > 0:
+                log_info("Executing squashfs script:")
+                run(["sudo", "mount", "/dev", f"{dstsquash}/dev"])
+                run(["sudo", "mount", "/dev/pts", f"{dstsquash}/dev/pts"])
+                run(["sudo", "mount", "/run", f"{dstsquash}/run"])
+                run(["sudo", "mount", "/proc", f"{dstsquash}/proc"])
+
+                for scriptfile in cfglive.live_squashfs_execute:
+                    run(["sudo", "chroot", dstsquash,
+                        "/bin/bash", "-c", scriptfile, self._extract_kernel_version])
+
+                run(["sudo", "mount", "/proc", f"{dstsquash}/proc"])
+                run(["sudo", "mount", "/run", f"{dstsquash}/run"])
+                run(["sudo", "mount", "/dev/pts", f"{dstsquash}/dev/pts"])
+                run(["sudo", "mount", "/dev", f"{dstsquash}/dev"])
+
+    def _extract_kernel_version(self, path: str) -> str:
+        searchfolder = f"{path}/boot"
+        pattern = f"{searchfolder}/initrd.img*"
+        files = glob.glob(pattern)
+        version_regex = re.compile(r"initrd\.img-(.+)")
+        for file in files:
+            match = version_regex.search(file)
+            if match:
+                kernel_version = match.group(1)
+                return kernel_version
+        return "X.Y.Z-W"

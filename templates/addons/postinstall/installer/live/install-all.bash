@@ -1,7 +1,5 @@
 #!/bin/bash
 
-echo "All Installer"
-
 /opt/umi/postinstall/installer/default/offline_packages.bash
 /opt/umi/postinstall/installer/default/hostnames.bash
 /opt/umi/postinstall/installer/default/hostnet_dhcp.bash

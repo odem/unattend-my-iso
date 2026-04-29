@@ -48,11 +48,13 @@ live_boot_type = "live"
 live_initrd_list = ["live"]
 live_copy_umidir = true
 live_copy_launchers = ["UMI-install-all.desktop"]
+live_squashfs_execute = ["/usr/local/bin/install-squashfs.bash"]
 live_copy_scripts = [
   "installer/live/install-all.bash",
   "installer/live/install-user-live.bash",
   "installer/live/install-zfs.bash",
   "installer/live/install-debian.bash",
+  "installer/live/install-squashfs.bash",
 ]
 
 zfs_name = "debianzfs"

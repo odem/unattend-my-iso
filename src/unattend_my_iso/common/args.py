@@ -156,6 +156,7 @@ class AddonArgsLiveBoot(ArgumentBase):
             "live"
         ]
     )
+    live_squashfs_execute: list[str] = field(default_factory=lambda: [])
     live_copy_umidir: bool = True
     live_copy_launchers: list[str] = field(default_factory=lambda: [])
     live_copy_scripts: list[str] = field(default_factory=lambda: [])
