@@ -31,14 +31,14 @@ exec_additional_scripts = [
   "installer/default/hostnet_dhcp.bash",
   "installer/default/hostnames.bash",
   "installer/default/apt.bash",
+  "installer/default/vim.bash",
+  "installer/default/locale.bash",
+  "installer/default/user.bash",
+  "installer/default/essentials.bash",
+  "installer/default/shell.bash",
+  "installer/default/ssh.bash",
   # "installer/default/docker.bash",
-  # "installer/default/user.bash",
-  # "installer/default/essentials.bash",
-  # "installer/default/shell.bash",
-  # "installer/default/ssh.bash",
-  # "installer/default/locale.bash",
   # "installer/default/firewall.bash",
-  # "installer/default/vim.bash",
 ]
 enable_grub_theme = true
 
@@ -48,13 +48,17 @@ live_boot_type = "live"
 live_initrd_list = ["live"]
 live_copy_umidir = true
 live_copy_launchers = ["UMI-install-all.desktop"]
-live_squashfs_execute = ["/usr/local/bin/install-squashfs.bash"]
+live_squashfs_execute = [
+  "/usr/local/bin/install-live-all.bash",
+  "/usr/local/bin/install-live-zfs.bash",
+]
 live_copy_scripts = [
-  "installer/live/install-all.bash",
-  "installer/live/install-user-live.bash",
-  "installer/live/install-zfs.bash",
-  "installer/live/install-debian.bash",
-  "installer/live/install-squashfs.bash",
+  "installer/live/install-live-all.bash",
+  "installer/live/install-live-essentials.bash",
+  "installer/live/install-live-user.bash",
+  "installer/live/install-live-zfs.bash",
+  "installer/live/debootstrap-zfs.bash",
+  "installer/live/debootstrap-debian.bash",
 ]
 
 zfs_name = "debianzfs"
@@ -130,7 +134,8 @@ deployment_users = ["deploy"]
 admin_group_name = "umi-admin"
 config_group_name = "umi-config"
 disk_password = "diskpass"
-include_git_repositories = ["https://github.com/mpsffap/ansible-fragments.git"]
+include_git_repositories = [
+] #["https://github.com/mpsffap/ansible-fragments.git"]
 include_offline_packages = [
   "vlan",
   "ifenslave",

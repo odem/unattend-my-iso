@@ -17,7 +17,7 @@ sleep 1
 apt update -y
 apt install -f -y
 apt upgrade -y
-apt install -y openssh-server rsyslog attr jq wget curl bc git vim make xxd \
+apt install -o Dpkg::Options::="--force-confold" -y openssh-server rsyslog attr jq wget curl bc git vim make xxd \
     sudo qemu-guest-agent eza bat chrony lsb-release gnupg iptables zip unzip
 apt install -y \
     kitty psmisc\

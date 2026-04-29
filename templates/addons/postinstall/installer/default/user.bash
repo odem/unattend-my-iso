@@ -21,6 +21,42 @@ genpw() {
     length=$1
     head /dev/urandom | tr -dc "$CHARSET_PW" | head -c "$length"
 }
+add_groups() {
+    if ! getent ggroup "$CFG_ADMIN_GROUP_NAME" &>/dev/null; then
+        /usr/sbin/groupadd "$CFG_ADMIN_GROUP_NAME"
+    fi
+    if ! getent ggroup "$CFG_CONFIG_GROUP_NAME" &>/dev/null; then
+        /usr/sbin/groupadd "$CFG_CONFIG_GROUP_NAME"
+    fi
+}
+add_users() {
+    for i in $(seq 0 $(("${#CFG_ADDITIONAL_USERS[*]}" - 1))); do
+        USER_NAME="${CFG_ADDITIONAL_USERS[$i]}"
+        if ! id "$USER_NAME" &>/dev/null; then
+            adduser --disabled-password --gecos '' "$USER_NAME";
+        fi
+    done
+    for i in $(seq 0 $(("${#CFG_ADMIN_USERS[*]}" - 1))); do
+        USER_NAME="${CFG_ADMIN_USERS[$i]}"
+        if ! id "$USER_NAME" &>/dev/null; then
+            adduser --disabled-password --gecos '' "$USER_NAME";
+        fi
+    done
+    for i in $(seq 0 $(("${#CFG_SUDO_USERS[*]}" - 1))); do
+        USER_NAME="${CFG_SUDO_USERS[$i]}"
+        if ! id "$USER_NAME" &>/dev/null; then
+            adduser --disabled-password --gecos '' "$USER_NAME";
+        fi
+    done
+    for i in $(seq 0 $(("${#CFG_DEPLOYMENT_USERS[*]}" - 1))); do
+        USER_NAME="${CFG_DEPLOYMENT_USERS[$i]}"
+        if ! id "$USER_NAME" &>/dev/null; then
+            adduser --disabled-password --gecos '' "$USER_NAME";
+        fi
+    done
+}
+add_groups
+add_users
 
 # Configure root user
 echo "-> Prepare user 'root'"

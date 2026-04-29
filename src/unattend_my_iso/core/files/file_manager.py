@@ -64,6 +64,26 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
             return False
         return True
 
+    def sudo_cp(self, src: str, dst: str) -> bool:
+        try:
+            if os.path.exists(src):
+                if os.path.isfile(src):
+                    run(["sudo", "cp", src, dst])
+                    # shutil.copy(src, dst)
+                elif os.path.isdir(src):
+                    run(["sudo", "cp", "-r", src, dst])
+                    # shutil.copytree(
+                    #     src, dst, dirs_exist_ok=True, symlinks=True)
+                else:
+                    log_error(
+                        "Cant delete unknown file object", self.__class__.__qualname__
+                    )
+        except Exception as exe:
+            log_error(f"Error on copy_file: {exe}",
+                      self.__class__.__qualname__)
+            return False
+        return True
+
     def exists(self, src: str) -> bool:
         return os.path.exists(src)
 

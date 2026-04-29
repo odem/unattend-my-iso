@@ -5,8 +5,6 @@ from pathlib import Path
 
 
 def run():
-    cwd = os.getcwd()
-    print(f"CWD: {cwd}")
     script_path = Path(__file__).resolve()
 
     # Go up to repo root, then into src

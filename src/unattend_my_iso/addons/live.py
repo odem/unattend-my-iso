@@ -24,6 +24,8 @@ class LiveBootAddon(UmiAddon):
             return False
         if self._copy_addon_data_launcher(args) is False:
             return False
+        if self._copy_addon_data_liveconfig(args) is False:
+            return False
         if self._exec_squashfs_scripts(args) is False:
             return False
         return True
@@ -37,7 +39,7 @@ class LiveBootAddon(UmiAddon):
         src_umi = f"{interpath}/umi"
         if cfglive.live_copy_umidir:
             if self.files.exists(src_umi):
-                self.files.cp(src_umi, dstumi)
+                self.files.sudo_cp(src_umi, dstumi)
             else:
                 log_error(f"UMI dir not found: {src_umi}", self.topic)
 
@@ -53,9 +55,11 @@ class LiveBootAddon(UmiAddon):
         for launcher in cfglive.live_copy_launchers:
             srcitem = f"{src_launcher}/{launcher}"
             if self.files.exists(srcitem):
-                os.makedirs(dst_dsklinks, exist_ok=True)
-                self.files.cp(srcitem, dst_launcher)
-                self.files.cp(srcitem, dst_dsklinks)
+                run(["sudo", "mkdir", "-p", dst_dsklinks])
+                run(["sudo", "chown", "1000:1000", "-R", dst_dsklinks])
+                # os.makedirs(dst_dsklinks, exist_ok=True)
+                self.files.sudo_cp(srcitem, dst_launcher)
+                self.files.sudo_cp(srcitem, dst_dsklinks)
                 run(["sudo", "chown", "1000:1000", "-R", dst_launcher])
                 run(["sudo", "chmod", "+x", "-R", dst_launcher])
             else:
@@ -71,9 +75,20 @@ class LiveBootAddon(UmiAddon):
         for script in cfglive.live_copy_scripts:
             srcitem = f"{postpath}/{script}"
             if self.files.exists(srcitem):
-                self.files.cp(srcitem, dst_scripts)
+                self.files.sudo_cp(srcitem, dst_scripts)
             else:
                 log_error(f"File not found: {srcitem}", self.topic)
+
+    def _copy_addon_data_liveconfig(self, args: TaskConfig):
+        cfglive = args.addons.live
+        interpath = self.files._get_path_intermediate(args)
+        dstsquash = f"{interpath}/{cfglive.live_boot_type}/{DIR_SQUASH}"
+        dstconf = f"{dstsquash}/etc/live/config.conf"
+        dsthook = f"{dstsquash}/etc/live/config/includes.chroot_after_packages/lib/live/config/2000_passwd"
+        self.files.append_to_file(dstconf, "live-config.noautologin")
+        self.files.append_to_file(
+            dsthook, "#!/bin/sh\nlive-config hook: passwd\necho 'root:rootpass' | chpasswd\n")
+        run(["sudo", "chmod", "+x", dsthook])
 
     def _exec_squashfs_scripts(self, args: TaskConfig):
         cfglive = args.addons.live
@@ -82,19 +97,33 @@ class LiveBootAddon(UmiAddon):
         if cfglive.live_boot_type != "":
             if len(cfglive.live_squashfs_execute) > 0:
                 log_info("Executing squashfs script:")
-                run(["sudo", "mount", "/dev", f"{dstsquash}/dev"])
-                run(["sudo", "mount", "/dev/pts", f"{dstsquash}/dev/pts"])
-                run(["sudo", "mount", "/run", f"{dstsquash}/run"])
-                run(["sudo", "mount", "/proc", f"{dstsquash}/proc"])
+                self._create_bindmount("/dev", dstsquash)
+                self._create_bindmount("/dev/pts", dstsquash)
+                self._create_bindmount("/run", dstsquash)
+                self._create_bindmount("/proc", dstsquash)
 
                 for scriptfile in cfglive.live_squashfs_execute:
+                    kversion = self._extract_kernel_version(dstsquash)
+                    log_info(f"Executing squashfs script: {scriptfile}")
                     run(["sudo", "chroot", dstsquash,
-                        "/bin/bash", "-c", scriptfile, self._extract_kernel_version])
+                        "/bin/bash", "-c", f"{scriptfile} {kversion}"], check=True)
 
-                run(["sudo", "mount", "/proc", f"{dstsquash}/proc"])
-                run(["sudo", "mount", "/run", f"{dstsquash}/run"])
-                run(["sudo", "mount", "/dev/pts", f"{dstsquash}/dev/pts"])
-                run(["sudo", "mount", "/dev", f"{dstsquash}/dev"])
+                self._release_bindmount("/proc", dstsquash)
+                self._release_bindmount("/run", dstsquash)
+                self._release_bindmount("/dev/pts", dstsquash)
+                self._release_bindmount("/dev", dstsquash)
+
+    def _create_bindmount(self, dev: str, path: str):
+        dstpath = f"{path}{dev}"
+        if self.files.exists(dstpath) is False:
+            os.makedirs(dstpath, exist_ok=True)
+        if os.path.ismount(dstpath) is False:
+            run(["sudo", "mount", "--bind", dev, dstpath])
+
+    def _release_bindmount(self, dev: str, path: str):
+        dstpath = f"{path}{dev}"
+        if os.path.ismount(dstpath):
+            run(["sudo", "umount", dstpath])
 
     def _extract_kernel_version(self, path: str) -> str:
         searchfolder = f"{path}/boot"
