@@ -33,25 +33,29 @@ add_users() {
     for i in $(seq 0 $(("${#CFG_ADDITIONAL_USERS[*]}" - 1))); do
         USER_NAME="${CFG_ADDITIONAL_USERS[$i]}"
         if ! id "$USER_NAME" &>/dev/null; then
-            adduser --disabled-password --gecos '' "$USER_NAME";
+            adduser --disabled-password --gecos '' "$USER_NAME"
+            echo "${USER_NAME}:${USER_NAME}pass" | chpasswd
         fi
     done
     for i in $(seq 0 $(("${#CFG_ADMIN_USERS[*]}" - 1))); do
         USER_NAME="${CFG_ADMIN_USERS[$i]}"
         if ! id "$USER_NAME" &>/dev/null; then
-            adduser --disabled-password --gecos '' "$USER_NAME";
+            adduser --disabled-password --gecos '' "$USER_NAME"
+            echo "${USER_NAME}:${USER_NAME}pass" | chpasswd
         fi
     done
     for i in $(seq 0 $(("${#CFG_SUDO_USERS[*]}" - 1))); do
         USER_NAME="${CFG_SUDO_USERS[$i]}"
         if ! id "$USER_NAME" &>/dev/null; then
-            adduser --disabled-password --gecos '' "$USER_NAME";
+            adduser --disabled-password --gecos '' "$USER_NAME"
+            echo "${USER_NAME}:${USER_NAME}pass" | chpasswd
         fi
     done
     for i in $(seq 0 $(("${#CFG_DEPLOYMENT_USERS[*]}" - 1))); do
         USER_NAME="${CFG_DEPLOYMENT_USERS[$i]}"
         if ! id "$USER_NAME" &>/dev/null; then
-            adduser --disabled-password --gecos '' "$USER_NAME";
+            adduser --disabled-password --gecos '' "$USER_NAME"
+            echo "${USER_NAME}:${USER_NAME}pass" | chpasswd
         fi
     done
 }
@@ -60,11 +64,11 @@ add_users
 
 # Configure root user
 echo "-> Prepare user 'root'"
-if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET"/users/root/ ]] ; then
+if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET"/users/root/ ]]; then
     cp -r "$CFG_ANSWERFILE_HOOK_DIR_TARGET"/users/root/. /root/
-    if [[ -f "$CFG_ANSWERFILE_HOOK_DIR_TARGET/ssh/authorized_keys" ]] ; then
+    if [[ -f "$CFG_ANSWERFILE_HOOK_DIR_TARGET/ssh/authorized_keys" ]]; then
         cat "$CFG_ANSWERFILE_HOOK_DIR_TARGET/ssh/authorized_keys" \
-            > /root/.ssh/authorized_keys
+            >/root/.ssh/authorized_keys
     fi
     chmod 700 -R /root/
     chown "root:root" -R /root
@@ -73,14 +77,14 @@ fi
 # Configure default user
 if [[ "$CFG_USER_OTHER_NAME" != "" ]]; then
     echo "-> Prepare default user '$CFG_USER_OTHER_NAME'"
-    if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET/users/$CFG_USER_OTHER_NAME/" ]] ; then
+    if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET/users/$CFG_USER_OTHER_NAME/" ]]; then
         cp -r "$CFG_ANSWERFILE_HOOK_DIR_TARGET/users/$CFG_USER_OTHER_NAME/". "/home/$CFG_USER_OTHER_NAME"
     fi
-    if [[ -f "$CFG_ANSWERFILE_HOOK_DIR_TARGET/ssh/authorized_keys" ]] ; then
+    if [[ -f "$CFG_ANSWERFILE_HOOK_DIR_TARGET/ssh/authorized_keys" ]]; then
         cat "$CFG_ANSWERFILE_HOOK_DIR_TARGET/ssh/authorized_keys" \
-            > "/home/$CFG_USER_OTHER_NAME"/.ssh/authorized_keys
+            >"/home/$CFG_USER_OTHER_NAME"/.ssh/authorized_keys
     fi
-    if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET/postinstall/manage" ]] ; then
+    if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET/postinstall/manage" ]]; then
         mkdir -p "/home/$CFG_USER_OTHER_NAME/manage"
         cp -r "$CFG_ANSWERFILE_HOOK_DIR_TARGET/postinstall/manage"/* \
             "/home/$CFG_USER_OTHER_NAME/manage/"
@@ -93,18 +97,18 @@ fi
 for i in $(seq 0 $(("${#CFG_ADDITIONAL_USERS[*]}" - 1))); do
     ADDITIONAL_NAME="${CFG_ADDITIONAL_USERS[$i]}"
     echo "-> Prepare additional user '$ADDITIONAL_NAME'"
-    if [[ $PWGEN -eq 1 ]] ; then
+    if [[ $PWGEN -eq 1 ]]; then
         newpass=$(genpw "$PWSIZE")
     else
         newpass="${ADDITIONAL_NAME}pass"
     fi
     echo "${ADDITIONAL_NAME}:${newpass}" | chpasswd
-    if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET/users/$ADDITIONAL_NAME/" ]] ; then
-       cp -r "$CFG_ANSWERFILE_HOOK_DIR_TARGET/users/$ADDITIONAL_NAME/". "/home/$ADDITIONAL_NAME"
+    if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET/users/$ADDITIONAL_NAME/" ]]; then
+        cp -r "$CFG_ANSWERFILE_HOOK_DIR_TARGET/users/$ADDITIONAL_NAME/". "/home/$ADDITIONAL_NAME"
     fi
-    if [[ -f "$CFG_ANSWERFILE_HOOK_DIR_TARGET/ssh/authorized_keys" ]] ; then
+    if [[ -f "$CFG_ANSWERFILE_HOOK_DIR_TARGET/ssh/authorized_keys" ]]; then
         cat "$CFG_ANSWERFILE_HOOK_DIR_TARGET/ssh/authorized_keys" \
-            > "/home/$ADDITIONAL_NAME"/.ssh/authorized_keys
+            >"/home/$ADDITIONAL_NAME"/.ssh/authorized_keys
     fi
     chmod 700 -R "/home/$ADDITIONAL_NAME/"
     chown "$ADDITIONAL_NAME:$ADDITIONAL_NAME" -R "/home/$ADDITIONAL_NAME/"
@@ -115,7 +119,7 @@ for i in $(seq 0 $(("${#CFG_ADMIN_USERS[*]}" - 1))); do
     ADDITIONAL_USER="${CFG_ADMIN_USERS[$i]}"
     echo "-> Prepare admin user '$ADDITIONAL_USER'"
     /sbin/usermod -aG "$CFG_ADMIN_GROUP_NAME" "$ADDITIONAL_USER"
-    if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET/postinstall/manage" ]] ; then
+    if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET/postinstall/manage" ]]; then
         mkdir -p "/home/$ADDITIONAL_USER/manage"
         cp -r "$CFG_ANSWERFILE_HOOK_DIR_TARGET/postinstall/manage"/* \
             "/home/$ADDITIONAL_USER/manage/"
@@ -135,12 +139,12 @@ echo ""
 for i in $(seq 0 $(("${#CFG_DEPLOYMENT_USERS[*]}" - 1))); do
     DEPLOY_NAME="${CFG_DEPLOYMENT_USERS[$i]}"
     echo "-> Grant NOPASSWD privileges to '$DEPLOY_NAME'"
-    if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET/postinstall/manage" ]] ; then
+    if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET/postinstall/manage" ]]; then
         mkdir -p "/home/$DEPLOY_NAME/manage"
         cp -r "$CFG_ANSWERFILE_HOOK_DIR_TARGET/postinstall/manage"/* \
             "/home/$DEPLOY_NAME/manage/"
     fi
-    cat <<EOF > /etc/sudoers.d/"$DEPLOY_NAME"
+    cat <<EOF >/etc/sudoers.d/"$DEPLOY_NAME"
 $DEPLOY_NAME ALL=(ALL) NOPASSWD: ALL
 EOF
 done

@@ -458,6 +458,13 @@ class CommandlineReader:
             help="Boot type",
         )
         group_target.add_argument(
+            "-llbu",
+            "--live_boot_username",
+            type=str,
+            default=None,
+            help="Deploy config to specified username (Default: '')",
+        )
+        group_target.add_argument(
             "-llil",
             "--live_initrd_list",
             type=list,
@@ -972,6 +979,13 @@ class CommandlineReader:
             type=str,
             default=None,
             help="Name of the vm",
+        )
+        group_target.add_argument(
+            "-rvg",
+            "--vga_type",
+            type=str,
+            default=None,
+            help="Tyype of the vga adapter",
         )
         # group_target.add_argument(
         #     "-rce",

@@ -45,6 +45,7 @@ enable_grub_theme = true
 [addon_live]
 live_enabled = true
 live_boot_type = "live"
+live_boot_username = "user"
 live_initrd_list = ["live"]
 live_copy_umidir = true
 live_copy_launchers = ["UMI-install-all.desktop"]
@@ -61,7 +62,6 @@ live_copy_scripts = [
   "installer/live/debootstrap-debian.bash",
 ]
 
-zfs_name = "debianzfs"
 zfs_bpool = [
   "bpool",
   "mirror",
@@ -84,14 +84,6 @@ zfs_datasets = [
   ["data", "/data", "opool/OPTS/data-debian"],
   # Prevent formatting
 ]
-zfs_props_pool = ["ashift=12", "autotrim=on"]
-zfs_props_zfs = [
-  "acltype=posixacl",
-  "xattr=sa",
-  "relatime=on",
-  "normalization=formD",
-  "mountpoint=none",
-]
 
 [addon_user]
 user_enabled = true
@@ -101,8 +93,8 @@ default_user_dir = "umi"
 grub_enabled = true
 grub_boot_type = "live"
 grub_theme = "showroom"
-timeout = 30
-sleeptime = 10
+timeout = 5
+sleeptime = 3
 initrd_list = ["install"]
 
 [addon_answerfile]
@@ -114,9 +106,9 @@ answerfile_confirm_partitioning = true
 answerfile_confirm_final_reboot = false
 install_disk = ""
 user_root_pw = "rootpass"
-user_other_name = "jb"
-user_other_fullname = "jb"
-user_other_pw = "jbpass"
+user_other_name = "umi-admin"
+user_other_fullname = "umi-admin"
+user_other_pw = "umi-adminpass"
 disk_recipe = "simple"
 host_name = "hivevm"
 host_domain = "local"
@@ -126,10 +118,10 @@ net_mask = ""
 net_gateway = ""
 net_dns = "8.8.8.8"
 packages_install = ["openssh-server", "sudo"]
-additional_users = ["deploy"]
-sudo_users = ["deploy", "jb"]
-admin_users = ["jb"]
-config_users = ["jb"]
+additional_users = ["deploy", "user"]
+sudo_users = ["deploy", "user"]
+admin_users = ["umi-admin"]
+config_users = ["umi-admin"]
 deployment_users = ["deploy"]
 admin_group_name = "umi-admin"
 config_group_name = "umi-config"

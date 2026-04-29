@@ -2,19 +2,45 @@
 
 # Globals
 export DEBIAN_FRONTEND=noninteractive
-set -eo pipefail
+#set -eo pipefail
+[[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
 
 # Defaults
-USERNAME="user"
+USERNAME="$CFG_LIVE_BOOT_USERNAME"
 USERDIR="/home/$USERNAME"
 SSHDIR="$USERDIR/.ssh"
-
+[[ "$USERNAME" == "" ]] && exit 0
 # Install
-# echo "$USERNAME:${USERNAME}pass" | chpasswd
-# mkdir -p "$SSHDIR"
-# cat <<EOF >"$SSHDIR"/authorized_keys
-# ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDYEMwNFwI1nJfHKHUZMZw5qD+u1DB8rtaq9Cdsep65yjT+kK1BXFrGGL+ZluRmZ/uIJTz4mBvZWIacD08USXzP76E3hNjrqBLUyhzgOoIIfguPwxI//bNAwbc8QYiG33ey1qQAYgnGQvAwA3ltDUIXYullpXmnMDOaKPqqq3z4XmP+YazgerXAwBTCa6p3FV55DcL4w2pT7y++uzWgfDwIfgb9D0WsMDquJCRDsM82hjTiaYn1CUr6Sv0EXYyRSC5liDh0JLY2iyPXU96r1qWOotIWkt9KSe3XTtNMCLWKQueviIcqPVzyXm9U7BC5k53a5qWu7wAC3rYXtn3UpOyaNeb8NC5xVnZYCs1Fb4E7l8JvOlrPTcw8If2Fu2LSLPSMhiyU0WOUOiZ7sIDk03nQ095lzMdiFENjiNuKh9YjNU+w7UAv1ZyiObNVwuUlxIhPogNSgqXxgU4meXK3afl/QAFL6Xr6swNZh8FciBXiaXiDwhZ1bf8/HES02YkGkeU= jb@otr
-# ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC5v9SlchPdcN0iCXB6TwYWiWEfkkBD67uk7TtBIqge2VlNNHZO+cGS0LqGpZBIwRVViwbvtF3vzEbfvC5zogx79Y6NeV5xWSWU5XCN5obrfSJrehJzw3fO0xdaE9bv7l4NeaRWEO9BlLanjF0DCD3CBweZhHqG6EGJ/KYv4RP7QaB7q8higjaPLc+SBLvhfPxnw6zTkU2ivIm37ApmDbm2cYu76qJbaiokzY6mixV0VqLbj5IFz4brN2/DHft/lfeii4VkOqLBPbK1l8GKctIDMUiL5A9RA751+2tGipSb/MLpS3GpRe9Bvsk0I0cS6Q96dPWg3I4OpkXkpQHL0HkvlKxeKtPQ45ekMFcfUMYTPIDwNha7l8zTtzrpghduQH3PQp4+IMAI/ZZhxTSiq0JQDOWvPZA2lYu0fxLdxB7to5Civ+6220QNwsH0pXqQSj5iSkD3EEoHPS00omrvhEl8cvI3pW4u69Kv/ghGapGHZX/HTGf+H9nasyIm7lGhkxk= jb@hive
-# EOF
-# chown "$USERNAME":"$USERNAME" -R "$USERDIR"
-# chmod 0600 "$SSHDIR"/*
+if ! id "$USERNAME" 2>/dev/null; then
+  adduser --disabled-password --gecos '' "$USERNAME"
+fi
+if ! id "$USERNAME" 2>/dev/null; then
+  adduser --disabled-password --gecos '' "$USERNAME"
+  echo "$USERNAME:${USERNAME}pass" | chpasswd
+fi
+
+echo "$USERNAME:${USERNAME}pass" | chpasswd
+mkdir -p "$SSHDIR"
+chown "$USERNAME":"$USERNAME" -R "$USERDIR"
+chmod 0600 "$SSHDIR"/*
+
+# Configure default user
+if [[ "$USERNAME" != "" ]]; then
+  echo "-> Prepare default user '$USERNAME'"
+  if [[ -d "$CFG_ANSWERFILE_HOOK_DIR_TARGET/users/$USERNAME/" ]]; then
+    cp -r "$CFG_ANSWERFILE_HOOK_DIR_TARGET/users/$USERNAME/". "/home/$USERNAME"
+    cp -r "$CFG_ANSWERFILE_HOOK_DIR_TARGET/users/$USERNAME/". "/root/"
+  fi
+  if [[ -f "$CFG_ANSWERFILE_HOOK_DIR_TARGET/ssh/authorized_keys" ]]; then
+    cat "$CFG_ANSWERFILE_HOOK_DIR_TARGET/ssh/authorized_keys" \
+      >"/home/$USERNAME"/.ssh/authorized_keys
+    cat "$CFG_ANSWERFILE_HOOK_DIR_TARGET/ssh/authorized_keys" \
+      >/root/.ssh/authorized_keys
+  fi
+  chmod 700 -R "/home/$USERNAME/"
+  chown "$USERNAME:$USERNAME" -R "/home/$USERNAME/"
+fi
+
+cat "$CFG_ANSWERFILE_HOOK_DIR_TARGET"/config/.bash_aliases >/etc/bash_aliases
+chmod 644 "/root/.bash"*
+chmod 644 /etc/bash_aliases

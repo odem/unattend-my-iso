@@ -43,6 +43,7 @@ class RunArgs(ArgumentBase):
     uefi_boot: bool = True
     cdrom_boot: bool = True
 
+    vga_type: str = ""
     daemonize: bool = True
     generate_run_script: bool = True
     uefi_ovmf_vars: str = "/usr/share/OVMF/OVMF_VARS_4M.fd"
@@ -151,6 +152,7 @@ class AddonArgsCloudInit(ArgumentBase):
 class AddonArgsLiveBoot(ArgumentBase):
     live_enabled: bool = True
     live_boot_type: str = ""
+    live_boot_username: str = ""
     live_initrd_list: list[str] = field(
         default_factory=lambda: [
             "live"
@@ -160,13 +162,20 @@ class AddonArgsLiveBoot(ArgumentBase):
     live_copy_umidir: bool = True
     live_copy_launchers: list[str] = field(default_factory=lambda: [])
     live_copy_scripts: list[str] = field(default_factory=lambda: [])
-    zfs_name: str = "zfs"
+    zfs_name: str = "debianzfs"
     zfs_bpool: list[str] = field(default_factory=lambda: [])
     zfs_rpool: list[str] = field(default_factory=lambda: [])
     zfs_opool: list[str] = field(default_factory=lambda: [])
     zfs_datasets: list[list[str]] = field(default_factory=lambda: [])
-    zfs_props_pool: list[str] = field(default_factory=lambda: [])
-    zfs_props_zfs: list[str] = field(default_factory=lambda: [])
+    zfs_props_pool: list[str] = field(
+        default_factory=lambda: ["ashift=12", "autotrim=on"])
+    zfs_props_zfs: list[str] = field(default_factory=lambda: [
+        "acltype=posixacl",
+        "xattr=sa",
+        "relatime=on",
+        "normalization=formD",
+        "mountpoint=none",
+    ])
 
 
 @dataclass

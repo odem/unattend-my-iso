@@ -84,11 +84,8 @@ class LiveBootAddon(UmiAddon):
         interpath = self.files._get_path_intermediate(args)
         dstsquash = f"{interpath}/{cfglive.live_boot_type}/{DIR_SQUASH}"
         dstconf = f"{dstsquash}/etc/live/config.conf"
-        dsthook = f"{dstsquash}/etc/live/config/includes.chroot_after_packages/lib/live/config/2000_passwd"
-        self.files.append_to_file(dstconf, "live-config.noautologin")
-        self.files.append_to_file(
-            dsthook, "#!/bin/sh\nlive-config hook: passwd\necho 'root:rootpass' | chpasswd\n")
-        run(["sudo", "chmod", "+x", dsthook])
+        # self.files.append_to_file(
+        #     dstconf, "live-config.noautologin")
 
     def _exec_squashfs_scripts(self, args: TaskConfig):
         cfglive = args.addons.live

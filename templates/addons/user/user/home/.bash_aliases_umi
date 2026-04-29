@@ -1,0 +1,8 @@
+#!/bin/bash
+# shellcheck disable=SC1090,SC1091,SC2139
+
+# Alias config: umi
+alias umi-post='cd /opt/umi/postinstall'
+alias umi-env='source /opt/umi/config/env.bash'
+alias umi-envcat='cat /opt/umi/config/env.bash'
+

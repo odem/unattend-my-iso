@@ -102,6 +102,8 @@ class UmiQemuCommands:
         self, args: TaskConfig, args_hv: HypervisorArgs
     ) -> list[str]:
         generated = []
+        if args.run.vga_type != "":
+            generated = ["-vga", args.run.vga_type]
         if args.run.spice_port > 0:
             generated = [
                 "-vga",
@@ -279,7 +281,8 @@ class UmiQemuCommands:
                 args, filename, diskindex, diskcache
             )
         elif filename != "" and disktype == "cloudinit":
-            generated += self._create_disk_args_cloudinit(args, filename, diskindex)
+            generated += self._create_disk_args_cloudinit(
+                args, filename, diskindex)
         elif filename != "" and disktype == "nvme":
             generated += self._create_disk_args_nvme(
                 args, filename, diskindex, diskcache
@@ -309,7 +312,8 @@ class UmiQemuCommands:
         if proc is not None and proc.returncode == 0:
             mac = str(proc.stdout)
             mac = mac.replace("\n", "")
-            log_debug(f"Random MAC generated: {mac}", self.__class__.__qualname__)
+            log_debug(
+                f"Random MAC generated: {mac}", self.__class__.__qualname__)
             return mac
         log_error("Got no random MAC")
         return ""
@@ -323,7 +327,8 @@ class UmiQemuCommands:
             diskid = f"disk{diskindex}"
             driveopts = f"drive={diskid},iothread={ioname}"
             diskopts = f"file={filename},media=cdrom,format=raw"
-            generated += self.bashformat(args, ["-object", f"iothread,id={ioname}"])
+            generated += self.bashformat(args,
+                                         ["-object", f"iothread,id={ioname}"])
             generated += self.bashformat(
                 args, ["-drive", f"if=none,id={diskid},{diskopts}"]
             )
@@ -342,7 +347,8 @@ class UmiQemuCommands:
             driveopts = f"drive={diskid},iothread={ioname}"
             serial = f"serial=DISK-{diskindex}"
             diskopts = f"file={filename},format=qcow2,{diskcache}"
-            generated += self.bashformat(args, ["-object", f"iothread,id={ioname}"])
+            generated += self.bashformat(args,
+                                         ["-object", f"iothread,id={ioname}"])
             generated += self.bashformat(
                 args, ["-drive", f"if=none,id={diskid},{diskopts}"]
             )

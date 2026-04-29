@@ -25,7 +25,7 @@ create_dataset_arrays() {
   # echo "INPUT DATASETS: ${CFG_ZFS_DATASETS[*]}"
   for entry in "${CFG_ZFS_DATASETS[@]}"; do
     entry=${entry//\'/}
-    IFS=',' read -r name mountpoint label<<< "$entry"
+    IFS=',' read -r name mountpoint label <<<"$entry"
     name=${name// /}
     mountpoint=${mountpoint// /}
     label=${label// /}
@@ -42,7 +42,7 @@ install_debootstrap_debian() {
     mkdir -p "$MNTDIR"
   fi
   if [[ -e "$MNTDIR" ]]; then
-    if debootstrap "$CODENAME" "$MNTDIR" ; then
+    if debootstrap "$CODENAME" "$MNTDIR"; then
       echo "-> SUCCESS : debootstrapped $CODENAME into $MNTDIR"
     else
       echo "-> ERROR   : debootstrap $CODENAME failed in $MNTDIR"
@@ -57,7 +57,7 @@ mount_debootstrap_folders_default() {
   echo "Mounting default chroot folders:"
   mkdir -p "$MNTDIR"/dev "$MNTDIR"/proc "$MNTDIR"/sys "$MNTDIR"/run
   mount --bind /dev "$MNTDIR"/dev
-  mount --bind /dev/pts  "$MNTDIR"/dev/pts
+  mount --bind /dev/pts "$MNTDIR"/dev/pts
   mount --bind /proc "$MNTDIR"/proc
   mount --rbind /sys "$MNTDIR"/sys
   mount --make-rslave "$MNTDIR"/sys
@@ -67,7 +67,7 @@ mount_debootstrap_folders_default() {
 
 mount_debootstrap_folder_zfs() {
   local ismounted=""
-  local mp="$1" 
+  local mp="$1"
   local label="$2"
   ismounted=0
   if mount | grep -q "$label"; then
@@ -91,25 +91,25 @@ mount_debootstrap_folder_zfs() {
 }
 unmount_debootstrap_folder_zfs() {
   local ismounted=""
-  local mp="$1" 
+  local mp="$1"
   local label="$2"
   ismounted=0
   if mount | grep -q "$label"; then
     ismounted=1
   fi
   if [[ $ismounted -eq 1 ]]; then
-      if zfs set canmount=off mountpoint=none "$label"; then
-        echo "-> SUCCESS : zfs unset mountpoint on $mp"
-        if zfs unmount "$label"; then
-          echo "-> SUCCESS : zfs dataset unmounted from $mp"
-        else
-          echo "-> ERROR   : zfs root dataset NOT unmounted from $mp"
-          return "$CONST_ERR_ZFSMOUNT"
-        fi
+    if zfs set canmount=off mountpoint=none "$label"; then
+      echo "-> SUCCESS : zfs unset mountpoint on $mp"
+      if zfs unmount "$label"; then
+        echo "-> SUCCESS : zfs dataset unmounted from $mp"
       else
-        echo "-> ERROR   : zfs properties NOT set to $mp"
-        return "$CONST_ERR_ZFSSETMP"
+        echo "-> ERROR   : zfs root dataset NOT unmounted from $mp"
+        return "$CONST_ERR_ZFSMOUNT"
       fi
+    else
+      echo "-> ERROR   : zfs properties NOT set to $mp"
+      return "$CONST_ERR_ZFSSETMP"
+    fi
   else
     echo "-> SUCCESS : zfs root dataset not mounted on $mp"
   fi
@@ -117,7 +117,7 @@ unmount_debootstrap_folder_zfs() {
 mount_debootstrap_folders_zfs_root() {
   echo "Mounting zfs chroot folders (root):"
   for key in "${!DATASET_LB[@]}"; do
-    local mp="${MNTDIR}${DATASET_MP[$key]}" 
+    local mp="${MNTDIR}${DATASET_MP[$key]}"
     local label="${DATASET_LB[$key]}"
     if [[ "$mp" == "$MNTDIR/" ]]; then
       mount_debootstrap_folder_zfs "$mp" "$label"
@@ -127,7 +127,7 @@ mount_debootstrap_folders_zfs_root() {
 mount_debootstrap_folders_zfs_custom() {
   echo "Mounting zfs chroot folders (custom):"
   for key in "${!DATASET_LB[@]}"; do
-    local mp="${MNTDIR}${DATASET_MP[$key]}" 
+    local mp="${MNTDIR}${DATASET_MP[$key]}"
     local label="${DATASET_LB[$key]}"
     if [[ "$mp" != "$MNTDIR/" ]]; then
       mount_debootstrap_folder_zfs "$mp" "$label"
@@ -137,7 +137,7 @@ mount_debootstrap_folders_zfs_custom() {
 unmount_debootstrap_folders_zfs_root() {
   echo "unmounting zfs chroot folders (root):"
   for key in "${!DATASET_LB[@]}"; do
-    local mp="${MNTDIR}${DATASET_MP[$key]}" 
+    local mp="${MNTDIR}${DATASET_MP[$key]}"
     local label="${DATASET_LB[$key]}"
     if [[ "$mp" == "$MNTDIR/" ]]; then
       unmount_debootstrap_folder_zfs "$mp" "$label"
@@ -147,7 +147,7 @@ unmount_debootstrap_folders_zfs_root() {
 unmount_debootstrap_folders_zfs_custom() {
   echo "Unmounting zfs chroot folders (custom):"
   for key in "${!DATASET_LB[@]}"; do
-    local mp="${MNTDIR}${DATASET_MP[$key]}" 
+    local mp="${MNTDIR}${DATASET_MP[$key]}"
     local label="${DATASET_LB[$key]}"
     if [[ "$mp" != "$MNTDIR/" ]]; then
       unmount_debootstrap_folder_zfs "$mp" "$label"
@@ -162,8 +162,8 @@ mount_efi_folders() {
   mount --bind /sys/firmware/efi/efivars "$MNTDIR"/sys/firmware/efi/efivars
   # mount --make-rslave "$MNTDIR"/sys/firmware/efi/efivars
   mkdir -p "$MNTDIR"/boot/efi
-  if [[ -e "$MNTDIR"/boot/efi ]] ; then
-    if mount "$efidev" "$MNTDIR"/boot/efi ; then
+  if [[ -e "$MNTDIR"/boot/efi ]]; then
+    if mount "$efidev" "$MNTDIR"/boot/efi; then
       echo "-> SUCCESS : efi partition mounted into $MNTDIR/boot/efi"
     else
       echo "-> ERROR   : efi partition NOT mounted into $MNTDIR/boot/efi"
@@ -175,7 +175,7 @@ mount_efi_folders() {
   fi
 }
 install_debootstrap_apt() {
-  cat <<EOF>"$MNTDIR"/usr/local/bin/setup-chroot-apt.bash
+  cat <<EOF >"$MNTDIR"/usr/local/bin/setup-chroot-apt.bash
 #!/bin/bash
 set -e
 
@@ -242,26 +242,28 @@ unmount_chroot() {
 finalize_zfs_mountpoints() {
   echo "Finalize zfs mountpoints:"
   for key in "${!DATASET_LB[@]}"; do
-    local mp="${DATASET_MP[$key]}" 
+    local mp="${DATASET_MP[$key]}"
     local label="${DATASET_LB[$key]}"
-    if zfs set canmount=noauto mountpoint="$mp" "$label" ; then
+    if zfs set canmount=noauto mountpoint="$mp" "$label"; then
       echo "-> SUCCESS : Mountpoint on $label updated to '$mp'"
     else
       echo "-> ERROR   : Mountpoint on $label NOT updated to '$mp'"
       exit $CONST_ERR_ZFSUNMOUNT
     fi
   done
+  zfs unmount -a
+  zpool export -a
 }
 create_dataset_arrays
-# mount_debootstrap_folders_zfs_root
-# install_debootstrap_debian
-# mount_debootstrap_folders_default
-# mount_debootstrap_folders_zfs_custom
-# mount_efi_folders
-# install_debootstrap_apt
-# install_debootstrap_grub
-# install_debootstrap_finalize
-# unmount_chroot
-# unmount_debootstrap_folders_zfs_custom
-# unmount_debootstrap_folders_zfs_root
-# finalize_zfs_mountpoints
+mount_debootstrap_folders_zfs_root
+install_debootstrap_debian
+mount_debootstrap_folders_default
+mount_debootstrap_folders_zfs_custom
+mount_efi_folders
+install_debootstrap_apt
+install_debootstrap_grub
+install_debootstrap_finalize
+unmount_chroot
+unmount_debootstrap_folders_zfs_custom
+unmount_debootstrap_folders_zfs_root
+finalize_zfs_mountpoints

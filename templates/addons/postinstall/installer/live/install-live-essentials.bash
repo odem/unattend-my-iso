@@ -6,5 +6,4 @@ export DEBIAN_FRONTEND=noninteractive
 set -eo pipefail
 
 # Install
-apt install -y openssh-server vim netstat dnsutils tcpdump net-tools
-
+apt install -y openssh-client openssh-server vim bind9-dnsutils tcpdump net-tools
