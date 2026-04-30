@@ -144,6 +144,7 @@ class PostinstallAddon(UmiAddon):
         if args.addons.postinstall.enable_grub_theme:
             subdir = "default"
             if args.addons.live.live_enabled:
+                log_error("AAAAAAAAAAAA LIVE ENABLED")
                 subdir = args.addons.live.live_boot_type
             if args.addons.grub.grub_theme == "":
                 return True
@@ -152,7 +153,7 @@ class PostinstallAddon(UmiAddon):
             )
             if os.path.exists(srcpath) is False:
                 log_error(
-                    f"Themefiles not available: {args.addons.grub.grub_theme}",
+                    f"Themefiles not available: '{srcpath}'",
                     "Postinstall",
                 )
                 return False

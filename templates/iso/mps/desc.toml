@@ -49,7 +49,7 @@ timeout = 30
 ci_enabled = false
 
 [addon_live]
-live_enabled = true
+live_enabled = false
 
 [addon_answerfile]
 answerfile_enable_networking = false

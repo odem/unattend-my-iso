@@ -150,7 +150,7 @@ class AddonArgsCloudInit(ArgumentBase):
 
 @dataclass
 class AddonArgsLiveBoot(ArgumentBase):
-    live_enabled: bool = True
+    live_enabled: bool = False
     live_boot_type: str = ""
     live_boot_username: str = ""
     live_initrd_list: list[str] = field(

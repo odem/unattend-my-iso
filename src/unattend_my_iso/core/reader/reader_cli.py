@@ -446,7 +446,7 @@ class CommandlineReader:
         group_target.add_argument(
             "-lle",
             "--live_enabled",
-            type=str,
+            type=bool,
             default=None,
             help="Enable or disable liveboot addon (true or false)",
         )

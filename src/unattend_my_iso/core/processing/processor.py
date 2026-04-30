@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import sys
 from datetime import datetime
 from unattend_my_iso.common.config import TaskResult, TemplateConfig
@@ -10,12 +11,19 @@ from unattend_my_iso.core.processing.processor_task_networking import (
 )
 
 
+@dataclass
+class TimingsProc():
+    time_proc_start: datetime = datetime.now()
+    time_proc_stop: datetime = datetime.now()
+    time_config_start: datetime = datetime.now()
+    time_config_stop: datetime = datetime.now()
+
+
 class UmiTaskProcessor(
     TaskProcessorIsogen, TaskProcessorVmRun, TaskProcessorNetworking
 ):
-    proc_time_start: datetime
-    proc_time_stop: datetime
     topic: str
+    timings: TimingsProc = TimingsProc()
 
     def __init__(self):
         self.topic = self.__class__.__qualname__
@@ -24,11 +32,11 @@ class UmiTaskProcessor(
 
     def do_process(self):
         taskconfigs = get_configs()
-        log_info(f"TaskConfigs : {len(taskconfigs)}",
-                 self.topic)
+        log_info(f"TaskConfigs : {len(taskconfigs)}", self.topic)
         if len(taskconfigs) > 0:
             for cfg in taskconfigs:
                 if isinstance(cfg, TaskConfig):
+                    self.timings.time_config_start = datetime.now()
                     log_info(
                         f"TaskTemplate: {cfg.target.template}",
                         self.topic,
@@ -46,11 +54,12 @@ class UmiTaskProcessor(
                             f"TemplateErr : Template is None. Current={template}", self.topic,
                         )
                         sys.exit(2)
+                    self.timings.time_config_stop = datetime.now()
                     if template is not None:
-                        self.proc_time_start = datetime.now()
+                        self.timings.time_proc_start = datetime.now()
                         result = self._process_task(cfg, template)
                         self._process_result(result)
-                        self.proc_time_stop = datetime.now()
+                        self.timings.time_proc_stop = datetime.now()
                         self._log_result(result)
                 else:
                     log_error(f"TaskConfig invalid: {taskconfigs}", self.topic)
@@ -100,21 +109,16 @@ class UmiTaskProcessor(
             log_error(f"Task Error : Msg:{result.msg}", self.topic)
 
     def _log_result(self, result: TaskResult):
-        dformat = "%Y-%m-%d %H:%M:%S"
-        diff = self.proc_time_stop - self.proc_time_start
-        start = datetime.strftime(self.proc_time_start, dformat)
-        stop = datetime.strftime(self.proc_time_stop, dformat)
-        total_seconds = int(diff.total_seconds())
-        diff_ms = diff.microseconds / 1000
-        diff_text = f"{diff_ms} ms"
-        if total_seconds > 0:
-            diff_text = f"{total_seconds} s"
-        msg = f"{result.success}"
-        if result.success is False:
-            msg = f"{result.success} -> {result.msg_short}"
-        log_info("--- Result -----------------------------------", self.topic)
-        log_info(f"Result     : {msg}", self.topic)
-        log_info(f"Time Start : {start}", self.topic)
-        log_info(f"Time Stop  : {stop}", self.topic)
-        log_info(f"Total Time : {diff_text}", self.topic)
-        log_info("----------------------------------------------", self.topic)
+        dproc = self.timings.time_proc_stop - self.timings.time_proc_start
+        dconf = self.timings.time_config_stop - self.timings.time_config_start
+        dfull = self.timings.time_proc_stop - self.timings.time_config_start
+        dconf_s = (dconf.total_seconds() + dconf.microseconds / 1000000)
+        dproc_s = (dproc.total_seconds() + dproc.microseconds / 1000000)
+        dfull_s = (dfull.total_seconds() + dfull.microseconds / 1000000)
+        t = self.topic
+        log_info("--- Result -----------------------------------", t)
+        log_info(f"Ret  : {result.success}{result.msg_short}", t)
+        log_info(f"Conf : {dconf_s * 1000:10.1f} ms -> {dconf_s:10.1f} s ", t)
+        log_info(f"Proc : {dproc_s * 1000:10.1f} ms -> {dproc_s:10.1f} s ", t)
+        log_info(f"Full : {dfull_s * 1000:10.1f} ms -> {dfull_s:10.1f} s ", t)
+        log_info("----------------------------------------------", t)
