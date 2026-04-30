@@ -153,6 +153,7 @@ class AddonArgsLiveBoot(ArgumentBase):
     live_enabled: bool = False
     live_boot_type: str = ""
     live_boot_username: str = ""
+    live_squashfs_motdfile: str = ""
     live_initrd_list: list[str] = field(
         default_factory=lambda: [
             "live"
@@ -163,9 +164,11 @@ class AddonArgsLiveBoot(ArgumentBase):
     live_copy_launchers: list[str] = field(default_factory=lambda: [])
     live_copy_scripts: list[str] = field(default_factory=lambda: [])
     zfs_name: str = "debianzfs"
-    zfs_bpool: list[str] = field(default_factory=lambda: [])
-    zfs_rpool: list[str] = field(default_factory=lambda: [])
-    zfs_opool: list[str] = field(default_factory=lambda: [])
+    zfs_bpool: list[str] = field(default_factory=lambda: ["bpool", "mirror"])
+    zfs_rpool: list[str] = field(default_factory=lambda: ["rpool", "mirror"])
+    zfs_opool: list[str] = field(default_factory=lambda: ["opool", "mirror"])
+    zfs_disks_main: list[str] = field(default_factory=lambda: [])
+    zfs_disks_optional: list[str] = field(default_factory=lambda: [])
     zfs_datasets: list[list[str]] = field(default_factory=lambda: [])
     zfs_props_pool: list[str] = field(
         default_factory=lambda: ["ashift=12", "autotrim=on"])

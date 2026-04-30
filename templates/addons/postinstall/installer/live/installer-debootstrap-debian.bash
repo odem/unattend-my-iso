@@ -4,6 +4,7 @@
 # -- Defaults
 MNTDIR="/target"
 CODENAME="trixie"
+URL="http://deb.debian.org/debian/"
 declare -A DATASET_LB
 declare -A DATASET_MP
 
@@ -42,7 +43,7 @@ install_debootstrap_debian() {
     mkdir -p "$MNTDIR"
   fi
   if [[ -e "$MNTDIR" ]]; then
-    if debootstrap "$CODENAME" "$MNTDIR"; then
+    if debootstrap "$CODENAME" "$MNTDIR" "$URL"; then
       echo "-> SUCCESS : debootstrapped $CODENAME into $MNTDIR"
     else
       echo "-> ERROR   : debootstrap $CODENAME failed in $MNTDIR"
@@ -156,7 +157,7 @@ unmount_debootstrap_folders_zfs_custom() {
 }
 mount_efi_folders() {
   echo "Mounting efi partition:"
-  read -r -a BPOOL_DISKS <<<"${CFG_ZFS_BPOOL[2]}"
+  read -r -a BPOOL_DISKS <<<"${CFG_ZFS_DISKS_MAIN[@]}"
   local efidev="${BPOOL_DISKS[0]}-part1"
   mkdir -p "$MNTDIR"/sys/firmware/efi
   mount --bind /sys/firmware/efi/efivars "$MNTDIR"/sys/firmware/efi/efivars
@@ -210,22 +211,29 @@ set -e
 apt purge --yes os-prober
 grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=debian
 grub-probe /boot
-update-initramfs -c -k all
+update-initramfs -c -u -k all
 update-grub
 EOF
   chmod +x "$MNTDIR"/usr/local/bin/setup-chroot-grub.bash
   chroot "$MNTDIR" /bin/bash /usr/local/bin/setup-chroot-grub.bash
 }
 install_debootstrap_finalize() {
+  cp -r /opt/umi "$MNTDIR"/opt/
   cat <<EOF >"$MNTDIR"/usr/local/bin/setup-chroot-finalize.bash
 #!/bin/bash
-set -e
+#set -e
 USERNAME=deploy
 useradd -m -G sudo -s /bin/bash \$USERNAME
 echo "\$USERNAME:\${USERNAME}pass" | chpasswd
 echo "root:rootpass" | chpasswd
 # zfs
 systemctl enable zfs.target
+
+apt install console-setup kbd
+/opt/umi/postinstall/installer/default/offline_packages.bash
+/opt/umi/postinstall/installer/default/hostnet_dhcp.bash
+/opt/umi/postinstall/installer/default/apt.bash
+/opt/umi/postinstall/postinstall.bash
 EOF
   chmod +x "$MNTDIR"/usr/local/bin/setup-chroot-finalize.bash
   chroot "$MNTDIR" /bin/bash /usr/local/bin/setup-chroot-finalize.bash
@@ -267,3 +275,4 @@ unmount_chroot
 unmount_debootstrap_folders_zfs_custom
 unmount_debootstrap_folders_zfs_root
 finalize_zfs_mountpoints
+

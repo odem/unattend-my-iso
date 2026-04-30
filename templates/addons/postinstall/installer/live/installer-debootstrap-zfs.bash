@@ -23,26 +23,18 @@ export DEBIAN_FRONTEND=noninteractive
 CONST_ERR_DISK=100
 CONST_ERR_FORMAT=101
 
-# -- Common options
-CFG_ZFS_NAME="debian"
-
 # -- ZFS Pool config ---
-CFG_ZFS_BPOOL=(
-  "bpool"
-  "mirror"
-  "/dev/disk/by-id/virtio-DISK-0 /dev/disk/by-id/virtio-DISK-1"
+CFG_ZFS_NAME="debian"
+CFG_ZFS_BPOOL=("bpool" "mirror")
+CFG_ZFS_RPOOL=("rpool" "mirror")
+CFG_ZFS_OPOOL=("opool" "mirror")
+CFG_ZFS_DISKS_MAIN=(
+  "/dev/disk/by-id/virtio-DISK-0"
+  "/dev/disk/by-id/virtio-DISK-1"
 )
-
-CFG_ZFS_RPOOL=(
-  "rpool"
-  "mirror"
-  "/dev/disk/by-id/virtio-DISK-0 /dev/disk/by-id/virtio-DISK-1"
-)
-
-CFG_ZFS_OPOOL=(
-  "opool"
-  "mirror"
-  "/dev/disk/by-id/virtio-DISK-2 /dev/disk/by-id/virtio-DISK-3"
+CFG_ZFS_DISKS_OPTIONAL=(
+  "/dev/disk/by-id/virtio-DISK-2"
+  "/dev/disk/by-id/virtio-DISK-3"
 )
 CFG_ZFS_DATASETS=( 
   "'root', '/', 'rpool/ROOT/root-$CFG_ZFS_NAME'" 
@@ -75,9 +67,9 @@ create_property_arrays() {
   done
 }
 create_disk_arrays() {
-  read -r -a BPOOL_DISKS <<<"${CFG_ZFS_BPOOL[2]}"
-  read -r -a RPOOL_DISKS <<<"${CFG_ZFS_RPOOL[2]}"
-  read -r -a OPOOL_DISKS <<<"${CFG_ZFS_OPOOL[2]}"
+  read -r -a BPOOL_DISKS <<<"${CFG_ZFS_DISKS_MAIN[@]}"
+  read -r -a RPOOL_DISKS <<<"${CFG_ZFS_DISKS_MAIN[@]}"
+  read -r -a OPOOL_DISKS <<<"${CFG_ZFS_DISKS_OPTIONAL[@]}"
 }
 create_partition_arrays() {
   for d in "${BPOOL_DISKS[@]}"; do

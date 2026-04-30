@@ -26,6 +26,8 @@ class LiveBootAddon(UmiAddon):
             return False
         if self._copy_addon_data_liveconfig(args) is False:
             return False
+        if self._copy_addon_data_motdfile(args) is False:
+            return False
         if self._exec_squashfs_scripts(args) is False:
             return False
         return True
@@ -86,6 +88,21 @@ class LiveBootAddon(UmiAddon):
         dstconf = f"{dstsquash}/etc/live/config.conf"
         # self.files.append_to_file(
         #     dstconf, "live-config.noautologin")
+
+    def _copy_addon_data_motdfile(self, args: TaskConfig):
+        cfglive = args.addons.live
+        interpath = self.files._get_path_intermediate(args)
+        srclive = self.files._get_path_template_addon("live", args)
+        srcmotd = f"{srclive}/{cfglive.live_squashfs_motdfile}"
+        dstsquash = f"{interpath}/{cfglive.live_boot_type}/{DIR_SQUASH}"
+        dstmotdpath = f"{dstsquash}/etc/update-motd.d"
+        dstmotd = f"{dstmotdpath}/99_motd_frauas"
+        dstmotd_uname = f"{dstmotdpath}/10-uname"
+        dstmotd_upgrades = f"{dstmotdpath}/92-unattended-upgrades"
+        self.files.sudo_cp(srcmotd, dstmotd)
+        run(["sudo", "chmod", "+x", "-R", dstmotd])
+        self.files.sudo_rm(dstmotd_uname)
+        self.files.sudo_rm(dstmotd_upgrades)
 
     def _exec_squashfs_scripts(self, args: TaskConfig):
         cfglive = args.addons.live

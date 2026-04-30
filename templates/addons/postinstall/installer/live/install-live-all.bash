@@ -16,8 +16,6 @@ echo "Kernel version was: '$KVERSION'"
 /opt/umi/postinstall/installer/default/locale.bash
 
 # Install live installers
-/usr/local/bin/install-live-essentials.bash
-/usr/local/bin/install-live-user.bash
-
+/opt/umi/postinstall/installer/live/install-live-essentials.bash
+/opt/umi/postinstall/installer/live/install-live-user.bash
 /opt/umi/postinstall/installer/default/shell.bash
-/opt/umi/postinstall/installer/default/ssh.bash

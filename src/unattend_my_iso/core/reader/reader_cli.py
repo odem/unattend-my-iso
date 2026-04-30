@@ -458,6 +458,13 @@ class CommandlineReader:
             help="Boot type",
         )
         group_target.add_argument(
+            "-lsm",
+            "--live_squashfs_motdfile",
+            type=str,
+            default=None,
+            help="Motd file to deploy into live system",
+        )
+        group_target.add_argument(
             "-llbu",
             "--live_boot_username",
             type=str,
@@ -507,25 +514,39 @@ class CommandlineReader:
             help="Name of the zfs deployment",
         )
         group_target.add_argument(
+            "-lzdm",
+            "--zfs_disks_main",
+            type=list,
+            default=None,
+            help="List of main disks",
+        )
+        group_target.add_argument(
+            "-lzdo",
+            "--zfs_disks_optional",
+            type=list,
+            default=None,
+            help="List of optional disks",
+        )
+        group_target.add_argument(
             "-lzb",
             "--zfs_bpool",
             type=list,
             default=None,
-            help="List of bpool parameters (name, mode, disks)",
+            help="List of bpool parameters (name, mode)",
         )
         group_target.add_argument(
             "-lzr",
             "--zfs_rpool",
             type=list,
             default=None,
-            help="List of rpool parameters (name, mode, disks)",
+            help="List of rpool parameters (name, mode)",
         )
         group_target.add_argument(
             "-lzo",
             "--zfs_opool",
             type=list,
             default=None,
-            help="List of opool parameters (name, mode, disks)",
+            help="List of opool parameters (name, mode)",
         )
         group_target.add_argument(
             "-lzd",

@@ -10,6 +10,7 @@ vmname = "live"
 net_devs = [["tap-mpsl1", "brMps", "c2:9c:4a:d7:83:33"]]
 net_bridges = [["brMps", "10.10.100.1", "24", true, true]]
 net_ports = []
+# vga_type = "virtio"
 disks = [
   ["disk1.qcow2", "64G", "hdd"],
   ["disk2.qcow2", "64G", "hdd"],
@@ -25,7 +26,14 @@ clean_old_vm = false
 [addon_postinstall]
 joblist_early = []
 joblist_late = ["installer/postinstall_mps.bash"]
-copy_additional_scripts = ["installer/default/finalize.bash"]
+copy_additional_scripts = [
+  "installer/default/finalize.bash",
+  "installer/live/install-live-all.bash",
+  "installer/live/install-live-essentials.bash",
+  "installer/live/install-live-user.bash",
+  "installer/live/install-live-zfs.bash",
+
+]
 exec_additional_scripts = [
   "installer/default/offline_packages.bash",
   "installer/default/hostnet_dhcp.bash",
@@ -49,33 +57,23 @@ live_boot_username = "user"
 live_initrd_list = ["live"]
 live_copy_umidir = true
 live_copy_launchers = ["UMI-install-all.desktop"]
+live_squashfs_motdfile = "99_motd_frauas.bash"
 live_squashfs_execute = [
-  "/usr/local/bin/install-live-all.bash",
-  "/usr/local/bin/install-live-zfs.bash",
+  "/opt/umi/postinstall/installer/live/install-live-all.bash",
+  "/opt/umi/postinstall/installer/live/install-live-zfs.bash",
 ]
 live_copy_scripts = [
-  "installer/live/install-live-all.bash",
-  "installer/live/install-live-essentials.bash",
-  "installer/live/install-live-user.bash",
-  "installer/live/install-live-zfs.bash",
-  "installer/live/debootstrap-zfs.bash",
-  "installer/live/debootstrap-debian.bash",
+  "installer/live/installer-debootstrap-zfs.bash",
+  "installer/live/installer-debootstrap-debian.bash",
+  "installer/live/installer-debootstrap-ubuntu.bash",
 ]
-
-zfs_bpool = [
-  "bpool",
-  "mirror",
-  "/dev/disk/by-id/virtio-DISK-0 /dev/disk/by-id/virtio-DISK-1",
+zfs_disks_main = [
+  "/dev/disk/by-id/virtio-DISK-0",
+  "/dev/disk/by-id/virtio-DISK-1",
 ]
-zfs_rpool = [
-  "rpool",
-  "mirror",
-  "/dev/disk/by-id/virtio-DISK-0 /dev/disk/by-id/virtio-DISK-1",
-]
-zfs_opool = [
-  "opool",
-  "mirror",
-  "/dev/disk/by-id/virtio-DISK-2 /dev/disk/by-id/virtio-DISK-3",
+zfs_disks_optional = [
+  "/dev/disk/by-id/virtio-DISK-2",
+  "/dev/disk/by-id/virtio-DISK-3",
 ]
 zfs_datasets = [
   ["root", "/", "rpool/ROOT/root-debian"],

@@ -35,6 +35,23 @@ class UmiFileManager(UmiFileMounts, UmiFileContents, UmiFileReplacements):
             return False
         return True
 
+    def sudo_rm(self, src: str) -> bool:
+        try:
+            if os.path.exists(src):
+                if os.path.isfile(src):
+                    run(["sudo", "rm", "-rf", src])
+                elif os.path.isdir(src):
+                    run(["sudo", "rm", "-rf", src])
+                else:
+                    log_error(
+                        "Cant delete unknown file object", self.__class__.__qualname__
+                    )
+        except Exception as exe:
+            log_error(f"Error on copy_file: {exe}",
+                      self.__class__.__qualname__)
+            return False
+        return True
+
     def mv(self, src: str, dst: str) -> bool:
         try:
             log_debug(f"Moving {src} to {dst}")
