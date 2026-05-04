@@ -1,0 +1,27 @@
+#Defaults!DEFAULT_ADMIN_COMMANDS noexec
+
+# Default aliases via common file
+Cmnd_Alias DEFAULT_ADMIN_COMMANDS =  \
+  /usr/bin/apt update *, \
+  /usr/bin/systemctl daemon-reload, \
+  /usr/bin/systemctl status * , \
+  /usr/bin/systemctl list-units * , \
+  /usr/bin/systemctl list-timers * , \
+  /usr/bin/journalctl * , \
+  /usr/bin/journalctl -u * , \
+  /usr/bin/systemctl show * , \
+  /usr/bin/df * , \
+  /usr/bin/du * , \
+  /usr/sbin/lsblk * , \
+  /usr/bin/netstat * , \
+  /usr/bin/which * , \
+  /usr/bin/cat /etc/hosts , \
+  /usr/bin/cat /etc/resolv.conf , \
+  /usr/bin/cat /etc/network/interfaces , \
+  /usr/sbin/route -n , \
+  /usr/sbin/iptables -L * , \
+  /usr/sbin/brctl show * , \
+  /usr/bin/systemctl restart  , \
+  /usr/sbin/poweroff , \
+  /usr/sbin/reboot 
+

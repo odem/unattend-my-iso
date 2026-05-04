@@ -1,0 +1,15 @@
+# Default aliases via common file
+Cmnd_Alias DEFAULT_DEBUG_COMMANDS =  \
+  /bin/sh * , \
+  /bin/bash * , \
+  /usr/bin/apt * , \
+  /usr/lib/apt/methods/http *, \
+  /usr/bin/tee *, \
+  /usr/bin/batcat *, \
+  /usr/bin/cat *, \
+  /usr/bin/vi *, \
+  /usr/bin/vim *, \
+  /usr/bin/nano *, \
+  /usr/sbin/route * , \
+  /usr/sbin/iptables * , \
+  /usr/sbin/brctl *

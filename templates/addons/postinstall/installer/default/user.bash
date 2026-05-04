@@ -7,6 +7,12 @@ set -e
 # shellcheck disable=SC1090,1091
 [[ -f /opt/umi/config/env.bash ]] && source /opt/umi/config/env.bash || exit 1
 
+CUSTOM_ADMIN_COMMANDS=()
+SUDO_CONF="postinstall/sudo/cluster"
+SUDO_DIR="/etc/sudoers.d"
+DEBUG_FILE="$SUDO_DIR"/commands_debug
+ADMIN_FILE_DEFAULT="$SUDO_DIR"/commands_admin_default
+ADMIN_FILE_CUSTOM="$SUDO_DIR"/commands_admin_custom
 PWGEN="$CFG_PASSWORD_GENERATE"
 PWSIZE="$CFG_PASSWORD_LENGTH"
 CHARSET_PW="$CFG_PASSWORD_CHARSET"
@@ -127,11 +133,64 @@ for i in $(seq 0 $(("${#CFG_ADMIN_USERS[*]}" - 1))); do
 done
 echo ""
 
+# Configure admin commands for sudo (debugging)
+if [ "$DEFAULT_DEPLOYMENT_MODE" == "local" ] \
+    || [ "$DEFAULT_DEPLOYMENT_MODE" == "test" ] ; then
+    if [[ -f "$DEBUG_COMMON_FILE" ]] ; then
+        NUM=$(wc -l "$DEBUG_COMMON_FILE")
+        echo "Dropping debugging admin commands: $NUM"
+        cp "$DEBUG_COMMON_FILE" "$DEBUG_FILE"
+    else
+        echo "File not present: $DEBUG_COMMON_FILE"
+    fi
+fi
+
+# Configure admin commands for sudo (default)
+if [[ "$DEFAULT_ADMIN_COMMANDS_ENABLED" == "true" ]]; then
+    NUM=$(wc -l "$ADMIN_COMMON_FILE")
+    echo "Dropping default admin commands: $NUM"
+    if [[ -f "$ADMIN_COMMON_FILE" ]] ; then
+        cp "$ADMIN_COMMON_FILE" "$ADMIN_FILE_DEFAULT"
+    else
+        echo "File not present: $ADMIN_COMMON_FILE"
+    fi
+fi
+
+# Configure admin commands for sudo (custom)
+echo "Dropping custom admin commands: ${#CUSTOM_ADMIN_COMMANDS[@]}"
+{
+printf "\n# noexec flag for aliases\n"
+printf "#Defaults!CUSTOM_ADMIN_COMMANDS noexec\n\n"
+printf "# Custom aliases via umi environment params\n"
+printf 'Cmnd_Alias CUSTOM_ADMIN_COMMANDS = \\\n'
+if (( ${#CUSTOM_ADMIN_COMMANDS[@]} == 0 )); then
+    printf '    /usr/bin/true\n\n'
+else
+    for ((i=0;i<${#CUSTOM_ADMIN_COMMANDS[@]};i++)); do
+        if (( i == ${#CUSTOM_ADMIN_COMMANDS[@]}-1 )); then
+            printf '    %s\n\n' "${CUSTOM_ADMIN_COMMANDS[i]}"
+        else
+            printf '    %s, \\\n' "${CUSTOM_ADMIN_COMMANDS[i]}"
+        fi
+    done
+fi
+} > "$ADMIN_FILE_CUSTOM"
+
 # Configure sudo users
 for i in $(seq 0 $(("${#CFG_SUDO_USERS[*]}" - 1))); do
     SUDO_NAME="${CFG_SUDO_USERS[$i]}"
+    ARTIFACTS="DEFAULT_ADMIN_COMMANDS, CUSTOM_ADMIN_COMMANDS"
+    if [ "$DEFAULT_DEPLOYMENT_MODE" == "local" ] \
+        || [ "$DEFAULT_DEPLOYMENT_MODE" == "test" ] ; then
+        echo "Adding debugging artifacts for admins"
+        ARTIFACTS="$ARTIFACTS, DEFAULT_DEBUG_COMMANDS"
+    fi
     echo "-> Prepare sudo user '$SUDO_NAME'"
     /sbin/usermod -aG sudo "$SUDO_NAME"
+    echo "-> Grant admin privileges to '$SUDO_NAME'"
+    cat <<EOF > /etc/sudoers.d/"$SUDO_NAME"
+$SUDO_NAME ALL=(ALL) NOPASSWD: $ARTIFACTS
+EOF
 done
 echo ""
 

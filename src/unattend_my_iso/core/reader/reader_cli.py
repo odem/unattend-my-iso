@@ -528,6 +528,20 @@ class CommandlineReader:
             help="List of optional disks",
         )
         group_target.add_argument(
+            "-lzdsm",
+            "--zfs_disks_special_main",
+            type=list,
+            default=None,
+            help="List of main special disks",
+        )
+        group_target.add_argument(
+            "-lzdso",
+            "--zfs_disks_special_optional",
+            type=list,
+            default=None,
+            help="List of optional special disks",
+        )
+        group_target.add_argument(
             "-lzb",
             "--zfs_bpool",
             type=list,

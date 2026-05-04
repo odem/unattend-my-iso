@@ -2,8 +2,7 @@ import os
 from typing_extensions import override
 from unattend_my_iso.addons.addon_base import UmiAddon
 from unattend_my_iso.common.config import TaskConfig, TemplateConfig
-from unattend_my_iso.common.const import DEFAULT_USERNAME
-from unattend_my_iso.common.logging import log_debug, log_error, log_info
+from unattend_my_iso.common.logging import log_debug, log_error
 
 
 class UserAddon(UmiAddon):
@@ -34,7 +33,8 @@ class UserAddon(UmiAddon):
             ]
 
         user_default = args.addons.user.default_user_dir
-        userdir_default = self.files._get_path_template_userhome(user_default, args)
+        userdir_default = self.files._get_path_template_userhome(
+            user_default, args)
         if os.path.exists(userdir_default) is False:
             log_error(f"Default user folder does not exist: {userdir_default}")
             return False

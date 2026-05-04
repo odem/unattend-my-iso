@@ -169,6 +169,8 @@ class AddonArgsLiveBoot(ArgumentBase):
     zfs_opool: list[str] = field(default_factory=lambda: ["opool", "mirror"])
     zfs_disks_main: list[str] = field(default_factory=lambda: [])
     zfs_disks_optional: list[str] = field(default_factory=lambda: [])
+    zfs_disks_special_main: list[str] = field(default_factory=lambda: [])
+    zfs_disks_special_optional: list[str] = field(default_factory=lambda: [])
     zfs_datasets: list[list[str]] = field(default_factory=lambda: [])
     zfs_props_pool: list[str] = field(
         default_factory=lambda: ["ashift=12", "autotrim=on"])
