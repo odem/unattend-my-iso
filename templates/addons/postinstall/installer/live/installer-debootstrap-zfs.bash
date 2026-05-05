@@ -36,6 +36,14 @@ CFG_ZFS_DISKS_OPTIONAL=(
   "/dev/disk/by-id/virtio-DISK-2"
   "/dev/disk/by-id/virtio-DISK-3"
 )
+CFG_ZFS_DISKS_SPECIAL_MAIN=(
+  "/dev/disk/by-id/virtio-DISK-4"
+  "/dev/disk/by-id/virtio-DISK-5"
+)
+CFG_ZFS_DISKS_SPECIAL_OPTIONAL=(
+  "/dev/disk/by-id/virtio-DISK-6"
+  "/dev/disk/by-id/virtio-DISK-7"
+)
 CFG_ZFS_DATASETS=( 
   "'root', '/', 'rpool/ROOT/root-$CFG_ZFS_NAME'" 
   "'boot', '/boot', 'bpool/BOOT/boot-$CFG_ZFS_NAME'"
@@ -70,6 +78,11 @@ create_disk_arrays() {
   read -r -a BPOOL_DISKS <<<"${CFG_ZFS_DISKS_MAIN[@]}"
   read -r -a RPOOL_DISKS <<<"${CFG_ZFS_DISKS_MAIN[@]}"
   read -r -a OPOOL_DISKS <<<"${CFG_ZFS_DISKS_OPTIONAL[@]}"
+}
+create_disk_arrays_special() {
+  read -r -a BPOOL_SPECIAL_DISKS <<<"${CFG_ZFS_DISKS_SPECIAL_MAIN[@]}"
+  read -r -a RPOOL_SPECIAL_DISKS <<<"${CFG_ZFS_DISKS_SPECIAL_MAIN[@]}"
+  read -r -a OPOOL_SPECIAL_DISKS <<<"${CFG_ZFS_DISKS_SPECIAL_OPTIONAL[@]}"
 }
 create_partition_arrays() {
   for d in "${BPOOL_DISKS[@]}"; do
@@ -161,6 +174,14 @@ disks_check() {
   for d in "${OPOOL_DISKS[@]}"; do
     assert_disk "$d"
   done
+  echo "Checking rpool special disks:"
+  for d in "${RPOOL_SPECIAL_DISKS[@]}"; do
+    assert_disk "$d"
+  done
+  echo "Checking opool special disks:"
+  for d in "${OPOOL_SPECIAL_DISKS[@]}"; do
+    assert_disk "$d"
+  done
 }
 disks_wipe() {
   echo "Wiping bpool disks:"
@@ -173,6 +194,14 @@ disks_wipe() {
   done
   echo "Wiping opool disks:"
   for d in "${OPOOL_DISKS[@]}"; do
+    wipe_disk "$d"
+  done
+  echo "Wiping rpool special disks:"
+  for d in "${RPOOL_SPECIAL_DISKS[@]}"; do
+    wipe_disk "$d"
+  done
+  echo "Wiping opool special disks:"
+  for d in "${OPOOL_SPECIAL_DISKS[@]}"; do
     wipe_disk "$d"
   done
 }
@@ -197,6 +226,18 @@ disks_partition() {
   for d in "${OPOOL_DISKS[@]}"; do
     if sgdisk -n1:0:0 -t1:BF00 "$d" >/dev/null; then
       echo "-> SUCCESS : part1 (OPOOL) partitioned: $d"
+    fi
+  done
+  echo "Partition rpool special disks:"
+  for d in "${RPOOL_SPECIAL_DISKS[@]}"; do
+    if sgdisk -n1:0:0 -t1:BF01 "$d" >/dev/null; then
+      echo "-> SUCCESS : part1 special (RPOOL) partitioned: $d"
+    fi
+  done
+  echo "Partition opool special disks:"
+  for d in "${OPOOL_SPECIAL_DISKS[@]}"; do
+    if sgdisk -n1:0:0 -t1:BF01 "$d" >/dev/null; then
+      echo "-> SUCCESS : part1 special (OPOOL) partitioned: $d"
     fi
   done
   sync_disks
@@ -224,12 +265,22 @@ create_pool() {
   props+=("${PROPS_ZFS[@]}")
   [[ $isboot -eq 1 ]] && props+=("${PROPS_GRUB[@]}")
 
-  if zpool create -f "${props[@]}" \
-    "$name" "$mode" "${partitions[@]}" ; \
-  then
+  if zpool create -f "${props[@]}" "$name" "$mode" "${partitions[@]}" ; then
       echo "-> SUCCESS : pool created: $name"
   else
       echo "-> ERROR   : pool NOT created: $name"
+  fi
+}
+add_special_pool_devices() {
+  local name="$1"
+  local mode="$2"
+  shift 2
+  disks=("$@")
+  
+  if zpool add -f "$name" "special" "$mode" "${disks[@]}" ; then
+      echo "-> SUCCESS : special pool devices added: $name"
+  else
+      echo "-> ERROR   : special pool devices NOT added: $name"
   fi
 }
 create_pools() {
@@ -237,6 +288,19 @@ create_pools() {
   create_pool "${CFG_ZFS_BPOOL[0]}" "${CFG_ZFS_BPOOL[1]}" 1 "${BPOOL_PARTS[@]}"
   create_pool "${CFG_ZFS_RPOOL[0]}" "${CFG_ZFS_RPOOL[1]}" 0 "${RPOOL_PARTS[@]}"
   create_pool "${CFG_ZFS_OPOOL[0]}" "${CFG_ZFS_OPOOL[1]}" 0 "${OPOOL_PARTS[@]}"
+}
+add_special_devices() {
+  echo "Adding special devices:"
+  if [[ ${#CFG_ZFS_DISKS_SPECIAL_MAIN[@]} -gt 1 ]] ; then
+    add_special_pool_devices "${CFG_ZFS_RPOOL[0]}" "mirror" "${RPOOL_SPECIAL_DISKS[@]}"
+  else
+    add_special_pool_devices "${CFG_ZFS_RPOOL[0]}" "" "${RPOOL_SPECIAL_DISKS[@]}"
+  fi
+  if [[ ${#CFG_ZFS_DISKS_SPECIAL_OPTIONAL[@]} -gt 1 ]] ; then
+    add_special_pool_devices "${CFG_ZFS_OPOOL[0]}" "mirror" "${OPOOL_SPECIAL_DISKS[@]}"
+  else
+    add_special_pool_devices "${CFG_ZFS_OPOOL[0]}" "" "${OPOOL_SPECIAL_DISKS[@]}"
+  fi
 }
 create_dataset() {
   local label="$1"
@@ -263,6 +327,7 @@ destroy_pools
 install_essentials
 create_property_arrays
 create_disk_arrays
+create_disk_arrays_special
 create_partition_arrays
 create_dataset_arrays
 disks_check
@@ -270,4 +335,5 @@ disks_wipe
 disks_partition
 disks_format_efi
 create_pools
+add_special_devices
 create_datasets

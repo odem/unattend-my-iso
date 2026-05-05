@@ -101,12 +101,12 @@ unmount_debootstrap_folder_zfs() {
   if [[ $ismounted -eq 1 ]]; then
     if zfs set canmount=off mountpoint=none "$label"; then
       echo "-> SUCCESS : zfs unset mountpoint on $mp"
-      if zfs unmount "$label"; then
-        echo "-> SUCCESS : zfs dataset unmounted from $mp"
-      else
-        echo "-> ERROR   : zfs root dataset NOT unmounted from $mp"
-        return "$CONST_ERR_ZFSMOUNT"
-      fi
+      # if zfs unmount "$label"; then
+      #   echo "-> SUCCESS : zfs dataset unmounted from $mp"
+      # else
+      #   echo "-> ERROR   : zfs root dataset NOT unmounted from $mp"
+      #   return "$CONST_ERR_ZFSMOUNT"
+      # fi
     else
       echo "-> ERROR   : zfs properties NOT set to $mp"
       return "$CONST_ERR_ZFSSETMP"

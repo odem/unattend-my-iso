@@ -13,6 +13,8 @@ SUDO_DIR="/etc/sudoers.d"
 DEBUG_FILE="$SUDO_DIR"/commands_debug
 ADMIN_FILE_DEFAULT="$SUDO_DIR"/commands_admin_default
 ADMIN_FILE_CUSTOM="$SUDO_DIR"/commands_admin_custom
+DEBUG_COMMON_FILE="$CFG_ANSWERFILE_HOOK_DIR_TARGET"/"$SUDO_CONF"/commands_debug
+ADMIN_COMMON_FILE="$CFG_ANSWERFILE_HOOK_DIR_TARGET"/"$SUDO_CONF"/commands_admin_default
 PWGEN="$CFG_PASSWORD_GENERATE"
 PWSIZE="$CFG_PASSWORD_LENGTH"
 CHARSET_PW="$CFG_PASSWORD_CHARSET"
@@ -28,14 +30,18 @@ genpw() {
     head /dev/urandom | tr -dc "$CHARSET_PW" | head -c "$length"
 }
 add_groups() {
-    if ! getent ggroup "$CFG_ADMIN_GROUP_NAME" &>/dev/null; then
+    echo "Adding groups..."
+    if ! getent group "$CFG_ADMIN_GROUP_NAME" &>/dev/null; then
+        echo "Adding group '$CFG_ADMIN_GROUP_NAME'"
         /usr/sbin/groupadd "$CFG_ADMIN_GROUP_NAME"
     fi
-    if ! getent ggroup "$CFG_CONFIG_GROUP_NAME" &>/dev/null; then
+    if ! getent group "$CFG_CONFIG_GROUP_NAME" &>/dev/null; then
+        echo "Adding group '$CFG_CONFIG_GROUP_NAME'"
         /usr/sbin/groupadd "$CFG_CONFIG_GROUP_NAME"
     fi
 }
 add_users() {
+    echo "Adding users..."
     for i in $(seq 0 $(("${#CFG_ADDITIONAL_USERS[*]}" - 1))); do
         USER_NAME="${CFG_ADDITIONAL_USERS[$i]}"
         if ! id "$USER_NAME" &>/dev/null; then
@@ -46,7 +52,9 @@ add_users() {
     for i in $(seq 0 $(("${#CFG_ADMIN_USERS[*]}" - 1))); do
         USER_NAME="${CFG_ADMIN_USERS[$i]}"
         if ! id "$USER_NAME" &>/dev/null; then
-            adduser --disabled-password --gecos '' "$USER_NAME"
+            adduser --disabled-password --gecos '' "$USER_NAME" \
+                --ingroup "$CFG_ADMIN_GROUP_NAME" \
+                --ingroup "$CFG_CONFIG_GROUP_NAME"
             echo "${USER_NAME}:${USER_NAME}pass" | chpasswd
         fi
     done
@@ -60,7 +68,9 @@ add_users() {
     for i in $(seq 0 $(("${#CFG_DEPLOYMENT_USERS[*]}" - 1))); do
         USER_NAME="${CFG_DEPLOYMENT_USERS[$i]}"
         if ! id "$USER_NAME" &>/dev/null; then
-            adduser --disabled-password --gecos '' "$USER_NAME"
+            adduser --disabled-password --gecos '' "$USER_NAME" \
+                --ingroup "$CFG_ADMIN_GROUP_NAME" \
+                --ingroup "$CFG_CONFIG_GROUP_NAME"
             echo "${USER_NAME}:${USER_NAME}pass" | chpasswd
         fi
     done

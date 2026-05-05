@@ -16,9 +16,24 @@ sleep 1
 # Timezone
 echo "Europe/Berlin" > /etc/timezone
 timedatectl set-timezone Europe/Berlin
-mkdir -p /etc/chrony/chrony.d
-echo "bindaddress 127.0.0.1" > /etc/chrony/chrony.d/localhost-only.conf
+
+# time settings
+apt install -y chrony #systemd-resolved
+cat <<EOF >/etc/chrony/conf.d/99-local-server.conf
+# Set default pool offline
+pool 2.debian.pool.ntp.org offline
+
+# Use default 
+server $DEFAULT_NIC_0_GW iburst
+
+# listen only locally
+bindaddress 127.0.0.1
+EOF
+
+# Enable securiyt options
 echo "DAEMON_OPTS='-F 1 -4'" > /etc/default/chrony
+#mkdir -p /etc/chrony/chrony.d
+# echo "bindaddress 127.0.0.1" > /etc/chrony/conf.d/localhost-only.conf
 systemctl restart chrony
 
 # Locale
@@ -28,6 +43,8 @@ LANG=$LOCALESTR
 LANGUAGE=$LOCALESTR
 LC_ALL=$LOCALESTR
 EOF
+echo "$CFG_LOCALE_MULTI UTF-8" >> /etc/locale.gen
+locale-gen
 echo "locales locales/default_environment_locale select $LOCALESTR" \
     | debconf-set-selections
 dpkg-reconfigure -f noninteractive locales

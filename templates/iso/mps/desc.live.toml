@@ -12,10 +12,16 @@ net_bridges = [["brMps", "10.10.100.1", "24", true, true]]
 net_ports = []
 # vga_type = "virtio"
 disks = [
+  ["disk0.qcow2", "64G", "hdd"],
   ["disk1.qcow2", "64G", "hdd"],
   ["disk2.qcow2", "64G", "hdd"],
   ["disk3.qcow2", "64G", "hdd"],
   ["disk4.qcow2", "64G", "hdd"],
+  ["disk5.qcow2", "64G", "hdd"],
+  ["disk6.qcow2", "64G", "hdd"],
+  ["disk7.qcow2", "64G", "hdd"],
+  ["disk8.qcow2", "64G", "hdd"],
+  ["disk9.qcow2", "64G", "hdd"],
   # Prevent formatting
 ]
 res_cpu = 8
@@ -32,7 +38,7 @@ copy_additional_scripts = [
   "installer/live/install-live-essentials.bash",
   "installer/live/install-live-user.bash",
   "installer/live/install-live-zfs.bash",
-
+  "sudo/cluster",
 ]
 exec_additional_scripts = [
   "installer/default/offline_packages.bash",
@@ -72,8 +78,18 @@ zfs_disks_main = [
   "/dev/disk/by-id/virtio-DISK-1",
 ]
 zfs_disks_optional = [
+  "/dev/disk/by-id/virtio-DISK-4",
+  "/dev/disk/by-id/virtio-DISK-5",
+  "/dev/disk/by-id/virtio-DISK-6",
+  "/dev/disk/by-id/virtio-DISK-7",
+]
+zfs_disks_special_main = [
   "/dev/disk/by-id/virtio-DISK-2",
   "/dev/disk/by-id/virtio-DISK-3",
+]
+zfs_disks_special_optional = [
+  "/dev/disk/by-id/virtio-DISK-8",
+  "/dev/disk/by-id/virtio-DISK-9",
 ]
 zfs_datasets = [
   ["root", "/", "rpool/ROOT/root-debian"],
@@ -82,6 +98,9 @@ zfs_datasets = [
   ["data", "/data", "opool/OPTS/data-debian"],
   # Prevent formatting
 ]
+zfs_bpool = ["bpool", "mirror"]
+zfs_rpool = ["rpool", "mirror"]
+zfs_opool = ["opool", "raidz2"]
 
 [addon_user]
 user_enabled = true
@@ -171,3 +190,11 @@ config_auth_append = "~/.ssh/id_rsa.pub"
 # "DEFAULT_FW_POLICY_FWD" = "DROP"
 # "DEFAULT_FW_PORTS_TCP" = "22"
 # "DEFAULT_FW_PORTS_UDP" = ""
+
+# admin privileges for sudo
+"DEFAULT_ADMIN_COMMANDS_ENABLED" = "true"
+"CUSTOM_ADMIN_COMMANDS" = [
+  "/usr/bin/systemctl *",
+  "/usr/bin/systemctl *",
+  "/usr/bin/systemctl *",
+]
