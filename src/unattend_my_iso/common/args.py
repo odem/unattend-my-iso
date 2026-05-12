@@ -121,8 +121,16 @@ class AddonArgsAnswerFile(ArgumentBase):
     preseed_commands_early: list[str] = field(default_factory=lambda: [])
     preseed_commands_late: list[str] = field(default_factory=lambda: [])
     include_anna_packages: list[str] = field(default_factory=lambda: [])
-    include_offline_packages: list[str] = field(default_factory=lambda: [])
     include_git_repositories: list[str] = field(default_factory=lambda: [])
+    include_offline_packages: list[str] = field(default_factory=lambda: [
+        "vlan",
+        "ifenslave",
+        "isc-dhcp-client",
+        "vim",
+        "vim-runtime",
+        "net-tools",
+        "bridge-utils",
+    ])
 
 
 @dataclass
