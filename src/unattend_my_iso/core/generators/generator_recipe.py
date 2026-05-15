@@ -10,9 +10,10 @@ from unattend_my_iso.common.const import (
     TRIPLE_PREFIX,
 )
 
-1GBSIZE = [1024]
-2GBSIZE = [2048]
-4GBSIZE = [4096]
+# Constants
+GB1 = [1024]
+GB2 = [2048]
+GB4 = [4096]
 BNAME = "/boot/efi"
 ENAME = "/media/disks/extra"
 
@@ -44,9 +45,9 @@ class AnswerfileRecipe:
     def create_partition_layout_simple(self, vg_name: str):
         mainsize = [40000, 45000, "100%"]
         return [
-            RecipeDescription(1GBSIZE, "vfat", BNAME, "", "", "ESP", "gpt"),
-            RecipeDescription(1GBSIZE, "ext4", "/boot", "", "", "BOOT", "gpt"),
-            RecipeDescription(4GBSIZE, "linux-swap", "", vg_name, "lv_swap"),
+            RecipeDescription(GB1, "vfat", BNAME, "", "", "ESP", "gpt"),
+            RecipeDescription(GB1, "ext4", "/boot", "", "", "BOOT", "gpt"),
+            RecipeDescription(GB4, "linux-swap", "", vg_name, "lv_swap"),
             RecipeDescription(mainsize, "ext4", "/", vg_name, "lv_root"),
         ]
 
@@ -54,9 +55,9 @@ class AnswerfileRecipe:
         mainsize = [30000, 35000, 35000]
         extrasize = [10000, 10000, "100%"]
         return [
-            RecipeDescription(1GBSIZE, "vfat", BNAME, "", "", "ESP", "gpt"),
-            RecipeDescription(1GBSIZE, "ext4", "/boot", "", "", "BOOT", "gpt"),
-            RecipeDescription(4GBSIZE, "linux-swap", "", vg_name, "lv_swap"),
+            RecipeDescription(GB1, "vfat", BNAME, "", "", "ESP", "gpt"),
+            RecipeDescription(GB1, "ext4", "/boot", "", "", "BOOT", "gpt"),
+            RecipeDescription(GB4, "linux-swap", "", vg_name, "lv_swap"),
             RecipeDescription(mainsize, "ext4", "/", vg_name, "lv_root"),
             RecipeDescription(extrasize, "ext4", ENAME),
         ]
@@ -67,10 +68,10 @@ class AnswerfileRecipe:
         homesize = [5000, 5000, 50000]
         srvsize = [1000, 10000, 100000]
         return [
-            RecipeDescription(1GBSIZE, "vfat", BNAME, "", "", "ESP", "gpt"),
-            RecipeDescription(1GBSIZE, "ext4", "/boot", "", "", "BOOT", "gpt"),
+            RecipeDescription(GB1, "vfat", BNAME, "", "", "ESP", "gpt"),
+            RecipeDescription(GB1, "ext4", "/boot", "", "", "BOOT", "gpt"),
             RecipeDescription(extrasize, "ext4", ENAME),
-            RecipeDescription(4GBSIZE, "linux-swap", "", vg_name, "lv_swap"),
+            RecipeDescription(GB4, "linux-swap", "", vg_name, "lv_swap"),
             RecipeDescription(mainsize, "ext4", "/", vg_name, "lv_root"),
             RecipeDescription(homesize, "ext4", "/home", vg_name, "lv_home"),
             RecipeDescription(srvsize, "ext4", "/srv", vg_name, "lv_srv"),
