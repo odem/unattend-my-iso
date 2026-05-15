@@ -10,6 +10,12 @@ from unattend_my_iso.common.const import (
     TRIPLE_PREFIX,
 )
 
+1GBSIZE = [1024]
+2GBSIZE = [2048]
+4GBSIZE = [4096]
+BNAME = "/boot/efi"
+ENAME = "/media/disks/extra"
+
 
 class AnswerfileRecipe:
 
@@ -36,32 +42,38 @@ class AnswerfileRecipe:
         return [RecipeDescription(*x) for x in definitions]
 
     def create_partition_layout_simple(self, vg_name: str):
+        mainsize = [40000, 45000, "100%"]
         return [
-            RecipeDescription([2048], "vfat", "/boot/efi",
-                              "", "", "ESP", "gpt"),
-            RecipeDescription([2048], "ext4", "/boot", "", "", "BOOT", "gpt"),
-            RecipeDescription([4096], "linux-swap", "", vg_name, "lv_swap"),
-            RecipeDescription(
-                [450000, 500000, 100000], "ext4", "/", vg_name, "lv_root"
-            ),
-            RecipeDescription([20000, 20000, 20000],
-                              "ext4", "/media/disks/extra"),
+            RecipeDescription(1GBSIZE, "vfat", BNAME, "", "", "ESP", "gpt"),
+            RecipeDescription(1GBSIZE, "ext4", "/boot", "", "", "BOOT", "gpt"),
+            RecipeDescription(4GBSIZE, "linux-swap", "", vg_name, "lv_swap"),
+            RecipeDescription(mainsize, "ext4", "/", vg_name, "lv_root"),
+        ]
+
+    def create_partition_layout_extrapart(self, vg_name: str):
+        mainsize = [30000, 35000, 35000]
+        extrasize = [10000, 10000, "100%"]
+        return [
+            RecipeDescription(1GBSIZE, "vfat", BNAME, "", "", "ESP", "gpt"),
+            RecipeDescription(1GBSIZE, "ext4", "/boot", "", "", "BOOT", "gpt"),
+            RecipeDescription(4GBSIZE, "linux-swap", "", vg_name, "lv_swap"),
+            RecipeDescription(mainsize, "ext4", "/", vg_name, "lv_root"),
+            RecipeDescription(extrasize, "ext4", ENAME),
         ]
 
     def create_partition_layout_mps(self, vg_name: str):
+        mainsize = [50000, 50000, 100000]
+        extrasize = [10000, 10000, 10000]
+        homesize = [5000, 5000, 50000]
+        srvsize = [1000, 10000, 100000]
         return [
-            RecipeDescription([1024], "vfat", "/boot/efi",
-                              "", "", "ESP", "gpt"),
-            RecipeDescription([1024], "ext4", "/boot", "", "", "BOOT", "gpt"),
-            RecipeDescription([10000, 10000, 10000],
-                              "ext4", "/media/disks/extra"),
-            RecipeDescription([4096], "linux-swap", "", vg_name, "lv_swap"),
-            RecipeDescription([50000, 50000, 100000],
-                              "ext4", "/", vg_name, "lv_root"),
-            RecipeDescription([5000, 5000, 50000], "ext4",
-                              "/home", vg_name, "lv_home"),
-            RecipeDescription([1000, 10000, 100000], "ext4",
-                              "/srv", vg_name, "lv_srv"),
+            RecipeDescription(1GBSIZE, "vfat", BNAME, "", "", "ESP", "gpt"),
+            RecipeDescription(1GBSIZE, "ext4", "/boot", "", "", "BOOT", "gpt"),
+            RecipeDescription(extrasize, "ext4", ENAME),
+            RecipeDescription(4GBSIZE, "linux-swap", "", vg_name, "lv_swap"),
+            RecipeDescription(mainsize, "ext4", "/", vg_name, "lv_root"),
+            RecipeDescription(homesize, "ext4", "/home", vg_name, "lv_home"),
+            RecipeDescription(srvsize, "ext4", "/srv", vg_name, "lv_srv"),
         ]
 
     def get_default_partitions(self, method: str, vg_name: str, definitions: list):
@@ -70,6 +82,8 @@ class AnswerfileRecipe:
             return self.create_partition_layout_mps(vg_name)
         elif method == "simple":
             return self.create_partition_layout_simple(vg_name)
+        elif method == "extrapart":
+            return self.create_partition_layout_extrapart(vg_name)
         elif method == "custom":
             return self.create_partition_layout_custom(definitions)
         else:
@@ -120,7 +134,7 @@ class AnswerfileRecipe:
             arr += [
                 PartitionFlag("label", desc.label),
                 PartitionFlag("$iflabel", desc.iflabel),
-                PartitionFlag("bootflag", "ef"),
+                PartitionFlag("bootflag", "efi"),
             ]
         elif desc.mountpoint == "/boot":
             arr += [

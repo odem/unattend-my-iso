@@ -2,7 +2,7 @@ import os
 import pwd
 
 # Globals
-APP_VERSION = "0.0.9"
+APP_VERSION = "0.0.10"
 
 # Current user
 
