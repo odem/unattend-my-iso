@@ -1,4 +1,3 @@
-
 [description]
 name = "debian13"
 virtio_name = ""
@@ -10,7 +9,7 @@ answerfile = ""
 path_postinstall = ""
 file_postinstall = "postinstall.bash"
 enabled_overlays = []
-config_version = "0.0.8"
+config_version = "0.0.10"
 
 [run]
 vmname = "debian13-test"

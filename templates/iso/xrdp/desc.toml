@@ -1,15 +1,14 @@
-
 [description]
 name = "xrdp"
 virtio_name = ""
 virtio_url = ""
-iso_name = "debian-12.11.0-amd64-netinst.iso"
-iso_url = "https://chuangtzu.ftp.acc.umu.se/debian-cd/current/amd64/iso-cd/debian-12.11.0-amd64-netinst.iso"
+iso_name = "debian-13.4.0-amd64-netinst.iso"
+iso_url = "https://saimei.ftp.acc.umu.se/debian-cd/current/amd64/iso-cd/debian-13.4.0-amd64-netinst.iso"
 iso_type = "linux"
 answerfile = ""
 path_postinstall = "postinstall"
 file_postinstall = "postinstall.bash"
-config_version = "0.0.3"
+config_version = "0.0.10"
 enabled_overlays = ["cinnamon", "xfce"]
 
 [run]
@@ -65,7 +64,8 @@ admin_users = ["umi-admin"]
 admin_group_name = "admin"
 
 [addon_grub]
-timeout = 0
+timeout = 5
+grub_theme = "showroom"
 
 [addon_user]
 user_enabled = true

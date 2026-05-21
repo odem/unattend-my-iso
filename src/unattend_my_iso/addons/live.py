@@ -110,7 +110,7 @@ class LiveBootAddon(UmiAddon):
         dstsquash = f"{interpath}/{cfglive.live_boot_type}/{DIR_SQUASH}"
         if cfglive.live_boot_type != "":
             if len(cfglive.live_squashfs_execute) > 0:
-                log_info("Executing squashfs script:")
+                log_info("Creating chroot mounts:")
                 self._create_bindmount("/dev", dstsquash)
                 self._create_bindmount("/dev/pts", dstsquash)
                 self._create_bindmount("/run", dstsquash)

@@ -6,7 +6,7 @@ iso_type = "linux"
 path_postinstall = "postinstall"
 file_postinstall = "postinstall.bash"
 enabled_overlays = ["mpsdev", "hive", "live"]
-config_version = "0.0.9"
+config_version = "0.0.10"
 
 [run]
 vmname = "mps-test"

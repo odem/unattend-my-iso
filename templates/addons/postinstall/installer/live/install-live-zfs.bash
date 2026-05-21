@@ -13,5 +13,5 @@ echo "Kernel version was: '$KVERSION'"
 apt update
 echo "zfs-dkms zfs-dkms/license/accepted boolean true" | sudo debconf-set-selections
 echo "zfs-dkms zfs-dkms/license/confirm boolean true" | sudo debconf-set-selections
-apt install -y debootstrap parted gdisk dosfstools \
-  zfsutils-linux zfs-dkms linux-headers-"$KVERSION"
+apt install -y linux-headers-"$KVERSION"
+apt install -y debootstrap parted gdisk dosfstools zfsutils-linux zfs-dkms

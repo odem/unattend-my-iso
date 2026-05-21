@@ -363,9 +363,10 @@ class UmiQemuCommands:
             diskid = f"disk{diskindex}"
             diskcache = f"cache={cache}"
             driveopts = f"drive={diskid},serial=nvme{diskindex}"
+            serial = f"serial=DISK-{diskindex}"
             diskopts = f"file={filename},format=raw,{diskcache}"
             generated += self.bashformat(
                 args, ["-drive", f"if=none,id={diskid},{diskopts}"]
             )
-            generated += ["-device", f"nvme,{driveopts}"]
+            generated += ["-device", f"nvme,{driveopts},{serial}"]
         return generated
