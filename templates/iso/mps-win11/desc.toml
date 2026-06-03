@@ -22,8 +22,11 @@ spice_port = -1
 res_mem = 4096
 clean_old_vm = false
 disks = [["os-hdd0.qcow2", "256G", "hdd", "writeback"]]
-net_devs = [["nat"]]
-net_ports = [["2223", "22"], ["3389", "3389"]]
+# net_devs = [["nat"]]
+# net_ports = [["2223", "22"], ["3389", "3389"]]
+net_devs = [["tap-win", "brWin", "c2:9c:4a:d7:83:25"]]
+net_bridges = [["brWin", "10.10.101.1", "24", true, true]]
+net_ports = []
 
 [addon_answerfile]
 locale_string = "de_DE"
