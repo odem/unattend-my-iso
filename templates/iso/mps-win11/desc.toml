@@ -3,13 +3,13 @@
 name = "mps-win11"
 virtio_name = "virtio-win-0.1.229.iso"
 virtio_url = "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.229-1/virtio-win-0.1.229.iso"
-iso_name = "Win11_25H2_German_x64.iso"
+iso_name = "Win11_25H2_German_x64_v2.iso"
 iso_url = ""
 iso_type = "windows"
 answerfile = "autounattend.xml"
 path_postinstall = "postinstall"
 file_postinstall = "postinstall.bat"
-config_version = "0.0.3"
+config_version = "0.0.10"
 
 [run]
 vmname = "mps-win11"
@@ -20,6 +20,7 @@ res_cpu = 8
 secure_boot = true
 spice_port = -1
 res_mem = 4096
+clean_old_vm = false
 disks = [["os-hdd0.qcow2", "256G", "hdd", "writeback"]]
 net_devs = [["nat"]]
 net_ports = [["2223", "22"], ["3389", "3389"]]
