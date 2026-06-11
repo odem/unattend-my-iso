@@ -130,6 +130,8 @@ class AddonArgsAnswerFile(ArgumentBase):
         "vim-runtime",
         "net-tools",
         "bridge-utils",
+        "firmware-bnx2",
+        "firmware-bnx2x"
     ])
 
 
