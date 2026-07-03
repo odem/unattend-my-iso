@@ -106,8 +106,10 @@ class LiveBootAddon(UmiAddon):
 
     def _exec_squashfs_scripts(self, args: TaskConfig):
         cfglive = args.addons.live
+
         interpath = self.files._get_path_intermediate(args)
         dstsquash = f"{interpath}/{cfglive.live_boot_type}/{DIR_SQUASH}"
+        dstresolv = f"{dstsquash}/etc/resolv.conf"
         if cfglive.live_boot_type != "":
             if len(cfglive.live_squashfs_execute) > 0:
                 log_info("Creating chroot mounts:")
@@ -119,13 +121,19 @@ class LiveBootAddon(UmiAddon):
                 for scriptfile in cfglive.live_squashfs_execute:
                     kversion = self._extract_kernel_version(dstsquash)
                     log_info(f"Executing squashfs script: {scriptfile}")
-                    run(["sudo", "chroot", dstsquash,
-                        "/bin/bash", "-c", f"{scriptfile} {kversion}"], check=True)
-
-                self._release_bindmount("/proc", dstsquash)
-                self._release_bindmount("/run", dstsquash)
-                self._release_bindmount("/dev/pts", dstsquash)
-                self._release_bindmount("/dev", dstsquash)
+                    log_info(f"Executing squashfs kernel: {kversion}")
+                    
+                    try:
+                        self.files.sudo_cp("/etc/resolv.conf", dstresolv)
+                        run(["sudo", "chroot", dstsquash,
+                            "/bin/bash", "-c", f"{scriptfile} {kversion}"], check=True)
+                    except Exception as exe:
+                        log_error(f"Error inside CHROOT: {exe}")
+                    finally:
+                        self._release_bindmount("/proc", dstsquash)
+                        self._release_bindmount("/run", dstsquash)
+                        self._release_bindmount("/dev/pts", dstsquash)
+                        self._release_bindmount("/dev", dstsquash)
 
     def _create_bindmount(self, dev: str, path: str):
         dstpath = f"{path}{dev}"
