@@ -1,4 +1,5 @@
 import os
+from subprocess import check_call
 from unattend_my_iso.common.const import DIR_SQUASH, NAME_SQUASH
 from unattend_my_iso.core.subprocess.caller import run
 from unattend_my_iso.common.config import TaskConfig
@@ -33,7 +34,7 @@ class UmiIsoGeneratorModSquash:
         os.chdir(args.sys.path_cwd)
         dstsquash = f"{interpath}/{cfglive.live_boot_type}/{DIR_SQUASH}"
         run(["sudo", "rm", "-rf", sq_umipath])
-        run(self._create_command_squashfs(dstsquash, sq_umipath))
+        check_call(self._create_command_squashfs(dstsquash, sq_umipath))
         run(["sudo", "rm", "-rf", sq_path])
         run(["sudo", "rm", "-rf", dstsquash])
         run(["sudo", "mv", sq_umipath, sq_path])
