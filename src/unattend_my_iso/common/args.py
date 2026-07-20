@@ -131,7 +131,11 @@ class AddonArgsAnswerFile(ArgumentBase):
         "net-tools",
         "bridge-utils",
         "firmware-bnx2",
-        "firmware-bnx2x"
+        "firmware-bnx2x",
+        "adduser",
+        "libpcap0.8t64",
+        "libssl3t64",
+        "tcpdump"
     ])
 
 
