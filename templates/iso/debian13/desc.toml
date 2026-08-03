@@ -2,7 +2,7 @@
 name = "debian13"
 virtio_name = ""
 virtio_url = ""
-iso_name = "debian-13.4.0-amd64-netinst.iso"
+iso_name = "debian-13.6.0-amd64-netinst.iso"
 iso_url = "https://saimei.ftp.acc.umu.se/debian-cd/current/amd64/iso-cd/debian-13.4.0-amd64-netinst.iso"
 iso_type = "linux"
 answerfile = ""
@@ -16,7 +16,8 @@ vmname = "debian13-test"
 res_cpu = 4
 res_mem = 4096
 disks = [["os-hdd0.qcow2", "256G", "hdd", "none"]]
-net_devs = [["nat"]]
+net_devs = [["tap-mps1", "brMps", "c2:9c:4a:d7:83:33"]]
+net_bridges = [["brMps", "10.10.100.1", "24", true, true]]
 net_ports = [["2224", "22"]]
 
 [addon_answerfile]
@@ -72,7 +73,10 @@ user_enabled = true
 default_user_dir = "umi"
 
 [addon_grub]
-timeout = 0
+grub_theme = "anon"
+grub_icons = "light"
+sleeptime = 5
+timeout = 5
 
 [addon_ssh]
 ssh_enabled = true
@@ -132,7 +136,7 @@ ci_uuid = "12345-abcde-67890-fghij"
 [[env]]
 "DEFAULT_HOST" = "debian13"
 "DEFAULT_DOMAIN" = "local"
-"DEFAULT_NIC_0" = "enp0s2"
+"DEFAULT_NIC_0" = "enp0s5"
 "DEFAULT_FW_POLICY_IN" = "DROP"
 "DEFAULT_FW_POLICY_OUT" = "ACCEPT"
 "DEFAULT_FW_POLICY_FWD" = "DROP"
